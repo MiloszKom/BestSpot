@@ -25,7 +25,7 @@ function App() {
               keyboardShortcuts={false}
               disableDefaultUI={true}
               defaultZoom={14}
-              defaultCenter={{ lat: 51.0918656, lng: 16.9377792 }}
+              defaultCenter={{ lat: 45.0918656, lng: 6.9377792 }}
               mapId="DEMO_MAP_ID"
             ></Map>
           </APIProvider>
