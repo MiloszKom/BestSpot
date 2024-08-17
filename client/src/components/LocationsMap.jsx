@@ -1,5 +1,6 @@
 import React from "react";
-import { APIProvider, Map } from "@vis.gl/react-google-maps";
+import { useEffect, useState } from "react";
+import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 
 const getLocation = () => {
   if (navigator.geolocation) {
@@ -15,25 +16,26 @@ const getLocation = () => {
 getLocation();
 
 export default function LocationsMap() {
+  const [backendData, setBackendData] = useState([{}]);
+
+  useEffect(() => {
+    fetch("/api/v1/places")
+      .then((response) => response.json())
+      .then((data) => {
+        setBackendData(data.results);
+      });
+  }, []);
+
   return (
-    <div className="content">
-      <div className="block1">
-        <button id="getLocationBtn"> Search Places Button </button>
-        <div className="results">
-          <div className="result"></div>
-        </div>
-      </div>
-      <div id="map">
-        <APIProvider apiKey={"AIzaSyBLzOyErw_GGeOYghEGKdDdV8Wyfx7kTpw"}>
-          <Map
-            keyboardShortcuts={false}
-            disableDefaultUI={true}
-            defaultZoom={13}
-            defaultCenter={{ lat: 51.0918656, lng: 16.9377792 }}
-            mapId="65ca8f0d0ef266e"
-          ></Map>
-        </APIProvider>
-      </div>
-    </div>
+    <APIProvider apiKey={"AIzaSyBLzOyErw_GGeOYghEGKdDdV8Wyfx7kTpw"}>
+      <Map
+        id="map"
+        keyboardShortcuts={false}
+        disableDefaultUI={true}
+        defaultZoom={13}
+        defaultCenter={{ lat: 51.0443583, lng: 16.8675189 }}
+        mapId="65ca8f0d0ef266e"
+      ></Map>
+    </APIProvider>
   );
 }

@@ -1,14 +1,12 @@
 import React from "react";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 import LocationsMap from "./components/LocationsMap";
+import Planner from "./components/Planner";
 
 function App() {
   return (
     <div className="container">
-      <Header />
-      <LocationsMap />
-      <Footer />
+      <LocationsMap />;
+      <Planner />
     </div>
   );
 }

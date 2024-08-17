@@ -1,13 +1,30 @@
 const express = require("express");
+const axios = require("axios");
 
 // const fs = require("fs");
 // const http = require("http");
 
 const app = express();
 
-app.get("/api", (req, res) => {
-  res.json({ users: ["userOne", "userTwo", "userThree"] });
-});
+// const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+// const params = {
+//   keyword: "restaurant",
+//   location: "51.0443583,16.8675189",
+//   radius: 3000,
+//   type: "restaurant",
+//   key: "AIzaSyBLzOyErw_GGeOYghEGKdDdV8Wyfx7kTpw",
+// };
+
+// app.get("/api/v1/places", (req, res) => {
+//   axios
+//     .get(url, { params })
+//     .then((response) => {
+//       res.json(response.data);
+//     })
+//     .catch((error) => {
+//       console.error("Error fetching data:", error);
+//     });
+// });
 
 const port = 5000;
 
