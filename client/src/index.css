@@ -69,17 +69,35 @@ img {
   height: 100%;
   background-color: #212121;
   border-radius: 0 2rem 2rem 0;
-  align-self: flex-end;
+  display: flex;
+  color: #fff;
+  justify-content: center;
+  align-items: center;
+  padding-right: 0.5rem;
+  cursor: pointer;
+}
+
+.search-bar-place,
+.search-bar-city {
+  border: none;
+  width: 42.5%;
+  height: 100%;
+  padding-left: 1rem;
+  font-size: 1rem;
+  border: 1px solid black;
 }
 
 .search-bar-place {
-  width: 42.5%;
-  height: 100%;
+  border-left: none;
 }
 
-.search-bar-distance {
-  width: 42.5%;
-  height: 100%;
+.search-bar-city {
+  border-radius: 2rem 0 0 2rem;
+}
+
+.search-bar-place:focus,
+.search-bar-city:focus {
+  outline: 0;
 }
 
 /* header {
