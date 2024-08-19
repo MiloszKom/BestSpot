@@ -1,6 +1,6 @@
 // mapStyles.js
 
-const darkThemeStyles = [
+export const darkThemeStyles = [
   { elementType: "geometry", stylers: [{ color: "#212121" }] },
   { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
   { elementType: "labels.text.fill", stylers: [{ color: "#757575" }] },
@@ -91,4 +91,10 @@ const darkThemeStyles = [
   },
 ];
 
-export default darkThemeStyles;
+export const blueBallSVG = `
+    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="8" r="7" stroke="white" stroke-width="2" fill="blue" />
+    </svg>
+  `;
+
+export const blueBallIcon = "data:image/svg+xml;base64," + btoa(blueBallSVG);
