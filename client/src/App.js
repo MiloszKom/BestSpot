@@ -5,6 +5,7 @@ import Planner from "./components/Planner";
 function App() {
   return (
     <div className="container">
+      <Planner />
       <LocationsMap />
     </div>
   );

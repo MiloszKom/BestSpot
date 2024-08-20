@@ -25,7 +25,7 @@ export default function LocationsMap() {
     };
 
     const setFallbackLocation = () => {
-      setUserLat(52.1027203);
+      setUserLat(51.1027203);
       setUserLng(16.9439538);
     };
 

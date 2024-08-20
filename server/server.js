@@ -1,8 +1,13 @@
 const express = require("express");
 const axios = require("axios");
-// const http = require("http");
 
 const app = express();
+
+const port = 5000;
+
+app.listen(port, () => {
+  console.log(`Listening to requests on port ${port}`);
+});
 
 // const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
 // const params = {
@@ -23,9 +28,3 @@ const app = express();
 //       console.error("Error fetching data:", error);
 //     });
 // });
-
-const port = 5000;
-
-app.listen(port, () => {
-  console.log(`Listening to requests on port ${port}`);
-});
