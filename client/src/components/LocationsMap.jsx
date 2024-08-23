@@ -37,7 +37,7 @@ export default function LocationsMap() {
   }
 
   return (
-    <APIProvider apiKey={"AIzaSyBLzOyErw_GGeOYghEGKdDdV8Wyfx7kTpw"}>
+    <APIProvider apiKey={process.env.React_App_Api_Key}>
       <Map
         id="map"
         keyboardShortcuts={false}
