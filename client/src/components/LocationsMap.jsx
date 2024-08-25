@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 import { darkThemeStyles, blueBallIcon } from "./mapStyles.js";
+import { SearchContext } from "./SearchContext";
 
 export default function LocationsMap() {
-  const [userLat, setUserLat] = useState(null);
-  const [userLng, setUserLng] = useState(null);
+  const { userLat, setUserLat, userLng, setUserLng, results, setResults } =
+    useContext(SearchContext);
+
+  const [mapMarkers, setMapMarkers] = useState([]);
 
   useEffect(() => {
     const getLocation = () => {
@@ -30,7 +33,21 @@ export default function LocationsMap() {
     };
 
     getLocation();
-  }, []);
+  }, [setUserLat, setUserLng]);
+
+  useEffect(() => {
+    console.log(results);
+    if (results) {
+      results.forEach((result) => {
+        console.log(result);
+      });
+      const newMarkers = results.map((result) => (
+        <Marker key={result} position={result.geometry.location} />
+      ));
+      console.log(newMarkers);
+      setMapMarkers(newMarkers);
+    }
+  }, [results]);
 
   if (userLat === null || userLng === null) {
     return <div>Loading map...</div>;
@@ -54,6 +71,7 @@ export default function LocationsMap() {
             url: blueBallIcon,
           }}
         />
+        {mapMarkers}
       </Map>
     </APIProvider>
   );
