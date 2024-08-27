@@ -15,10 +15,7 @@ export default function SearchFilters() {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/search",
-        data
-      );
+      const response = await axios.post("/api/search", data);
 
       console.log("Data received from server:", response.data.googleData);
 

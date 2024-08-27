@@ -36,15 +36,11 @@ export default function LocationsMap() {
   }, [setUserLat, setUserLng]);
 
   useEffect(() => {
-    console.log(results);
     if (results) {
-      results.forEach((result) => {
-        console.log(result);
-      });
+      console.log(results);
       const newMarkers = results.map((result) => (
         <Marker key={result} position={result.geometry.location} />
       ));
-      console.log(newMarkers);
       setMapMarkers(newMarkers);
     }
   }, [results]);
