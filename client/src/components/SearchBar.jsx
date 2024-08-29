@@ -1,17 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export default function SearchBar() {
+export default function Home() {
   return (
-    <div className="map-search">
-      <div className="map-search-icon">
-        <i className="fa-solid fa-location-dot"></i>
-      </div>
-      <div className="map-search-bar">
-        <Link to="/search">
-          <h3>Click here to see search options</h3>
-        </Link>
-      </div>
+    <div className="search-bar">
+      <h3>BestSpot</h3>
+      <Link to={"/search"}>
+        <div className="search-bar-text">
+          Search Here <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+      </Link>
     </div>
   );
 }

@@ -3,26 +3,37 @@ import { Link } from "react-router-dom";
 import { SearchContext } from "./SearchContext";
 import axios from "axios";
 
-export default function SearchFilters() {
-  const { selectedSubcategory, userLng, userLat, results, setResults } =
-    useContext(SearchContext);
+import usePlacesAutocomplete, {
+  getGeocode,
+  getLatLng,
+} from "use-places-autocomplete";
 
-  const handleSubmit = async () => {
-    const data = {
-      keyword: selectedSubcategory,
-      location: `${userLat},${userLng}`,
-      radius: document.getElementById("distance").value,
-    };
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxPopover,
+  ComboboxList,
+  ComboboxOption,
+  ComboboxOptionText,
+} from "@reach/combobox";
+import "@reach/combobox/styles.css";
 
-    try {
-      const response = await axios.post("/api/search", data);
+export default function SearchFilters({ setLocation }) {
+  const {
+    ready,
+    value,
+    setValue,
+    suggestions: { status, data },
+    clearSuggestions,
+  } = usePlacesAutocomplete();
 
-      console.log("Data received from server:", response.data.googleData);
+  const handleSelect = async (val) => {
+    setValue(val, false);
+    clearSuggestions();
 
-      setResults(response.data.googleData.results);
-    } catch (error) {
-      console.error("Error sending data to the server:", error);
-    }
+    const results = await getGeocode({ address: val });
+    const { lat, lng } = await getLatLng(results[0]);
+    setLocation({ lat, lng });
   };
 
   return (
@@ -33,34 +44,26 @@ export default function SearchFilters() {
         </Link>
         <p>Clear Filters</p>
       </div>
-      <h2>Filters</h2>
-      <div className="category">
-        <p>Category</p>
-        <Link to="category">
-          <div className="category-box">
-            <p>{selectedSubcategory}</p>{" "}
-            <i className="fa-solid fa-angle-right"></i>
-          </div>
-        </Link>
-      </div>
 
       <div className="category">
         <p>Location</p>
-        <Link to="">
-          <div className="category-box">
-            {/* To do: add the option to pick the location from the map */}
-            <p>Current Location</p>
-            <i className="fa-solid fa-angle-right"></i>
-          </div>
-        </Link>
+        <Combobox onSelect={handleSelect}>
+          <ComboboxInput
+            className="category-box"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Search an adress"
+          />
+          <ComboboxPopover>
+            <ComboboxList>
+              {status === "OK" &&
+                data.map(({ place_id, description }) => (
+                  <ComboboxOption key={place_id} value={description} />
+                ))}
+            </ComboboxList>
+          </ComboboxPopover>
+        </Combobox>
       </div>
-
-      <div className="category">
-        <p>Distance</p>
-        <input type="number" id="distance" defaultValue={500} />
-      </div>
-
-      <button onClick={handleSubmit}>Search Spots</button>
     </div>
   );
 }

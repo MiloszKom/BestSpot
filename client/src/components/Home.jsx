@@ -7,8 +7,8 @@ export default function Home() {
   return (
     <div className="container">
       <SearchBar />
-      <Spots />
       <LocationsMap />
+      <Spots />
     </div>
   );
 }
