@@ -6,6 +6,6 @@ export default function LocationsMap() {
     googleMapsApiKey: process.env.React_App_Api_Key,
     libraries: ["places"],
   });
-  if (!isLoaded) return <div>Loading</div>;
+  if (!isLoaded) return <div className="loader"></div>;
   return <Map />;
 }

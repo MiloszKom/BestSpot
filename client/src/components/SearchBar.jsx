@@ -1,15 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
-export default function Home() {
+export default function SearchBar() {
+  const handleClick = () => {
+    const searchFilters = document.querySelector(".search-filters");
+    searchFilters.style.marginTop = "-100dvh";
+  };
+
   return (
     <div className="search-bar">
       <h3>BestSpot</h3>
-      <Link to={"/search"}>
-        <div className="search-bar-text">
-          Search Here <i class="fa-solid fa-magnifying-glass"></i>
-        </div>
-      </Link>
+      <div className="search-bar-text" onClick={handleClick}>
+        Search Here
+        <FontAwesomeIcon icon={faMagnifyingGlass} className="icon" />
+      </div>
     </div>
   );
 }

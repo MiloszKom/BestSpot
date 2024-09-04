@@ -1,4 +1,12 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+
+import {
+  faHeart,
+  faMessage,
+  faUser,
+} from "@fortawesome/free-regular-svg-icons";
 
 export default function SearchBar() {
   return (
@@ -9,9 +17,7 @@ export default function SearchBar() {
           <div className="spot-el-name">
             Fitness Klub CityFit - Siłownia 24h Wrocław Wroclavia
           </div>
-          <div className="spot-el-rating">
-            <i class="fa-solid fa-star"></i>4.6(1650)
-          </div>
+          <div className="spot-el-rating"></div>
           <div className="spot-el-adress">Sucha 1, Wrocław</div>
           <div className="spot-el-open">Open</div>
           <div className="spot-el-details">More Details</div>
@@ -19,19 +25,19 @@ export default function SearchBar() {
       </div>
       <div className="navigation">
         <div className="nav-element">
-          <i class="fa-solid fa-magnifying-glass"></i>
+          <FontAwesomeIcon icon={faMagnifyingGlass} className="icon" />
           <p>Explore</p>
         </div>
         <div className="nav-element">
-          <i class="fa-regular fa-heart"></i>
+          <FontAwesomeIcon icon={faHeart} className="icon" />
           <p>Favourites</p>
         </div>
         <div className="nav-element">
-          <i class="fa-regular fa-message"></i>
+          <FontAwesomeIcon icon={faMessage} className="icon" />
           <p>Messages</p>
         </div>
         <div className="nav-element">
-          <i class="fa-regular fa-user"></i>
+          <FontAwesomeIcon icon={faUser} className="icon" />
           <p>Profile</p>
         </div>
       </div>

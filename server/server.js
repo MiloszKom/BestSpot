@@ -13,13 +13,17 @@ app.post("/api/search", async (req, res) => {
 
   console.log("Received data from client:", { keyword, location, radius }); // Log the received data
 
+  const locationString = `${location.lat},${location.lng}`; // Convert location to the required format
+
   const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
   const params = {
     keyword: keyword,
-    location: location,
-    radius: radius,
-    key: process.env.React_App_Api_Key,
+    location: locationString,
+    radius: radius * 100,
+    key: process.env.React_App_Api_Key, // Use the appropriate environment variable
   };
+
+  console.log(radius);
 
   const queryString = new URLSearchParams(params).toString();
   const fullUrl = `${url}?${queryString}`;
