@@ -71,7 +71,6 @@ a {
   width: 100%;
   background-color: #14161a;
   color: #fff;
-  margin-top: -100dvh;
   padding: 1rem;
   transition: margin-top 0.5s;
 }
@@ -136,45 +135,6 @@ a {
   bottom: 0;
   left: 0;
   z-index: 0;
-}
-
-.spots-results {
-  height: 38vh;
-  width: 100%;
-  border-radius: 1.5rem 1.5rem 0rem 0rem;
-  background-color: lightgray;
-  overflow: hidden;
-  display: none;
-}
-
-.spots-results-handle {
-  width: 3rem;
-  height: 0.25rem;
-  background-color: gray;
-  margin: 0 auto;
-  margin-top: 0.5rem;
-  border-radius: 5px;
-}
-
-.spot-el {
-  width: 100%;
-  margin-top: 0.5rem;
-  border: 3px solid black;
-  display: grid;
-  grid-template-columns: 1fr 100px;
-  gap: 0.25rem;
-  padding: 0.25rem;
-}
-
-.spot-el-name,
-.spot-el-adress {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.spot-el-adress {
-  grid-column: 1/-1;
 }
 
 .navigation {

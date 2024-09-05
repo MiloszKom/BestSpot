@@ -1,25 +1,19 @@
 import { useState, useMemo, useCallback, useRef } from "react";
-import {
-  GoogleMap,
-  Marker,
-  DirectionsRenderer,
-  Circle,
-  MarkerClusterer,
-} from "@react-google-maps/api";
+import { GoogleMap, Marker, Circle } from "@react-google-maps/api";
 
 import SearchFilters from "./SearchFilters";
 import Spots from "./Spots";
 import SearchBar from "./SearchBar";
 import { blueBallIcon } from "./mapStyles.js";
-// import Distance from "./distance";
 
 export default function Map({ isLoaded }) {
   const [location, setLocation] = useState();
-  const [sliderValue, setSliderValue] = useState(1);
+  const [sliderValue, setSliderValue] = useState(0);
   const [spotValue, setSpotValue] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
   const mapRef = useRef();
-  const center = useMemo(() => ({ lat: 43, lng: -80 }), []);
+  const center = useMemo(() => ({ lat: 51.103574, lng: 16.943842 }), []);
   const options = useMemo(
     () => ({
       mapId: "b181cac70f27f5e6",
@@ -40,6 +34,11 @@ export default function Map({ isLoaded }) {
       radius: sliderValue,
     };
 
+    const searchFilters = document.querySelector(".search-filters");
+    if (searchFilters) {
+      searchFilters.style.marginTop = "0dvh";
+    }
+
     fetch("/api/search", {
       method: "POST",
       headers: {
@@ -49,7 +48,8 @@ export default function Map({ isLoaded }) {
     })
       .then((response) => response.json())
       .then((result) => {
-        console.log("Success:", result);
+        console.log("Success:", result.googleData.results);
+        setSearchResults(result.googleData.results);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -80,6 +80,24 @@ export default function Map({ isLoaded }) {
                 <Circle center={location} radius={sliderValue * 100}></Circle>
               </>
             )}
+
+            {searchResults &&
+              searchResults.map((result) => (
+                <Marker
+                  key={result.place_id}
+                  position={result.geometry.location}
+                  label={{
+                    text: `${result.name} (${result.rating})`,
+                    color: "#00aaff",
+                    fontWeight: "bold",
+                    fontSize: "0.7rem",
+                  }}
+                  icon={{
+                    url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                    labelOrigin: new window.google.maps.Point(17, 40), // Adjust x and y values
+                  }}
+                />
+              ))}
           </GoogleMap>
         </div>
         <Spots />
