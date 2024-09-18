@@ -9,21 +9,18 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.post("/api/search", async (req, res) => {
-  const { keyword, location, radius } = req.body; // Destructure the data from the request body
+  const { keyword, location, radius } = req.body;
 
-  console.log("Received data from client:", { keyword, location, radius }); // Log the received data
+  console.log("Received data from client:", { keyword, location, radius });
 
-  const locationString = `${location.lat},${location.lng}`; // Convert location to the required format
-
+  const locationString = `${location.lat},${location.lng}`;
   const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
   const params = {
     keyword: keyword,
     location: locationString,
     radius: radius * 100,
-    key: process.env.React_App_Api_Key, // Use the appropriate environment variable
+    key: process.env.React_App_Api_Key,
   };
-
-  console.log(radius);
 
   const queryString = new URLSearchParams(params).toString();
   const fullUrl = `${url}?${queryString}`;
@@ -36,6 +33,70 @@ app.post("/api/search", async (req, res) => {
       message: "Data received successfully!",
       googleData: response.data,
     });
+  } catch (error) {
+    console.error("Error making API request:", error);
+    res.status(500).json({
+      message: "Failed to retrieve data from Google Maps API",
+      error: error.message,
+    });
+  }
+});
+
+app.post("/api/search2", async (req, res) => {
+  const { placeId } = req.body;
+
+  console.log("Received data from client:", { placeId });
+
+  const url = "https://maps.googleapis.com/maps/api/place/details/json";
+  const params = {
+    place_id: placeId,
+    key: process.env.React_App_Api_Key,
+  };
+
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = `${url}?${queryString}`;
+
+  try {
+    const response = await axios.get(fullUrl);
+
+    console.log("Data received from Google Maps API:", response.data);
+    res.status(200).json({
+      message: "Data received successfully!",
+      googleData: response.data,
+    });
+  } catch (error) {
+    console.error("Error making API request:", error);
+    res.status(500).json({
+      message: "Failed to retrieve data from Google Maps API",
+      error: error.message,
+    });
+  }
+});
+
+app.post("/api/search3", async (req, res) => {
+  const { maxwidth, photo_reference } = req.body;
+
+  console.log("Received data from client:", { maxwidth, photo_reference });
+
+  const url = "https://maps.googleapis.com/maps/api/place/photo";
+  const params = {
+    maxwidth: maxwidth,
+    photo_reference: photo_reference,
+    key: process.env.React_App_Api_Key,
+  };
+
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = `${url}?${queryString}`;
+
+  try {
+    const response = await axios({
+      url: fullUrl,
+      method: "GET",
+      responseType: "arraybuffer",
+    });
+
+    res.set("Content-Type", response.headers["content-type"]);
+    res.send(response.data);
   } catch (error) {
     console.error("Error making API request:", error);
     res.status(500).json({

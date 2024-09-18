@@ -1,28 +1,39 @@
-import { useState, useMemo, useCallback, useRef } from "react";
-import { GoogleMap, Marker, Circle } from "@react-google-maps/api";
+import { useState, useMemo, useRef, useEffect } from "react";
+// import { Circle } from "@react-google-maps/api";
+
+import {
+  APIProvider,
+  Map,
+  useMap,
+  AdvancedMarker,
+} from "@vis.gl/react-google-maps";
+
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
 import SearchFilters from "./SearchFilters";
 import Spots from "./Spots";
 import SearchBar from "./SearchBar";
-import { blueBallIcon } from "./mapStyles.js";
+import MapResults from "./MapResults.jsx";
+import SpotDetail from "./SpotDetail.jsx";
+// import { blueBallIcon } from "./mapStyles.js";
 
-export default function Map({ isLoaded }) {
-  const [location, setLocation] = useState();
-  const [sliderValue, setSliderValue] = useState(0);
-  const [spotValue, setSpotValue] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-
-  const mapRef = useRef();
+export default function GoogleMap() {
+  const [location, setLocation] = useState("");
+  const [sliderValue, setSliderValue] = useState(15);
+  const [spotValue, setSpotValue] = useState("Restaurant");
+  const [searchResults, setSearchResults] = useState();
+  const [placeDetails, setPlaceDetails] = useState(null);
+  const [placePhotos, setPlacePhotos] = useState([]);
   const center = useMemo(() => ({ lat: 51.103574, lng: 16.943842 }), []);
   const options = useMemo(
     () => ({
       mapId: "b181cac70f27f5e6",
       disableDefaultUI: true,
       clickableIcons: false,
+      gestureHandling: "greedy",
     }),
     []
   );
-  const onLoad = useCallback((map) => (mapRef.current = map), []);
 
   const handleSearch = () => {
     const data = {
@@ -56,63 +67,189 @@ export default function Map({ isLoaded }) {
       });
   };
 
+  const Markers = ({ points }) => {
+    const map = useMap();
+    const [markers, setMarkers] = useState({});
+    const clusterer = useRef(null);
+
+    useEffect(() => {
+      if (!map) return;
+
+      if (!clusterer.current) {
+        clusterer.current = new MarkerClusterer({ map });
+      }
+
+      return () => {
+        if (clusterer.current) {
+          clusterer.current.clearMarkers();
+        }
+      };
+    }, [map]);
+
+    useEffect(() => {
+      if (clusterer.current && markers && Object.keys(markers).length > 0) {
+        clusterer.current.clearMarkers();
+        clusterer.current.addMarkers(Object.values(markers));
+      }
+    }, [markers]);
+
+    useEffect(() => {
+      if (!points || points.length === 0) {
+        if (clusterer.current) {
+          clusterer.current.clearMarkers();
+        }
+      }
+    }, [points]);
+
+    const setMarkerRef = (marker, key) => {
+      if (marker && markers[key]) return;
+      if (!marker && !markers[key]) return;
+
+      setMarkers((prev) => {
+        if (marker) {
+          return { ...prev, [key]: marker };
+        } else {
+          const newMarkers = { ...prev };
+          delete newMarkers[key];
+          return newMarkers;
+        }
+      });
+    };
+
+    return points.map((result) => (
+      <AdvancedMarker
+        key={result.place_id}
+        position={result.geometry.location}
+        ref={(marker) => setMarkerRef(marker, result.place_id)}
+      >
+        <div className="custom-marker-wrapper">
+          <div className="test">
+            <div className="custom-marker">
+              {result.rating} ({result.user_ratings_total})
+            </div>
+          </div>
+          <div className="custom-marker-label">{result.name}</div>
+        </div>
+      </AdvancedMarker>
+    ));
+  };
+
+  const moreDetails = (id) => {
+    const data = {
+      placeId: id,
+    };
+
+    fetch("/api/search2", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log("Success:", result.googleData.result);
+        setPlaceDetails(result.googleData.result);
+
+        const photos = result.googleData.result.photos || [];
+        const fetchPhotoPromises = photos.slice(0, 3).map((photo) => {
+          const photoData = {
+            maxwidth: photo.width,
+            photo_reference: photo.photo_reference,
+          };
+
+          return fetch("/api/search3", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(photoData),
+          })
+            .then((response) => response.blob())
+            .then((blob) => {
+              const imageUrl = URL.createObjectURL(blob);
+              return imageUrl;
+            })
+            .catch((error) => {
+              console.error("Error fetching photo:", error);
+              return null;
+            });
+        });
+
+        Promise.all(fetchPhotoPromises)
+          .then((photoUrls) => {
+            setPlacePhotos((prevPhotos) => [
+              ...prevPhotos,
+              ...photoUrls.filter((url) => url !== null),
+            ]);
+          })
+          .catch((error) => {
+            console.error("Error processing photo URLs:", error);
+          });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  const lessDetails = () => {
+    setPlaceDetails(null);
+    setPlacePhotos([]);
+  };
+
   return (
     <>
-      <div className="container">
-        <SearchBar />
-        {isLoaded}
-        <div className="map">
-          <GoogleMap
-            zoom={10}
-            center={center}
-            options={options}
-            mapContainerClassName="map-container2"
-            onLoad={onLoad}
-          >
-            {location && (
-              <>
-                <Marker
-                  position={location}
-                  icon={{
-                    url: blueBallIcon,
-                  }}
-                />
-                <Circle center={location} radius={sliderValue * 100}></Circle>
-              </>
+      <APIProvider apiKey={process.env.React_App_Api_Key}>
+        <div className="container">
+          {!searchResults && <SearchBar />}
+          <div className="map-container">
+            {!placeDetails && (
+              <div className="map">
+                <Map
+                  defaultZoom={10}
+                  defaultCenter={center}
+                  options={options}
+                  mapContainerClassName="map-container2"
+                >
+                  {location && (
+                    <>
+                      {/* <Circle center={location} radius={sliderValue * 100} /> */}
+                      <AdvancedMarker position={location}>
+                        <div className="current-location"></div>
+                      </AdvancedMarker>
+                    </>
+                  )}
+                  {searchResults && <Markers points={searchResults} />}
+                </Map>
+              </div>
             )}
-
-            {searchResults &&
-              searchResults.map((result) => (
-                <Marker
-                  key={result.place_id}
-                  position={result.geometry.location}
-                  label={{
-                    text: `${result.name} (${result.rating})`,
-                    color: "#00aaff",
-                    fontWeight: "bold",
-                    fontSize: "0.7rem",
-                  }}
-                  icon={{
-                    url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                    labelOrigin: new window.google.maps.Point(17, 40), // Adjust x and y values
-                  }}
-                />
-              ))}
-          </GoogleMap>
+            {searchResults && !placeDetails && (
+              <MapResults
+                points={searchResults}
+                setSearchResults={setSearchResults}
+                moreDetails={moreDetails}
+              />
+            )}
+            {placeDetails && (
+              <SpotDetail
+                placeDetails={placeDetails}
+                placePhotos={placePhotos}
+                lessDetails={lessDetails}
+              />
+            )}
+          </div>
+          {!searchResults && <Spots />}
         </div>
-        <Spots />
-      </div>
-      <SearchFilters
-        setLocation={(position) => {
-          setLocation(position);
-          mapRef.current?.panTo(position);
-        }}
-        sliderValue={sliderValue}
-        setSliderValue={setSliderValue}
-        spotValue={spotValue}
-        setSpotValue={setSpotValue}
-        handleSearch={handleSearch}
-      />
+        <SearchFilters
+          location={location}
+          setLocation={setLocation}
+          sliderValue={sliderValue}
+          setSliderValue={setSliderValue}
+          spotValue={spotValue}
+          setSpotValue={setSpotValue}
+          handleSearch={handleSearch}
+        />
+      </APIProvider>
     </>
   );
 }

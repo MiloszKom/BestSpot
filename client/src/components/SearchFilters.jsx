@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { useMap } from "@vis.gl/react-google-maps";
 
 import usePlacesAutocomplete, {
   getGeocode,
@@ -16,6 +17,7 @@ import {
 import "@reach/combobox/styles.css";
 
 export default function SearchFilters({
+  location,
   setLocation,
   sliderValue,
   setSliderValue,
@@ -37,7 +39,7 @@ export default function SearchFilters({
     const x = sliderValue;
     const color = `linear-gradient(90deg, #0088ff ${x}%, rgb(214, 214, 214) ${x}%)`;
     setSliderBackground(color);
-  }, [sliderValue]); // Update the background gradient when sliderValue changes
+  }, [sliderValue]);
 
   const handleSelect = async (val) => {
     setValue(val, false);
@@ -46,6 +48,10 @@ export default function SearchFilters({
     const results = await getGeocode({ address: val });
     const { lat, lng } = await getLatLng(results[0]);
     setLocation({ lat, lng });
+
+    if (map) {
+      map.panTo({ lat, lng });
+    }
   };
 
   const handleClick = () => {
@@ -59,6 +65,14 @@ export default function SearchFilters({
     setSliderValue(Number(e.target.value));
   };
 
+  const map = useMap();
+
+  const clearFilters = () => {
+    setSpotValue("");
+    setValue("");
+    setSliderValue(15);
+  };
+
   return (
     <div className="search-filters">
       <div className="filter-header">
@@ -67,7 +81,7 @@ export default function SearchFilters({
           className="icon"
           onClick={handleClick}
         />
-        <p>Clear Filters</p>
+        <p onClick={clearFilters}>Clear Filters</p>
       </div>
 
       <div className="category">

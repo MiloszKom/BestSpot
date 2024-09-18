@@ -17,8 +17,7 @@ img {
 }
 
 .container {
-  display: grid;
-  grid-template-rows: 70px 1fr 70px;
+  display: flex;
   flex-direction: column;
   /* dynamic view height might not be consistent for all browsers, going to look into that and the end */
   height: 100dvh;
@@ -32,7 +31,7 @@ img {
 
 a {
   text-decoration: none;
-  color: black;
+  color: #fff;
 }
 
 /* SEARCH BAR */
@@ -131,10 +130,6 @@ a {
   background-color: #fff;
   width: 100%;
   z-index: 1;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  z-index: 0;
 }
 
 .navigation {
@@ -167,16 +162,291 @@ a {
   margin-top: 0;
 }
 
+/* SPOT DETAIL */
+
+.spot-detail {
+  flex: 1;
+  background-color: #14161a;
+  color: #fff;
+  overflow-y: scroll;
+}
+
+.spot-detail-wrapper {
+  height: 35%;
+  position: relative;
+}
+
+.spot-detail-carousel {
+  display: grid;
+  grid-template-columns: 100% 100% 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.spot-detail-img {
+  height: 100%;
+  width: 100%;
+  background-size: 100%;
+  background-position: center;
+  background-size: cover;
+  transition: margin 0.4s;
+}
+
+.spot-detail-btn {
+  height: 40px;
+  width: 40px;
+  border-radius: 100%;
+  background-color: #14161a;
+  color: #0088ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+.spot-detail-img-btn {
+  position: absolute;
+  top: 0;
+  margin: 1rem;
+}
+
+.spot-detail-controlls {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  bottom: 0;
+  width: 100%;
+  padding: 1rem;
+}
+
+.padding-container {
+  padding: 0rem 1rem;
+}
+
+.spot-detail-name {
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+.spot-detail-info {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+.spot-detail-info-el {
+  border-top: 1px solid black;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 1rem;
+}
+
+.spot-detail-info-el:last-of-type {
+  border-bottom: 1px solid black;
+}
+
+.spot-detail-info-el .downArrow {
+  margin-left: 1rem;
+}
+
+.spot-detail-info-el .website-link {
+  text-decoration: underline;
+}
+
+.opening-hours {
+  font-size: 0.9rem;
+  padding-left: 4rem;
+}
+
+.opening-hours span {
+  width: 90px;
+}
+
+.spot-detail-info p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.spot-detail-info .icon {
+  text-align: center;
+  font-size: 1.35rem;
+  min-height: 32px;
+  min-width: 32px;
+  margin-right: 1rem;
+  color: #0088ff;
+}
+
+.spot-detail-reviews {
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+
+.spot-detail-reviews h2 {
+  margin-top: 0;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.review-header img {
+  height: 32px;
+  width: 32px;
+  margin-right: 1rem;
+}
+
+.review-header .icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+.review-stars {
+  display: flex;
+  align-items: center;
+}
+
+.review-date {
+  background-color: #0088ff;
+  border-radius: 0.25rem;
+  padding: 0 0.2rem;
+  margin-left: 0.5rem;
+  color: #14161a;
+}
+
+.spot-detail-review-el {
+  margin-bottom: 1.5rem;
+}
+
+.spot-detail-footer {
+  position: fixed;
+  width: calc(100% - 5px);
+  bottom: 0;
+  left: 0;
+  padding: 0.5rem 0;
+  display: flex;
+  justify-content: space-around;
+  background-color: #14161a;
+  border-top: 2px solid black;
+}
+
+.spot-detail-footer div {
+  background-color: #0088ff;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  color: #fff;
+}
+
+.spot-detail-footer .add-favorite-btn {
+  background-color: #fa507d;
+}
+
 /* MAP */
 
-.map {
+.map-container {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
 }
 
-.map-container2 {
+.map {
+  flex: 1;
+}
+
+.map-results {
+  flex: 1;
+  background-color: #14161a;
+  color: #fff;
+  overflow-y: auto;
+}
+
+.map-results-header {
+  position: fixed;
+  display: flex;
   width: 100%;
-  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 2px solid #000;
+  background-color: #14161a;
+}
+
+.map-results-header h2 {
+  margin: 0;
+  font-weight: 400;
+}
+
+.map-results-btn {
+  border-radius: 100%;
+  border: none;
+  height: 30px;
+  width: 30px;
+  background-color: #d3d3d3;
+  cursor: pointer;
+}
+
+.disabled {
+  opacity: 0.4;
+}
+
+.map-result {
+  padding: 0.5rem 1rem;
+  display: grid;
+  grid-template-columns: 70% 30%;
+}
+
+.all-map-results {
+  margin-top: 70px;
+}
+
+.map-result-name {
+  font-size: 1.15rem;
+  font-weight: 500;
+  text-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-result-open {
+  color: #188038;
+  font-weight: 500;
+}
+
+.map-result-closed {
+  color: #d5372f;
+  font-weight: 500;
+}
+
+.map-result-details {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 108px;
+}
+
+.map-result-details button {
+  height: 30px;
+  border: 1px solid #0088ff;
+  color: #0088ff;
+  background-color: #14161a;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.current-location {
+  height: 17px;
+  width: 17px;
+  border-radius: 100%;
+  background-color: #0088ff;
+  border: 2px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Fancy Slider */
@@ -254,7 +524,7 @@ a {
   left: 0;
   width: 100vw;
   height: 100dvh;
-  display: Flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   background-color: #14161a;
@@ -277,4 +547,60 @@ a {
   to {
     transform: rotate(1turn);
   }
+}
+
+.custom-marker-wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.custom-marker {
+  background-color: #0088ff;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  padding: 5px 10px;
+  position: relative;
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.custom-marker::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, 0);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #0088ff;
+}
+
+.custom-marker-label {
+  cursor: pointer;
+  margin-top: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+/* Custom Styles For Developemtn */
+
+/* Scroll Bar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
 }
