@@ -124,6 +124,45 @@ a {
   color: #fff;
 }
 
+.get-current-location {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.get-current-location .button {
+  background-color: #d2d2d2c1;
+  width: 50px;
+  height: 25px;
+  border-radius: 50px;
+  cursor: pointer;
+  position: relative;
+  transition: 0.2s;
+}
+
+.get-current-location .button::before {
+  position: absolute;
+  content: "";
+  background-color: #fff;
+  width: 22.5px;
+  height: 22.5px;
+  border-radius: 50px;
+  margin: 1px;
+  transition: 0.2s;
+}
+
+.get-current-location input:checked + .button {
+  background-color: #0088ff;
+}
+
+.get-current-location input:checked + .button::before {
+  transform: translateX(25px);
+}
+
+.get-current-location input {
+  display: none;
+}
+
 /* SPOTS AND NAVIGATION */
 
 .spots {
@@ -308,6 +347,7 @@ a {
 .review-stars {
   display: flex;
   align-items: center;
+  margin-bottom: 0.25rem;
 }
 
 .review-date {
@@ -360,18 +400,20 @@ a {
 
 .map-results {
   flex: 1;
+  height: 50%;
   background-color: #14161a;
   color: #fff;
-  overflow-y: auto;
+  display: grid;
+  grid-template-rows: 110px auto;
 }
 
 .map-results-header {
-  position: fixed;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 30px;
   width: 100%;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 1rem 1rem 0.25rem 1rem;
   border-bottom: 2px solid #000;
   background-color: #14161a;
 }
@@ -386,8 +428,31 @@ a {
   border: none;
   height: 30px;
   width: 30px;
-  background-color: #d3d3d3;
+  background-color: #14161a;
+  border: #0088ff 2px solid;
+  color: #0088ff;
   cursor: pointer;
+}
+
+.map-results-sort {
+  display: flex;
+  align-items: center;
+}
+
+.sort-option {
+  margin-right: 1rem;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  background-color: #14161a;
+  border: 1px solid #0088ff;
+  color: #0088ff;
+  cursor: pointer;
+}
+
+.map-results-sort .active {
+  background-color: #0088ff;
+  color: #14161a;
+  font-weight: 500;
 }
 
 .disabled {
@@ -398,10 +463,15 @@ a {
   padding: 0.5rem 1rem;
   display: grid;
   grid-template-columns: 70% 30%;
+  transition: background-color 0.2s;
+}
+
+.highlight {
+  background-color: #212121;
 }
 
 .all-map-results {
-  margin-top: 70px;
+  overflow-y: auto;
 }
 
 .map-result-name {
@@ -438,9 +508,16 @@ a {
   cursor: pointer;
 }
 
+.no-results {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .current-location {
-  height: 17px;
-  width: 17px;
+  height: 20px;
+  width: 20px;
   border-radius: 100%;
   background-color: #0088ff;
   border: 2px solid black;
@@ -564,6 +641,11 @@ a {
   position: relative;
   align-self: flex-start;
   cursor: pointer;
+  transition: font-size 0.15s;
+}
+
+.custom-marker:hover {
+  font-size: 1rem;
 }
 
 .custom-marker::after {
@@ -577,6 +659,13 @@ a {
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
   border-top: 8px solid #0088ff;
+}
+
+.highlighted-marker {
+  font-size: 1rem;
+  border: 2px solid #0088ff;
+  background-color: #14161a;
+  color: #0088ff;
 }
 
 .custom-marker-label {

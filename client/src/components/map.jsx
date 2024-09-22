@@ -67,6 +67,8 @@ export default function GoogleMap() {
       });
   };
 
+  const [highlightedMarker, setHighlightedMarker] = useState(null);
+
   const Markers = ({ points }) => {
     const map = useMap();
     const [markers, setMarkers] = useState({});
@@ -116,15 +118,37 @@ export default function GoogleMap() {
       });
     };
 
+    const zoomMarker = (place_id, position) => {
+      map.setZoom(16.99);
+      setHighlightedMarker(place_id);
+
+      const element = document.querySelector(`[data-id=${place_id}]`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      setTimeout(() => {
+        map.setZoom(17);
+        map.setCenter(position);
+      }, 100);
+    };
+
     return points.map((result) => (
       <AdvancedMarker
         key={result.place_id}
         position={result.geometry.location}
         ref={(marker) => setMarkerRef(marker, result.place_id)}
+        onClick={() => zoomMarker(result.place_id, result.geometry.location)}
       >
         <div className="custom-marker-wrapper">
           <div className="test">
-            <div className="custom-marker">
+            <div
+              className={`custom-marker ${
+                highlightedMarker === result.place_id
+                  ? "highlighted-marker"
+                  : ""
+              }`}
+            >
               {result.rating} ({result.user_ratings_total})
             </div>
           </div>
@@ -228,6 +252,8 @@ export default function GoogleMap() {
                 points={searchResults}
                 setSearchResults={setSearchResults}
                 moreDetails={moreDetails}
+                location={location}
+                highlightedMarker={highlightedMarker}
               />
             )}
             {placeDetails && (
@@ -248,6 +274,7 @@ export default function GoogleMap() {
           spotValue={spotValue}
           setSpotValue={setSpotValue}
           handleSearch={handleSearch}
+          searchResults={searchResults}
         />
       </APIProvider>
     </>

@@ -1,62 +1,116 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark, faStarHalfStroke } from "@fortawesome/free-solid-svg-icons";
-import { faStar as emptyStar } from "@fortawesome/free-regular-svg-icons";
-import { faStar as filledStar } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
 
-export default function mapResults({ points, setSearchResults, moreDetails }) {
+import { measureDistance } from "./helperFunctions";
+import { starRating } from "./helperFunctions";
+
+export default function MapResults({
+  points,
+  setSearchResults,
+  moreDetails,
+  location,
+  highlightedMarker,
+}) {
   const deleteResults = () => {
     setSearchResults(null);
   };
+
   const searchResults = points;
 
-  const starRating = (rating) => {
-    const stars = [];
+  const [sortOption, setSortOption] = useState(null);
 
-    for (let i = 1; i <= 5; i++) {
-      if (rating >= i) {
-        stars.push(<FontAwesomeIcon key={i} icon={filledStar} />);
-      } else if (rating >= i - 0.5) {
-        stars.push(<FontAwesomeIcon key={i} icon={faStarHalfStroke} />);
-      } else {
-        stars.push(<FontAwesomeIcon key={i} icon={emptyStar} />);
-      }
+  const modyfiedSearchResults = searchResults.map((result) => {
+    const distance = measureDistance(location, result.geometry.location);
+    return { ...result, distance }; // Spread the existing properties and add distance
+  });
+
+  const sortedResults = [...modyfiedSearchResults].sort((a, b) => {
+    if (sortOption === "Most rated") {
+      return b.user_ratings_total - a.user_ratings_total;
+    } else if (sortOption === "Best rated") {
+      return b.rating - a.rating;
+    } else if (sortOption === "Distance") {
+      return a.distance - b.distance; // Assuming you have 'distance' in the result data
     }
+    return 0; // Default: no sorting
+  });
 
-    return stars;
-  };
   return (
     <div className="map-results">
       <div className="map-results-header">
-        <h2>Results</h2>
+        <h2>Results ({searchResults.length})</h2>
         <button className="map-results-btn" onClick={deleteResults}>
           <FontAwesomeIcon icon={faXmark} className="icon" />
         </button>
+        <div className="map-results-sort">
+          <div
+            className={`sort-option ${
+              sortOption === "Most rated" ? "active" : ""
+            }`}
+            onClick={() => setSortOption("Most rated")}
+          >
+            Most rated
+          </div>
+          <div
+            className={`sort-option ${
+              sortOption === "Best rated" ? "active" : ""
+            }`}
+            onClick={() => setSortOption("Best rated")}
+          >
+            Best rated
+          </div>
+          <div
+            className={`sort-option ${
+              sortOption === "Distance" ? "active" : ""
+            }`}
+            onClick={() => setSortOption("Distance")}
+          >
+            Distance
+          </div>
+        </div>
       </div>
       <div className="all-map-results">
-        {searchResults.map((result) => (
-          <div className="map-result">
-            <div className="map-result-container">
-              <div className="map-result-name">{result.name}</div>
-              <div>
-                {result.rating}
-                {starRating(result.rating)}({result.user_ratings_total})
+        {sortedResults.length > 0 ? (
+          sortedResults.map((result) => (
+            <div
+              className={`map-result ${
+                highlightedMarker === result.place_id ? "highlight" : ""
+              }`}
+              data-id={result.place_id}
+              key={result.place_id}
+            >
+              <div className="map-result-container">
+                <div className="map-result-name">{result.name}</div>
+                <div>
+                  {result.rating}
+                  {starRating(result.rating)}({result.user_ratings_total})
+                </div>
+                <div>
+                  <FontAwesomeIcon icon={faPersonWalking} />
+                  {` ${result.distance.toFixed(0)} m, `}
+                  {result.vicinity}
+                </div>
+                {result.opening_hours?.open_now ? (
+                  <div className="map-result-open">Open</div>
+                ) : (
+                  <div className="map-result-closed">Closed</div>
+                )}
               </div>
-              <div>{result.vicinity}</div>
-              {result.opening_hours?.open_now ? (
-                <div className="map-result-open">Open</div>
-              ) : (
-                <div className="map-result-closed">Closed</div>
-              )}
+              <div className="map-result-details">
+                <button onClick={() => moreDetails(result.place_id)}>
+                  More Details
+                </button>
+              </div>
             </div>
-            <div className="map-result-details">
-              <button onClick={() => moreDetails(result.place_id)}>
-                More Details
-              </button>
-            </div>
+          ))
+        ) : (
+          <div className="no-results">
+            <p>No results found. Try another search!</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

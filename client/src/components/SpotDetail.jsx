@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faStarHalfStroke,
   faArrowRight,
   faArrowLeft,
   faLocationDot,
-  faStar as filledStar,
   faChevronLeft,
   faClock,
   faPhone,
@@ -14,32 +12,15 @@ import {
   faChevronDown,
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  faStar as emptyStar,
-  faUser,
-} from "@fortawesome/free-regular-svg-icons";
+import { faUser } from "@fortawesome/free-regular-svg-icons";
+
+import { starRating } from "./helperFunctions";
 
 // import img1 from "./img/jpg1.jpg";
 // import img2 from "./img/jpg2.jpg";
 // import img3 from "./img/jpg3.jpg";
 export default function SpotDetail({ placePhotos, placeDetails, lessDetails }) {
   const [imageError, setImageError] = useState(false);
-
-  const starRating = (rating) => {
-    const stars = [];
-
-    for (let i = 1; i <= 5; i++) {
-      if (rating >= i) {
-        stars.push(<FontAwesomeIcon key={i} icon={filledStar} />);
-      } else if (rating >= i - 0.5) {
-        stars.push(<FontAwesomeIcon key={i} icon={faStarHalfStroke} />);
-      } else {
-        stars.push(<FontAwesomeIcon key={i} icon={emptyStar} />);
-      }
-    }
-
-    return stars;
-  };
 
   const [imgMargin, setImgMargin] = useState(0);
   const [showHours, setShowHours] = useState(false);
@@ -70,13 +51,15 @@ export default function SpotDetail({ placePhotos, placeDetails, lessDetails }) {
   }
 
   const getNearestTime = () => {
+    console.log("1");
     let periods = placeDetails.current_opening_hours.periods;
+    console.log("2");
+    if (!periods) return;
+    console.log("3");
 
     const now = new Date();
     const currentDay = now.getDay();
     const currentTime = now.getHours() * 100 + now.getMinutes();
-
-    console.log(currentTime);
 
     if (!periods[currentDay]) {
       return console.log("Not Operating Today");
@@ -151,24 +134,26 @@ export default function SpotDetail({ placePhotos, placeDetails, lessDetails }) {
           </div>
           <p>{placeDetails.vicinity}</p>
         </div>
-        <div className="spot-detail-info-el" onClick={handleClick}>
-          <div className="icon">
-            <FontAwesomeIcon icon={faClock} />
+        {placeDetails.current_opening_hours && (
+          <div className="spot-detail-info-el" onClick={handleClick}>
+            <div className="icon">
+              <FontAwesomeIcon icon={faClock} />
+            </div>
+            <p>
+              {placeDetails.opening_hours?.open_now ? (
+                <span className="map-result-open">Open</span>
+              ) : (
+                <span className="map-result-closed">Closed</span>
+              )}
+              {!showHours && <> &middot; {getNearestTime()}</>}
+              {showHours ? (
+                <FontAwesomeIcon icon={faChevronUp} className="downArrow" />
+              ) : (
+                <FontAwesomeIcon icon={faChevronDown} className="downArrow" />
+              )}
+            </p>
           </div>
-          <p>
-            {placeDetails.opening_hours?.open_now ? (
-              <span className="map-result-open">Open</span>
-            ) : (
-              <span className="map-result-closed">Closed</span>
-            )}
-            {!showHours && <> &middot; {getNearestTime()}</>}
-            {showHours ? (
-              <FontAwesomeIcon icon={faChevronUp} className="downArrow" />
-            ) : (
-              <FontAwesomeIcon icon={faChevronDown} className="downArrow" />
-            )}
-          </p>
-        </div>
+        )}
         {showHours && (
           <>
             {placeDetails.opening_hours.weekday_text.map((day, index) => {

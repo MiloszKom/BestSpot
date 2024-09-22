@@ -24,11 +24,12 @@ export default function SearchFilters({
   spotValue,
   setSpotValue,
   handleSearch,
+  searchResults,
 }) {
   const [sliderBackground, setSliderBackground] = useState("");
 
   const {
-    ready,
+    // ready,
     value,
     setValue,
     suggestions: { status, data },
@@ -41,7 +42,12 @@ export default function SearchFilters({
     setSliderBackground(color);
   }, [sliderValue]);
 
+  const AdjustZoom = () => {
+    map.setZoom(15 - sliderValue / 20);
+  };
+
   const handleSelect = async (val) => {
+    if (isChecked) return;
     setValue(val, false);
     clearSuggestions();
 
@@ -71,6 +77,70 @@ export default function SearchFilters({
     setSpotValue("");
     setValue("");
     setSliderValue(15);
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          if (location.lat === lat && location.lng === lng) return;
+          setLocation({ lat, lng });
+          setValue("Searching adress...");
+
+          if (map) {
+            map.panTo({ lat, lng });
+          }
+
+          const data = {
+            lat: lat,
+            lng: lng,
+          };
+
+          fetch("/api/search4", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              console.log("Success:", result.googleData.results[0]);
+              setValue(result.googleData.results[0].formatted_address);
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  };
+
+  // Bandaid scrollIntoView in searchResults fix
+
+  const searchFilters = document.querySelector(".search-filters");
+
+  if (searchFilters) {
+    searchResults
+      ? (searchFilters.style.display = "none")
+      : (searchFilters.style.display = "block");
+  }
+
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleLocationChange = (e) => {
+    setIsChecked(e.target.checked);
+
+    if (e.target.checked) {
+      getCurrentLocation();
+    }
   };
 
   return (
@@ -112,6 +182,16 @@ export default function SearchFilters({
             </ComboboxList>
           </ComboboxPopover>
         </Combobox>
+        <div className="get-current-location">
+          <p>Use your current location</p>
+          <input
+            type="checkbox"
+            id="check"
+            checked={isChecked}
+            onChange={handleLocationChange}
+          />
+          <label for="check" class="button"></label>
+        </div>
       </div>
 
       <div className="slideContainer">
@@ -123,6 +203,8 @@ export default function SearchFilters({
             max="100"
             value={sliderValue}
             onChange={handleSliderChange}
+            onMouseUp={AdjustZoom}
+            onTouchEnd={AdjustZoom}
             className="slider"
             style={{ background: sliderBackground }}
           />

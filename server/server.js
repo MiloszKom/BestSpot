@@ -106,6 +106,37 @@ app.post("/api/search3", async (req, res) => {
   }
 });
 
+app.post("/api/search4", async (req, res) => {
+  const { lat, lng } = req.body;
+
+  console.log("Received data from client:", { lat, lng });
+
+  const url = "https://maps.googleapis.com/maps/api/geocode/json";
+  const params = {
+    latlng: `${lat},${lng}`,
+    key: process.env.React_App_Api_Key,
+  };
+
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = `${url}?${queryString}`;
+
+  try {
+    const response = await axios.get(fullUrl);
+
+    console.log("Data received from Google Maps API:", response.data);
+    res.status(200).json({
+      message: "Data received successfully!",
+      googleData: response.data,
+    });
+  } catch (error) {
+    console.error("Error making API request:", error);
+    res.status(500).json({
+      message: "Failed to retrieve data from Google Maps API",
+      error: error.message,
+    });
+  }
+});
+
 const port = 5000;
 
 app.listen(port, () => {
