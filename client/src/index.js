@@ -4,7 +4,7 @@ import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LocationsMap from "./components/LocationsMap";
-import SearchFilters from "./components/SearchFilters";
+import Account from "./components/Account";
 import NotFoundPage from "./components/NotFoundPage";
 import { SearchProvider } from "./components/SearchContext"; // Import the context provider
 
@@ -15,8 +15,9 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
   },
   {
-    path: "/search",
-    element: <SearchFilters />,
+    path: "/account",
+    element: <Account />,
+    errorElement: <NotFoundPage />,
   },
 ]);
 
