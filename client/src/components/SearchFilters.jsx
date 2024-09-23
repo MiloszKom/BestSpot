@@ -60,10 +60,11 @@ export default function SearchFilters({
     }
   };
 
-  const handleClick = () => {
+  const searchFadeAway = () => {
     const searchFilters = document.querySelector(".search-filters");
     if (searchFilters) {
-      searchFilters.style.marginTop = "0dvh";
+      searchFilters.style.opacity = "0";
+      searchFilters.style.transform = "translateY(-100%)";
     }
   };
 
@@ -125,14 +126,6 @@ export default function SearchFilters({
 
   // Bandaid scrollIntoView in searchResults fix
 
-  const searchFilters = document.querySelector(".search-filters");
-
-  if (searchFilters) {
-    searchResults
-      ? (searchFilters.style.display = "none")
-      : (searchFilters.style.display = "block");
-  }
-
   const [isChecked, setIsChecked] = useState(false);
 
   const handleLocationChange = (e) => {
@@ -149,7 +142,7 @@ export default function SearchFilters({
         <FontAwesomeIcon
           icon={faAngleLeft}
           className="icon"
-          onClick={handleClick}
+          onClick={searchFadeAway}
         />
         <p onClick={clearFilters}>Clear Filters</p>
       </div>
@@ -217,7 +210,13 @@ export default function SearchFilters({
           Value: <span>{sliderValue / 10} km</span>
         </p>
       </div>
-      <button className="search-spots-btn" onClick={handleSearch}>
+      <button
+        className="search-spots-btn"
+        onClick={() => {
+          handleSearch();
+          searchFadeAway();
+        }}
+      >
         Search Spots
       </button>
     </div>

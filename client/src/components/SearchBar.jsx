@@ -5,7 +5,8 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 export default function SearchBar() {
   const handleClick = () => {
     const searchFilters = document.querySelector(".search-filters");
-    searchFilters.style.marginTop = "-100dvh";
+    searchFilters.style.opacity = "1";
+    searchFilters.style.transform = "translateY(0%)";
   };
 
   return (

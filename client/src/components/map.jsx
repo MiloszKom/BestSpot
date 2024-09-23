@@ -11,7 +11,7 @@ import {
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
 import SearchFilters from "./SearchFilters";
-import Spots from "./Spots";
+import Navbar from "./Navbar.jsx";
 import SearchBar from "./SearchBar";
 import MapResults from "./MapResults.jsx";
 import SpotDetail from "./SpotDetail.jsx";
@@ -222,50 +222,45 @@ export default function GoogleMap() {
   };
 
   return (
-    <>
-      <APIProvider apiKey={process.env.React_App_Api_Key}>
-        <div className="container">
-          {!searchResults && <SearchBar />}
-          <div className="map-container">
-            {!placeDetails && (
-              <div className="map">
-                <Map
-                  defaultZoom={10}
-                  defaultCenter={center}
-                  options={options}
-                  mapContainerClassName="map-container2"
-                >
-                  {location && (
-                    <>
-                      {/* <Circle center={location} radius={sliderValue * 100} /> */}
-                      <AdvancedMarker position={location}>
-                        <div className="current-location"></div>
-                      </AdvancedMarker>
-                    </>
-                  )}
-                  {searchResults && <Markers points={searchResults} />}
-                </Map>
-              </div>
-            )}
-            {searchResults && !placeDetails && (
-              <MapResults
-                points={searchResults}
-                setSearchResults={setSearchResults}
-                moreDetails={moreDetails}
-                location={location}
-                highlightedMarker={highlightedMarker}
-              />
-            )}
-            {placeDetails && (
-              <SpotDetail
-                placeDetails={placeDetails}
-                placePhotos={placePhotos}
-                lessDetails={lessDetails}
-              />
-            )}
+    <APIProvider apiKey={process.env.React_App_Api_Key}>
+      <div className="map-container">
+        {!searchResults && <SearchBar />}
+        {!placeDetails && (
+          <div className="map">
+            <Map
+              defaultZoom={10}
+              defaultCenter={center}
+              options={options}
+              mapContainerClassName="map-container2"
+            >
+              {location && (
+                <>
+                  {/* <Circle center={location} radius={sliderValue * 100} /> */}
+                  <AdvancedMarker position={location}>
+                    <div className="current-location"></div>
+                  </AdvancedMarker>
+                </>
+              )}
+              {searchResults && <Markers points={searchResults} />}
+            </Map>
           </div>
-          {!searchResults && <Spots />}
-        </div>
+        )}
+        {searchResults && !placeDetails && (
+          <MapResults
+            points={searchResults}
+            setSearchResults={setSearchResults}
+            moreDetails={moreDetails}
+            location={location}
+            highlightedMarker={highlightedMarker}
+          />
+        )}
+        {placeDetails && (
+          <SpotDetail
+            placeDetails={placeDetails}
+            placePhotos={placePhotos}
+            lessDetails={lessDetails}
+          />
+        )}
         <SearchFilters
           location={location}
           setLocation={setLocation}
@@ -276,7 +271,7 @@ export default function GoogleMap() {
           handleSearch={handleSearch}
           searchResults={searchResults}
         />
-      </APIProvider>
-    </>
+      </div>
+    </APIProvider>
   );
 }
