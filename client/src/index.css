@@ -781,3 +781,144 @@ input:focus {
   color: #0088ff;
   text-decoration: underline;
 }
+
+/* ACCOUNT */
+
+.account-container {
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.account-photo {
+  height: 7.5rem;
+  width: 7.5rem;
+  border-radius: 50%;
+  border: 2px solid #0088ff;
+  overflow: hidden;
+}
+
+.account-photo img {
+  object-fit: cover;
+}
+
+.account-name {
+  margin-top: 1rem;
+  font-size: 2rem;
+}
+
+.account-settings {
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  align-self: flex-start;
+}
+
+.account-settings-el {
+  width: 100%;
+  font-size: 1.15rem;
+  text-align: left;
+  padding: 0.5rem 0.5rem 0.5rem 0;
+}
+
+/* SETTINGS */
+
+.settings-container {
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.settings-header {
+  font-size: 1.5rem;
+}
+
+.settings-text {
+  margin-top: 1rem;
+  font-size: 1.75rem;
+}
+
+.settings-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form__photo-upload {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  font-size: 1.6rem;
+}
+
+.form__user-photo {
+  height: 5rem;
+  width: 5rem;
+  border-radius: 50%;
+  border: 1px solid #0088ff;
+  margin-right: 1rem;
+  overflow: hidden;
+}
+
+.form__photo-upload input {
+  display: none;
+}
+
+.form__photo-upload label {
+  font-size: 1rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.settings-form .btn {
+  margin-bottom: 1rem;
+  width: 200px;
+  height: 50px;
+  background-color: #0088ff;
+  border: none;
+  font-size: 1.25rem;
+  border-radius: 5rem;
+  color: #fff;
+  align-self: flex-end;
+  cursor: pointer;
+}
+
+/* ALERTS */
+
+.alert {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: 80%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  z-index: 999;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: center;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  padding: 1.6rem 1.5rem;
+  -webkit-box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.25);
+}
+
+.alert-success {
+  background-color: #20bf6b;
+}
+
+.alert-error {
+  background-color: #eb4d4b;
+}

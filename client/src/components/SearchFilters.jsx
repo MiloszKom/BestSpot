@@ -183,7 +183,7 @@ export default function SearchFilters({
             checked={isChecked}
             onChange={handleLocationChange}
           />
-          <label for="check" class="button"></label>
+          <label htmlFor="check" className="button"></label>
         </div>
       </div>
 

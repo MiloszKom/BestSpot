@@ -1,29 +1,52 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "./AuthContext";
+import axios from "axios";
+import { showAlert } from "./helperFunctions";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState("test@onet.io");
+  const [password, setPassword] = useState("milosz123");
+  const auth = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const login = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      setError("Both fields are required.");
-      return;
-    }
+    try {
+      const res = await axios({
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        url: "http://localhost:5000/api/v1/users/login",
+        data: {
+          email,
+          password,
+        },
+        withCredentials: true,
+      });
 
-    setError("");
-    // Submit login logic
-    console.log("Logging in with", { email, password });
+      auth.login(res.data);
+
+      if (res.data.status === "success") {
+        showAlert("success", "Logged in successfully");
+        window.setTimeout(() => {
+          navigate("/search");
+        }, 1500);
+      }
+
+      console.log(res);
+    } catch (err) {
+      showAlert("error", err.response.data.message);
+    }
+    console.log(auth);
   };
 
   return (
     <div className="login-container">
       <h2 className="login-title">Welcome to BestSpot</h2>
-      {error && <p className="error-message">{error}</p>}
-      <form onSubmit={handleSubmit} className="login-form">
+      <form onSubmit={login} className="login-form">
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <input

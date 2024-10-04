@@ -1,11 +1,42 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "./AuthContext";
+import axios from "axios";
 
 export default function Signup() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState("");
+  const auth = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const signup = async (name, email, password, passwordConfirm) => {
+    console.log(email, password);
+    try {
+      const res = await axios({
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        url: "http://localhost:5000/api/v1/users/signup",
+        data: {
+          name,
+          email,
+          password,
+          passwordConfirm,
+        },
+        withCredentials: true,
+        credentials: "include",
+      });
+      console.log(res);
+      auth.login(res.data);
+      navigate("/search");
+    } catch (err) {
+      console.log(err.response.data);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,10 +45,9 @@ export default function Signup() {
       setError("Please fill out all the fields");
       return;
     }
-
     setError("");
 
-    console.log("Logging in with", { email, password, passwordConfirm });
+    signup(name, email, password, passwordConfirm);
   };
 
   return (
@@ -25,6 +55,16 @@ export default function Signup() {
       <h2 className="login-title">Create an account</h2>
       {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit} className="login-form">
+        <div className="form-group">
+          <label htmlFor="name">Name</label>
+          <input
+            type="name"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your name"
+          />
+        </div>
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
@@ -48,7 +88,7 @@ export default function Signup() {
         <div className="form-group">
           <label htmlFor="passwordConfirm">Confirm Password</label>
           <input
-            type="passwordConfirm"
+            type="password"
             id="passwordConfirm"
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}

@@ -3,6 +3,8 @@ import { faStarHalfStroke } from "@fortawesome/free-solid-svg-icons";
 import { faStar as emptyStar } from "@fortawesome/free-regular-svg-icons";
 import { faStar as filledStar } from "@fortawesome/free-solid-svg-icons";
 
+import axios from "axios";
+
 export function measureDistance(position1, position2) {
   const R = 6371e3; // metres
   const φ1 = (position1.lat * Math.PI) / 180; // φ, λ in radians
@@ -35,3 +37,33 @@ export function starRating(rating) {
 
   return stars;
 }
+
+export function showAlert(type, msg) {
+  hideAlert();
+  const markup = `<div class="alert alert-${type}">${msg}</div>`;
+  document.querySelector("body").insertAdjacentHTML("afterbegin", markup);
+  window.setTimeout(hideAlert, 5000);
+}
+
+export function hideAlert() {
+  const el = document.querySelector(".alert");
+  if (el) el.parentElement.removeChild(el);
+}
+
+export const checkCookies = async () => {
+  try {
+    const res = await axios({
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: "http://localhost:5000/api/v1/users/checkCookies",
+      withCredentials: true,
+    });
+
+    console.log(res.data);
+    if (res.data.status === "success") return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
