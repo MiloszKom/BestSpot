@@ -3,12 +3,12 @@ import GoogleMap from "./map";
 
 const libraries = ["places"];
 
-export default function LocationsMap() {
+export default function LocationsMap({ setShowNavbar }) {
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.React_App_Api_Key,
+    googleMapsApiKey: process.env.REACT_APP_API_KEY,
     libraries,
   });
 
   if (!isLoaded) return <div className="loader"></div>;
-  return <GoogleMap />;
+  return <GoogleMap setShowNavbar={setShowNavbar} />;
 }

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { AuthContext } from "./AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { showAlert } from "./helperFunctions";
 import axios from "axios";
 
@@ -33,7 +33,7 @@ export default function Login() {
     <div className="account-container">
       <div className="account-photo">
         <img
-          crossorigin="anonymous"
+          crossOrigin="anonymous"
           src={`http://localhost:5000/uploads/images/${user.photo}`}
           alt="User"
         />

@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-// import { Circle } from "@react-google-maps/api";
+import React, { useState, useMemo, useRef, useEffect, useContext } from "react";
+import { ResultsContext } from "./ResultsContext";
 
 import {
   APIProvider,
@@ -11,19 +11,13 @@ import {
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
 import SearchFilters from "./SearchFilters";
-import Navbar from "./Navbar.jsx";
 import SearchBar from "./SearchBar";
 import MapResults from "./MapResults.jsx";
-import SpotDetail from "./SpotDetail.jsx";
-// import { blueBallIcon } from "./mapStyles.js";
 
-export default function GoogleMap() {
+export default function GoogleMap({ setShowNavbar }) {
   const [location, setLocation] = useState("");
   const [sliderValue, setSliderValue] = useState(15);
   const [spotValue, setSpotValue] = useState("Restaurant");
-  const [searchResults, setSearchResults] = useState();
-  const [placeDetails, setPlaceDetails] = useState(null);
-  const [placePhotos, setPlacePhotos] = useState([]);
   const center = useMemo(() => ({ lat: 51.103574, lng: 16.943842 }), []);
   const options = useMemo(
     () => ({
@@ -34,6 +28,10 @@ export default function GoogleMap() {
     }),
     []
   );
+
+  const results = useContext(ResultsContext);
+
+  if (results.searchResults) setShowNavbar(false);
 
   const handleSearch = () => {
     const data = {
@@ -50,7 +48,7 @@ export default function GoogleMap() {
       searchFilters.style.marginTop = "0dvh";
     }
 
-    fetch("/api/search", {
+    fetch("/api/v1/maps/searchNerby", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -60,7 +58,7 @@ export default function GoogleMap() {
       .then((response) => response.json())
       .then((result) => {
         console.log("Success:", result.googleData.results);
-        setSearchResults(result.googleData.results);
+        results.getResults(result.googleData.results);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -158,107 +156,36 @@ export default function GoogleMap() {
     ));
   };
 
-  const moreDetails = (id) => {
-    const data = {
-      placeId: id,
-    };
-
-    fetch("/api/search2", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        console.log("Success:", result.googleData.result);
-        setPlaceDetails(result.googleData.result);
-
-        const photos = result.googleData.result.photos || [];
-        const fetchPhotoPromises = photos.slice(0, 3).map((photo) => {
-          const photoData = {
-            maxwidth: photo.width,
-            photo_reference: photo.photo_reference,
-          };
-
-          return fetch("/api/search3", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(photoData),
-          })
-            .then((response) => response.blob())
-            .then((blob) => {
-              const imageUrl = URL.createObjectURL(blob);
-              return imageUrl;
-            })
-            .catch((error) => {
-              console.error("Error fetching photo:", error);
-              return null;
-            });
-        });
-
-        Promise.all(fetchPhotoPromises)
-          .then((photoUrls) => {
-            setPlacePhotos((prevPhotos) => [
-              ...prevPhotos,
-              ...photoUrls.filter((url) => url !== null),
-            ]);
-          })
-          .catch((error) => {
-            console.error("Error processing photo URLs:", error);
-          });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
-
-  const lessDetails = () => {
-    setPlaceDetails(null);
-    setPlacePhotos([]);
-  };
-
   return (
     <APIProvider apiKey={process.env.React_App_Api_Key}>
       <div className="map-container">
-        {!searchResults && <SearchBar />}
-        {!placeDetails && (
-          <div className="map">
-            <Map
-              defaultZoom={10}
-              defaultCenter={center}
-              options={options}
-              mapContainerClassName="map-container2"
-            >
-              {location && (
-                <>
-                  {/* <Circle center={location} radius={sliderValue * 100} /> */}
-                  <AdvancedMarker position={location}>
-                    <div className="current-location"></div>
-                  </AdvancedMarker>
-                </>
-              )}
-              {searchResults && <Markers points={searchResults} />}
-            </Map>
-          </div>
-        )}
-        {searchResults && !placeDetails && (
+        {!results.searchResults && <SearchBar />}
+        <div className="map">
+          <Map
+            defaultZoom={10}
+            defaultCenter={center}
+            options={options}
+            mapContainerClassName="map-container2"
+          >
+            {location && (
+              <>
+                {/* <Circle center={location} radius={sliderValue * 100} /> */}
+                <AdvancedMarker position={location}>
+                  <div className="current-location"></div>
+                </AdvancedMarker>
+              </>
+            )}
+            {results.searchResults && (
+              <Markers points={results.searchResults} />
+            )}
+          </Map>
+        </div>
+        {results.searchResults && (
           <MapResults
-            points={searchResults}
-            setSearchResults={setSearchResults}
-            moreDetails={moreDetails}
+            points={results.searchResults}
             location={location}
             highlightedMarker={highlightedMarker}
-          />
-        )}
-        {placeDetails && (
-          <SpotDetail
-            placeDetails={placeDetails}
-            placePhotos={placePhotos}
-            lessDetails={lessDetails}
+            setShowNavbar={setShowNavbar}
           />
         )}
         <SearchFilters
@@ -269,7 +196,7 @@ export default function GoogleMap() {
           spotValue={spotValue}
           setSpotValue={setSpotValue}
           handleSearch={handleSearch}
-          searchResults={searchResults}
+          searchResults={results.searchResults}
         />
       </div>
     </APIProvider>

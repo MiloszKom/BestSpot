@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-
+import React, { useState, useContext } from "react";
+import { ResultsContext } from "./ResultsContext";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
@@ -9,13 +10,16 @@ import { starRating } from "./helperFunctions";
 
 export default function MapResults({
   points,
-  setSearchResults,
   moreDetails,
   location,
   highlightedMarker,
+  setShowNavbar,
 }) {
+  const results = useContext(ResultsContext);
+
   const deleteResults = () => {
-    setSearchResults(null);
+    results.deleteResults();
+    setShowNavbar(true);
   };
 
   const searchResults = points;
@@ -100,9 +104,7 @@ export default function MapResults({
                 )}
               </div>
               <div className="map-result-details">
-                <button onClick={() => moreDetails(result.place_id)}>
-                  More Details
-                </button>
+                <Link to={result.place_id}>More Details</Link>
               </div>
             </div>
           ))

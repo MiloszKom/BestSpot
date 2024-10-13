@@ -19,7 +19,7 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        url: "http://localhost:5000/api/v1/users/login",
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/login`,
         data: {
           email,
           password,

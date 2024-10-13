@@ -99,7 +99,7 @@ export default function SearchFilters({
             lng: lng,
           };
 
-          fetch("/api/search4", {
+          fetch("/api/v1/maps/getCurrentLocation", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

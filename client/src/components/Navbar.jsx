@@ -29,7 +29,7 @@ export default function Navbar() {
           </Link>
         </div>
         <div className="nav-element">
-          <Link to="/">
+          <Link to="/favourites">
             <FontAwesomeIcon icon={faHeart} className="icon" />
             <p>Favourites</p>
           </Link>

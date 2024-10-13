@@ -5,17 +5,18 @@ const authController = require("./../controllers/authController");
 
 router
   .route("/")
-  .get(authController.protect, favController.getAllFav)
-  .post(favController.createFav);
+  .get(authController.protect, favController.getAllUserFav)
+  .post(
+    authController.protect,
+    favController.uploadTourImages,
+    favController.adjustUserPhoto,
+    favController.createFav
+  );
 
 router
   .route("/:id")
   .get(favController.getFav)
   .patch(favController.updateFav)
-  .delete(
-    authController.protect,
-    authController.restrictTo("admin"),
-    favController.deleteFav
-  );
+  .delete(authController.protect, favController.deleteFav);
 
 module.exports = router;
