@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,7 +19,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-regular-svg-icons";
 
-import { starRating } from "./helperFunctions";
+import { starRating } from "../utils/helperFunctions";
 
 export default function SpotDetail({ setShowNavbar }) {
   const [imageError, setImageError] = useState(false);

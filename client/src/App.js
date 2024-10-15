@@ -6,19 +6,19 @@ import {
   Outlet,
   Navigate,
 } from "react-router-dom";
-import { AuthContext } from "./components/AuthContext";
-import { ResultsContext } from "./components/ResultsContext";
+import { AuthContext } from "./components/context/AuthContext";
+import { ResultsContext } from "./components/context/ResultsContext";
 
-import { checkCookies } from "./components/helperFunctions";
+import { checkCookies } from "./components/utils/helperFunctions";
 
-import Navbar from "./components/Navbar";
-import LocationsMap from "./components/LocationsMap";
-import Login from "./components/Login";
-import Signup from "./components/Signup";
-import Account from "./components/Account";
-import Settings from "./components/Settings";
-import Favourites from "./components/Favourites";
-import SpotDetail from "./components/SpotDetail";
+import Navbar from "./components/common/Navbar";
+import GoogleMap from "./components/map/GoogleMap";
+import Login from "./components/auth/Login";
+import Signup from "./components/auth/Signup";
+import Account from "./components/account/Account";
+import Settings from "./components/account/Settings";
+import Favourites from "./components/favourites/Favourites";
+import SpotDetail from "./components/map/SpotDetail";
 
 function Layout({ showNavbar }) {
   return (
@@ -82,15 +82,8 @@ function App() {
 
               <Route
                 path="search"
-                element={<LocationsMap setShowNavbar={setShowNavbar} />}
+                element={<GoogleMap setShowNavbar={setShowNavbar} />}
               />
-              {/* <Route path="favourites">
-              <Route index element={<Favourites />} />
-              <Route
-                path=":id"
-                element={<SpotDetail setShowNavbar={setShowNavbar} />}
-              />
-            </Route> */}
               <Route path="favourites" element={<Favourites />} />
               <Route
                 path="favourites/:id"

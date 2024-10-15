@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { showAlert } from "./helperFunctions";
+import { showAlert } from "../utils/helperFunctions";
 import axios from "axios";
 
 export default function Login() {

@@ -1,8 +1,8 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
-import { showAlert } from "./helperFunctions";
+import { showAlert } from "../utils/helperFunctions";
 
 export default function Login() {
   const [email, setEmail] = useState("test@onet.io");

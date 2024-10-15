@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, useContext } from "react";
-import { ResultsContext } from "./ResultsContext";
+import { ResultsContext } from "../context/ResultsContext.jsx";
+
+import { useLoadScript } from "@react-google-maps/api";
 
 import {
   APIProvider,
@@ -10,9 +12,11 @@ import {
 
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
-import SearchFilters from "./SearchFilters";
-import SearchBar from "./SearchBar";
+import SearchFilters from "./SearchFilters.jsx";
+import SearchBar from "./SearchBar.jsx";
 import MapResults from "./MapResults.jsx";
+
+const libraries = ["places"];
 
 export default function GoogleMap({ setShowNavbar }) {
   const [location, setLocation] = useState("");
@@ -28,6 +32,11 @@ export default function GoogleMap({ setShowNavbar }) {
     }),
     []
   );
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_API_KEY,
+    libraries,
+  });
 
   const results = useContext(ResultsContext);
 
@@ -156,6 +165,7 @@ export default function GoogleMap({ setShowNavbar }) {
     ));
   };
 
+  if (!isLoaded) return <div className="loader"></div>;
   return (
     <APIProvider apiKey={process.env.React_App_Api_Key}>
       <div className="map-container">

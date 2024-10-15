@@ -1,12 +1,12 @@
 import React, { useState, useContext } from "react";
-import { ResultsContext } from "./ResultsContext";
+import { ResultsContext } from "../context/ResultsContext";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
 
-import { measureDistance } from "./helperFunctions";
-import { starRating } from "./helperFunctions";
+import { measureDistance } from "../utils/helperFunctions";
+import { starRating } from "../utils/helperFunctions";
 
 export default function MapResults({
   points,
