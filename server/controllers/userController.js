@@ -91,12 +91,24 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not yet defined!",
+exports.getUser = catchAsync(async (req, res) => {
+  const user = await User.findById(req.params.id).populate([
+    {
+      path: "pendingRequests",
+      select: "name photo isOnline",
+    },
+    {
+      path: "friends",
+      select: "name photo isOnline",
+    },
+  ]);
+  res.status(200).json({
+    status: "success",
+    data: {
+      user,
+    },
   });
-};
+});
 
 exports.createUser = (req, res) => {
   res.status(500).json({
@@ -118,3 +130,166 @@ exports.deleteUser = (req, res) => {
     message: "This route is not yet defined!",
   });
 };
+
+// FRIENDS APIS
+
+exports.sendFriendRequest = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const friend = await User.findById(req.params.id);
+
+  const isAlreadySent = await User.findOne({
+    _id: user._id,
+    sentRequests: { $in: [friend._id] },
+  });
+
+  if (isAlreadySent) {
+    return res.status(409).json({
+      status: "fail",
+      message: "Friend request has already been sent.",
+    });
+  } else {
+    await User.findByIdAndUpdate(
+      user._id,
+      { $addToSet: { sentRequests: friend._id } },
+      { new: true }
+    );
+    await User.findByIdAndUpdate(
+      friend._id,
+      { $addToSet: { pendingRequests: user._id } },
+      { new: true }
+    );
+  }
+
+  res.status(201).json({
+    status: "success",
+    message: "Friend request sent!",
+  });
+});
+
+exports.cancelFriendRequest = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const friend = await User.findById(req.params.id);
+
+  const isRequestSent = await User.findOne({
+    _id: user._id,
+    sentRequests: { $in: [friend._id] },
+  });
+
+  if (!isRequestSent) {
+    return res.status(400).json({
+      status: "fail",
+      message: "No friend request to cancel.",
+    });
+  }
+
+  await User.findByIdAndUpdate(
+    user._id,
+    { $pull: { sentRequests: friend._id } },
+    { new: true }
+  );
+
+  await User.findByIdAndUpdate(
+    friend._id,
+    { $pull: { pendingRequests: user._id } },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Friend request canceled.",
+  });
+});
+
+exports.acceptFriendRequest = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const friend = await User.findById(req.params.id);
+
+  await User.findByIdAndUpdate(
+    user._id,
+    {
+      $pull: { pendingRequests: friend._id },
+      $push: { friends: friend._id },
+    },
+    { new: true }
+  );
+
+  await User.findByIdAndUpdate(
+    friend._id,
+    {
+      $pull: { sentRequests: user._id },
+      $push: { friends: user._id },
+    },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Friend request accepted",
+  });
+});
+
+exports.rejectFriendRequest = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const friend = await User.findById(req.params.id);
+
+  await User.findByIdAndUpdate(
+    user._id,
+    {
+      $pull: { pendingRequests: friend._id },
+    },
+    { new: true }
+  );
+
+  await User.findByIdAndUpdate(
+    friend._id,
+    {
+      $pull: { sentRequests: user._id },
+    },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Friend request rejected",
+  });
+});
+
+exports.deleteFriend = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const friend = await User.findById(req.params.id);
+
+  await User.findByIdAndUpdate(
+    user._id,
+    {
+      $pull: { friends: friend._id },
+    },
+    { new: true }
+  );
+
+  await User.findByIdAndUpdate(
+    friend._id,
+    {
+      $pull: { friends: user._id },
+    },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Friend successfully deleted",
+  });
+});
+
+exports.searchUsers = catchAsync(async (req, res) => {
+  const searchTerm = req.query.q;
+  try {
+    const users = await User.find({
+      name: { $regex: searchTerm, $options: "i" },
+      _id: { $ne: req.user._id },
+    });
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});

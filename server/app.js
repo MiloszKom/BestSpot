@@ -38,6 +38,7 @@ const globalErrorHandler = require("./controllers/errorController");
 const favRouter = require("./routes/favRoutes");
 const userRouter = require("./routes/userRoutes");
 const mapRouter = require("./routes/mapRoutes");
+const chatRouter = require("./routes/chatRoutes");
 
 app.use(express.json());
 
@@ -46,12 +47,12 @@ app.use(
     origin: [`http://${process.env.REACT_APP_SERVER}:3001`],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 // app.use((req, res, next) => {
-//   console.log(req.cookies);
+//   // console.log(req.cookies);
 //   next();
 // });
 
@@ -62,6 +63,7 @@ app.get("/favicon.ico", (req, res) => res.status(204).end());
 app.use("/api/v1/favourites", favRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/maps", mapRouter);
+app.use("/api/v1/chats", chatRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`));

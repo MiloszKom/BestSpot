@@ -57,7 +57,7 @@ export const checkCookies = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-      url: "http://localhost:5000/api/v1/users/checkCookies",
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/checkCookies`,
       withCredentials: true,
     });
 
@@ -65,5 +65,25 @@ export const checkCookies = async () => {
     if (res.data.status === "success") return res.data;
   } catch (err) {
     console.log(err);
+  }
+};
+
+export const formatTime = (date) => {
+  const time = new Date(date);
+  const year = String(time.getFullYear());
+  const month = String(time.getMonth() + 1).padStart(2, "0");
+  const day = String(time.getDate()).padStart(2, "0");
+  return `${day}/${month}/${year}`;
+};
+
+export const compareTime = (date1, date2) => {
+  if (date1.split("/")[0] > date2.split("/")[0]) {
+    return true;
+  } else if (date1.split("/")[1] > date2.split("/")[1]) {
+    return true;
+  } else if (date1.split("/")[2 > date2.split("/")[2]]) {
+    return true;
+  } else {
+    return false;
   }
 };

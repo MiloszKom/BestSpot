@@ -35,7 +35,7 @@ export default function Navbar() {
           </Link>
         </div>
         <div className="nav-element">
-          <Link to="/">
+          <Link to="/messages">
             <FontAwesomeIcon icon={faMessage} className="icon" />
             <p>Messages</p>
           </Link>

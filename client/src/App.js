@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useEffect, useContext } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useContext,
+  useRef,
+} from "react";
 import {
   BrowserRouter,
   Routes,
@@ -8,6 +14,7 @@ import {
 } from "react-router-dom";
 import { AuthContext } from "./components/context/AuthContext";
 import { ResultsContext } from "./components/context/ResultsContext";
+import { SocketContext } from "./components/context/SocketContext";
 
 import { checkCookies } from "./components/utils/helperFunctions";
 
@@ -19,6 +26,14 @@ import Account from "./components/account/Account";
 import Settings from "./components/account/Settings";
 import Favourites from "./components/favourites/Favourites";
 import SpotDetail from "./components/map/SpotDetail";
+import Chats from "./components/friends/Chats";
+import Friends from "./components/friends/Friends";
+import ChatRoom from "./components/friends/ChatRoom";
+import Profile from "./components/friends/Profile";
+import ChatSearchBar from "./components/friends/ChatSearchBar";
+import ContactRequests from "./components/friends/ContactRequests";
+
+import { io } from "socket.io-client";
 
 function Layout({ showNavbar }) {
   return (
@@ -70,57 +85,113 @@ function App() {
     setSearchResults(null);
   }, []);
 
+  const socketRef = useRef();
+  const [socket, setSocket] = useState(null);
+
+  // useEffect(() => {
+  //   console.log(socket);
+  // }, [socket]);
+
+  useEffect(() => {
+    if (!userData) return;
+
+    socketRef.current = io("http://localhost:5000");
+
+    socketRef.current.on("connect", () => {
+      setSocket(socketRef.current);
+      console.log(`You connected with the server!`);
+
+      socketRef.current.emit("user-online", userData._id, userData.chatsJoined);
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [userData]);
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, userData }}>
-      <ResultsContext.Provider
-        value={{ searchResults, getResults, deleteResults }}
-      >
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout showNavbar={showNavbar} />}>
-              <Route index element={<Navigate to="/search" replace />} />
+    <SocketContext.Provider value={{ socket }}>
+      <AuthContext.Provider value={{ isLoggedIn, login, logout, userData }}>
+        <ResultsContext.Provider
+          value={{ searchResults, getResults, deleteResults }}
+        >
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Layout showNavbar={showNavbar} />}>
+                <Route index element={<Navigate to="/search" replace />} />
 
-              <Route
-                path="search"
-                element={<GoogleMap setShowNavbar={setShowNavbar} />}
-              />
-              <Route path="favourites" element={<Favourites />} />
-              <Route
-                path="favourites/:id"
-                element={<SpotDetail setShowNavbar={setShowNavbar} />}
-              />
+                <Route
+                  path="search"
+                  element={<GoogleMap setShowNavbar={setShowNavbar} />}
+                />
 
-              <Route
-                path="search/:id"
-                element={<SpotDetail setShowNavbar={setShowNavbar} />}
-              />
+                <Route
+                  path="search/:id"
+                  element={<SpotDetail setShowNavbar={setShowNavbar} />}
+                />
 
-              <Route path="login" element={<Login />} />
-              <Route path="signup" element={<Signup />} />
+                <Route path="favourites" element={<Favourites />} />
+                <Route
+                  path="favourites/:id"
+                  element={<SpotDetail setShowNavbar={setShowNavbar} />}
+                />
 
-              <Route
-                path="account"
-                element={
-                  <PrivateRoute>
-                    <Account />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="account/settings"
-                element={
-                  <PrivateRoute>
-                    <Settings />
-                  </PrivateRoute>
-                }
-              />
+                <Route
+                  path="messages"
+                  element={<Chats setShowNavbar={setShowNavbar} />}
+                />
 
-              <Route path="*" element={<Navigate to="/search" replace />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ResultsContext.Provider>
-    </AuthContext.Provider>
+                <Route
+                  path="messages/search-bar"
+                  element={<ChatSearchBar setShowNavbar={setShowNavbar} />}
+                />
+
+                <Route
+                  path="messages/friend-requests"
+                  element={<Friends setShowNavbar={setShowNavbar} />}
+                />
+
+                <Route
+                  path="messages/contact-requests"
+                  element={<ContactRequests setShowNavbar={setShowNavbar} />}
+                />
+
+                <Route
+                  path="messages/chat-room/:id"
+                  element={<ChatRoom setShowNavbar={setShowNavbar} />}
+                />
+
+                <Route path="/profile/:id" element={<Profile />} />
+
+                <Route path="login" element={<Login />} />
+                <Route path="signup" element={<Signup />} />
+
+                <Route
+                  path="account"
+                  element={
+                    <PrivateRoute>
+                      <Account />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="account/settings"
+                  element={
+                    <PrivateRoute>
+                      <Settings />
+                    </PrivateRoute>
+                  }
+                />
+
+                <Route path="*" element={<Navigate to="/search" replace />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ResultsContext.Provider>
+      </AuthContext.Provider>
+    </SocketContext.Provider>
   );
 }
 

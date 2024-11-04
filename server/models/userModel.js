@@ -47,6 +47,14 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  chatsJoined: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chat" }],
+  isOnline: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 userSchema.pre("save", async function (next) {

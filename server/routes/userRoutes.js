@@ -28,6 +28,8 @@ router.patch(
 );
 router.delete("/deleteMe", authController.protect, userController.deleteMe);
 
+router.get("/searchUsers", authController.protect, userController.searchUsers);
+
 router
   .route("/")
   .get(userController.getAllUsers)
@@ -38,5 +40,35 @@ router
   .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
+
+router.post(
+  "/sendFriendRequest/:id",
+  authController.protect,
+  userController.sendFriendRequest
+);
+
+router.delete(
+  "/cancelFriendRequest/:id",
+  authController.protect,
+  userController.cancelFriendRequest
+);
+
+router.post(
+  "/acceptFriendRequest/:id",
+  authController.protect,
+  userController.acceptFriendRequest
+);
+
+router.delete(
+  "/rejectFriendRequest/:id",
+  authController.protect,
+  userController.rejectFriendRequest
+);
+
+router.delete(
+  "/deleteFriend/:id",
+  authController.protect,
+  userController.deleteFriend
+);
 
 module.exports = router;

@@ -20,8 +20,8 @@ export default function Login() {
         withCredentials: true,
       });
 
+      localStorage.removeItem("friendNav");
       auth.logout();
-
       if ((res.data.status = "success")) window.location.reload(true);
     } catch (err) {
       console.log(err);
