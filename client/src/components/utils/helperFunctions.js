@@ -1,7 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStarHalfStroke } from "@fortawesome/free-solid-svg-icons";
 import { faStar as emptyStar } from "@fortawesome/free-regular-svg-icons";
-import { faStar as filledStar } from "@fortawesome/free-solid-svg-icons";
+import {
+  faStar as filledStar,
+  faCircleCheck,
+} from "@fortawesome/free-solid-svg-icons";
 
 import axios from "axios";
 
@@ -36,18 +39,6 @@ export function starRating(rating) {
   }
 
   return stars;
-}
-
-export function showAlert(type, msg) {
-  hideAlert();
-  const markup = `<div class="alert alert-${type}">${msg}</div>`;
-  document.querySelector("body").insertAdjacentHTML("afterbegin", markup);
-  window.setTimeout(hideAlert, 5000);
-}
-
-export function hideAlert() {
-  const el = document.querySelector(".alert");
-  if (el) el.parentElement.removeChild(el);
 }
 
 export const checkCookies = async () => {

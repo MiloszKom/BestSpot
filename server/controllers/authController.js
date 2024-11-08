@@ -12,7 +12,7 @@ const signToken = (id) => {
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, res, message) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
@@ -28,6 +28,7 @@ const createSendToken = (user, statusCode, res) => {
 
   res.status(statusCode).json({
     status: "success",
+    message,
     token,
     data: {
       user,
@@ -43,7 +44,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
 
-  createSendToken(newUser, 201, res);
+  createSendToken(newUser, 201, res, "Account created.");
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -59,7 +60,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Incorrect email or password", 401));
   }
 
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, res, "Successfully logged in.");
 });
 
 exports.logout = (req, res) => {
@@ -181,7 +182,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, res, "Password restarted.");
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -195,7 +196,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
 
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, res, "Password updated.");
 });
 
 exports.checkCookies = catchAsync(async (req, res, next) => {

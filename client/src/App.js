@@ -15,6 +15,8 @@ import {
 import { AuthContext } from "./components/context/AuthContext";
 import { ResultsContext } from "./components/context/ResultsContext";
 import { SocketContext } from "./components/context/SocketContext";
+import { AlertContext } from "./components/context/AlertContext";
+import Alert from "./components/common/Alert";
 
 import { checkCookies } from "./components/utils/helperFunctions";
 
@@ -46,6 +48,9 @@ function Layout({ showNavbar }) {
 
 function PrivateRoute({ children }) {
   const { isLoggedIn } = useContext(AuthContext);
+  if (isLoggedIn === null) {
+    return <div>Loading...</div>; // Show loading state if needed
+  }
   return isLoggedIn ? children : <Navigate to="/login" replace />;
 }
 
@@ -53,7 +58,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [showNavbar, setShowNavbar] = useState(true);
-
+  const [alertData, setAlertData] = useState({});
   const [searchResults, setSearchResults] = useState(null);
 
   useEffect(() => {
@@ -73,8 +78,12 @@ function App() {
   }, []);
 
   const logout = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
     setIsLoggedIn(false);
     setUserData(null);
+    setSocket(null);
   }, []);
 
   const getResults = useCallback((data) => {
@@ -88,10 +97,6 @@ function App() {
   const socketRef = useRef();
   const [socket, setSocket] = useState(null);
 
-  // useEffect(() => {
-  //   console.log(socket);
-  // }, [socket]);
-
   useEffect(() => {
     if (!userData) return;
 
@@ -104,6 +109,10 @@ function App() {
       socketRef.current.emit("user-online", userData._id, userData.chatsJoined);
     });
 
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Connection failed:", err);
+    });
+
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
@@ -111,87 +120,97 @@ function App() {
     };
   }, [userData]);
 
+  const showAlert = useCallback((msg, type) => {
+    setAlertData({
+      alertMsg: msg,
+      alertType: type,
+    });
+  }, []);
+
   return (
-    <SocketContext.Provider value={{ socket }}>
-      <AuthContext.Provider value={{ isLoggedIn, login, logout, userData }}>
-        <ResultsContext.Provider
-          value={{ searchResults, getResults, deleteResults }}
-        >
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Layout showNavbar={showNavbar} />}>
-                <Route index element={<Navigate to="/search" replace />} />
+    <AlertContext.Provider value={{ showAlert }}>
+      <SocketContext.Provider value={{ socket }}>
+        <AuthContext.Provider value={{ isLoggedIn, login, logout, userData }}>
+          <ResultsContext.Provider
+            value={{ searchResults, getResults, deleteResults }}
+          >
+            <BrowserRouter>
+              <Alert msg={alertData.alertMsg} type={alertData.alertType} />
+              <Routes>
+                <Route path="/" element={<Layout showNavbar={showNavbar} />}>
+                  <Route index element={<Navigate to="/search" replace />} />
 
-                <Route
-                  path="search"
-                  element={<GoogleMap setShowNavbar={setShowNavbar} />}
-                />
+                  <Route
+                    path="search"
+                    element={<GoogleMap setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route
-                  path="search/:id"
-                  element={<SpotDetail setShowNavbar={setShowNavbar} />}
-                />
+                  <Route
+                    path="search/:id"
+                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route path="favourites" element={<Favourites />} />
-                <Route
-                  path="favourites/:id"
-                  element={<SpotDetail setShowNavbar={setShowNavbar} />}
-                />
+                  <Route path="favourites" element={<Favourites />} />
+                  <Route
+                    path="favourites/:id"
+                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route
-                  path="messages"
-                  element={<Chats setShowNavbar={setShowNavbar} />}
-                />
+                  <Route
+                    path="messages"
+                    element={<Chats setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route
-                  path="messages/search-bar"
-                  element={<ChatSearchBar setShowNavbar={setShowNavbar} />}
-                />
+                  <Route
+                    path="messages/search-bar"
+                    element={<ChatSearchBar setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route
-                  path="messages/friend-requests"
-                  element={<Friends setShowNavbar={setShowNavbar} />}
-                />
+                  <Route
+                    path="messages/friend-requests"
+                    element={<Friends setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route
-                  path="messages/contact-requests"
-                  element={<ContactRequests setShowNavbar={setShowNavbar} />}
-                />
+                  <Route
+                    path="messages/contact-requests"
+                    element={<ContactRequests setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route
-                  path="messages/chat-room/:id"
-                  element={<ChatRoom setShowNavbar={setShowNavbar} />}
-                />
+                  <Route
+                    path="messages/chat-room/:id"
+                    element={<ChatRoom setShowNavbar={setShowNavbar} />}
+                  />
 
-                <Route path="/profile/:id" element={<Profile />} />
+                  <Route path="/profile/:id" element={<Profile />} />
 
-                <Route path="login" element={<Login />} />
-                <Route path="signup" element={<Signup />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="signup" element={<Signup />} />
 
-                <Route
-                  path="account"
-                  element={
-                    <PrivateRoute>
-                      <Account />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="account/settings"
-                  element={
-                    <PrivateRoute>
-                      <Settings />
-                    </PrivateRoute>
-                  }
-                />
+                  <Route
+                    path="account"
+                    element={
+                      <PrivateRoute>
+                        <Account />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="account/settings"
+                    element={
+                      <PrivateRoute>
+                        <Settings />
+                      </PrivateRoute>
+                    }
+                  />
 
-                <Route path="*" element={<Navigate to="/search" replace />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </ResultsContext.Provider>
-      </AuthContext.Provider>
-    </SocketContext.Provider>
+                  <Route path="*" element={<Navigate to="/search" replace />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </ResultsContext.Provider>
+        </AuthContext.Provider>
+      </SocketContext.Provider>
+    </AlertContext.Provider>
   );
 }
 

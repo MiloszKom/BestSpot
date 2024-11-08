@@ -1,13 +1,15 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { AlertContext } from "../context/AlertContext";
 import axios from "axios";
-import { showAlert } from "../utils/helperFunctions";
 
 export default function Login() {
   const [email, setEmail] = useState("test@onet.io");
   const [password, setPassword] = useState("milosz123");
+
   const auth = useContext(AuthContext);
+  const { showAlert } = useContext(AlertContext);
   const navigate = useNavigate();
 
   const login = async (e) => {
@@ -30,16 +32,14 @@ export default function Login() {
       auth.login(res.data);
 
       if (res.data.status === "success") {
-        showAlert("success", "Logged in successfully");
+        showAlert(res.data.message, res.data.status);
         window.setTimeout(() => {
           navigate("/search");
-        }, 1500);
+        }, 2000);
       }
 
       console.log(res);
-    } catch (err) {
-      showAlert("error", err.response.data.message);
-    }
+    } catch (err) {}
     console.log(auth);
   };
 

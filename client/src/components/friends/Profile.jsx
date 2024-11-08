@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { AlertContext } from "../context/AlertContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -13,6 +14,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const params = useParams();
   const auth = useContext(AuthContext);
+  const { showAlert } = useContext(AlertContext);
 
   useEffect(() => {
     if (!profileData) return;
@@ -66,9 +68,10 @@ export default function Profile() {
         withCredentials: true,
       });
       setInviteStatus("pending");
-      console.log(res);
+      showAlert(res.data.message, res.data.status);
     } catch (err) {
       console.log(err);
+      showAlert(err.message, "error");
     }
     setIsLoading(false);
   };
@@ -85,8 +88,9 @@ export default function Profile() {
         withCredentials: true,
       });
       setInviteStatus("not_sent");
-      console.log(res);
+      showAlert(res.data.message, res.data.status);
     } catch (err) {
+      showAlert(err.message, "error");
       console.log(err);
     }
     setIsLoading(false);

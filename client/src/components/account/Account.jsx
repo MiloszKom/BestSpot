@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { showAlert } from "../utils/helperFunctions";
 import axios from "axios";
 
 export default function Login() {
@@ -25,7 +24,6 @@ export default function Login() {
       if ((res.data.status = "success")) window.location.reload(true);
     } catch (err) {
       console.log(err);
-      showAlert("error", "Error logging out! Try again");
     }
   };
 
