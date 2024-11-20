@@ -1,8 +1,9 @@
 const multer = require("multer");
 const sharp = require("sharp");
-const Fav = require("./../models/favModel");
-const catchAsync = require("./../utils/catchAsync");
-const AppError = require("./../utils/appError");
+const Spot = require("../models/spotModel");
+const User = require("../models/userModel");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
 const fs = require("fs");
 const path = require("path");
 
@@ -26,10 +27,9 @@ exports.uploadTourImages = upload.fields([{ name: "photo", maxCount: 3 }]);
 
 exports.adjustUserPhoto = async (req, res, next) => {
   if (!req.files || !req.files["photo"]) return next();
-
   await Promise.all(
     req.files["photo"].map(async (file, index) => {
-      const filename = `user-${req.user.id}-${req.body._id}-${index + 1}.jpeg`;
+      const filename = `spot-${req.body._id}-${index + 1}.jpeg`;
 
       await sharp(file.buffer)
         .toFormat("jpeg")
@@ -44,8 +44,8 @@ exports.adjustUserPhoto = async (req, res, next) => {
   next();
 };
 
-exports.getAllUserFav = catchAsync(async (req, res) => {
-  const favs = await Fav.find({ user_id: req.user.id });
+exports.getAllUserSpot = catchAsync(async (req, res) => {
+  const favs = await Spot.find({ "favouritedBy.userId": req.user.id });
 
   res.status(200).json({
     status: "success",
@@ -56,7 +56,7 @@ exports.getAllUserFav = catchAsync(async (req, res) => {
   });
 });
 
-exports.createFav = catchAsync(async (req, res) => {
+exports.createSpot = catchAsync(async (req, res) => {
   if (req.body.current_opening_hours) {
     req.body.current_opening_hours = JSON.parse(req.body.current_opening_hours);
     delete req.body.current_opening_hours.open_now;
@@ -80,33 +80,56 @@ exports.createFav = catchAsync(async (req, res) => {
     );
   }
 
-  const newFav = await Fav.create(req.body);
+  const newSpot = await Spot.create(req.body);
 
   res.status(201).json({
     status: "success",
     data: {
-      fav: newFav,
+      fav: newSpot,
     },
   });
 });
 
-exports.getFav = catchAsync(async (req, res, next) => {
-  const fav = await Fav.findById(req.params.id);
+exports.getSpot = catchAsync(async (req, res, next) => {
+  const spot = await Spot.findById(req.params.id).populate(
+    "favouritedBy.userId",
+    "photo name"
+  );
 
-  if (!fav) {
+  const user = await User.findById(req.user._id);
+
+  if (!spot) {
     return next(new AppError("No favourite found with that ID", 404));
   }
+
+  const isFavourite = user.favouritePlaces.includes(spot._id);
+
+  let userNote;
+  let friendsWhoFavourited = [];
+
+  spot.favouritedBy.forEach((el) => {
+    if (el.userId.toString() === user._id.toString()) userNote = el.note;
+    if (
+      user.friends.includes(el.userId._id.toString()) &&
+      el.privacyOption !== "Private"
+    ) {
+      friendsWhoFavourited.push(el);
+    }
+  });
 
   res.status(200).json({
     status: "success",
     data: {
-      fav,
+      spot,
+      isFavourite,
+      userNote,
+      friendsWhoFavourited,
     },
   });
 });
 
-exports.updateFav = catchAsync(async (req, res) => {
-  const fav = await Fav.findByIdAndUpdate(req.params.id, req.body, {
+exports.updateSpot = catchAsync(async (req, res) => {
+  const fav = await Spot.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
@@ -123,8 +146,8 @@ exports.updateFav = catchAsync(async (req, res) => {
   });
 });
 
-exports.deleteFav = catchAsync(async (req, res, next) => {
-  const fav = await Fav.findById(req.params.id);
+exports.deleteSpot = catchAsync(async (req, res, next) => {
+  const fav = await Spot.findById(req.params.id);
 
   // if (!fav) {
   //   return next(new AppError("No favourite found with that ID", 404));
@@ -143,7 +166,7 @@ exports.deleteFav = catchAsync(async (req, res, next) => {
   //   });
   // }
 
-  await Fav.findByIdAndDelete(req.params.id);
+  await Spot.findByIdAndDelete(req.params.id);
 
   res.status(204).json({
     status: "success",

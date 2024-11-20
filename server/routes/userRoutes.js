@@ -31,6 +31,11 @@ router.delete("/deleteMe", authController.protect, userController.deleteMe);
 router.get("/searchUsers", authController.protect, userController.searchUsers);
 
 router
+  .route("/favourites/:id")
+  .post(authController.protect, userController.addToFavourites)
+  .delete(authController.protect, userController.removeFromFavourites);
+
+router
   .route("/")
   .get(userController.getAllUsers)
   .post(userController.createUser);

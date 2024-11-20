@@ -330,6 +330,28 @@ a {
   color: #fa507d;
 }
 
+.friend-favourited {
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.friend-favourited-header {
+  display: flex;
+  gap: 1rem;
+}
+
+.friend-favourited-header-img {
+  height: 32px;
+  width: 32px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 100%;
+}
+
+.friend-favourited-note {
+  margin-top: 0.5rem;
+}
+
 .spot-detail-reviews {
   padding: 1rem;
   margin-bottom: 2rem;

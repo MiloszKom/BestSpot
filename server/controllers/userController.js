@@ -1,6 +1,7 @@
 const multer = require("multer");
 const sharp = require("sharp");
 const User = require("./../models/userModel");
+const Spot = require("./../models/spotModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 
@@ -130,6 +131,57 @@ exports.deleteUser = (req, res) => {
     message: "This route is not yet defined!",
   });
 };
+
+// SPOT APIS
+
+exports.addToFavourites = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const spot = await Spot.findById(req.params.id);
+
+  if (user.favouritePlaces.includes(spot._id)) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Spot is already in favourites.",
+    });
+  }
+
+  await User.findByIdAndUpdate(user._id, {
+    $push: { favouritePlaces: spot._id },
+  });
+
+  await Spot.findByIdAndUpdate(spot._id, {
+    $push: {
+      favouritedBy: {
+        userId: user._id,
+        note: req.body.note,
+        privacyOption: req.body.privacyOption,
+      },
+    },
+  });
+
+  res.status(200).json({
+    status: "success",
+    message: "Added to favourites.",
+  });
+});
+
+exports.removeFromFavourites = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const spot = await Spot.findById(req.params.id);
+
+  await User.findByIdAndUpdate(user._id, {
+    $pull: { favouritePlaces: spot._id },
+  });
+
+  await Spot.findByIdAndUpdate(spot._id, {
+    $pull: { favouritedBy: { userId: user._id } },
+  });
+
+  res.status(200).json({
+    status: "success",
+    message: "Removed from favourites.",
+  });
+});
 
 // FRIENDS APIS
 

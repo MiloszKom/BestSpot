@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const favSchema = new mongoose.Schema({
+const spotSchema = new mongoose.Schema({
   _id: {
     type: String,
     required: true,
@@ -87,18 +87,15 @@ const favSchema = new mongoose.Schema({
       required: true,
     },
   },
-  userNote: {
-    type: String,
-  },
-  privacyOptions: {
-    type: String,
-  },
+  favouritedBy: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      note: { type: String },
+      privacyOption: { type: String },
+    },
+  ],
 });
 
-const Fav = mongoose.model("Fav", favSchema);
+const Spot = mongoose.model("Spot", spotSchema);
 
-module.exports = Fav;
-
-// weekday_text: {
-//   type: [String],
-// },
+module.exports = Spot;

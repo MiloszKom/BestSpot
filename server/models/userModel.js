@@ -47,6 +47,7 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
+  favouritePlaces: [{ type: String }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

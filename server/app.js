@@ -35,7 +35,7 @@ require("dotenv").config();
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
-const favRouter = require("./routes/favRoutes");
+const spotRouter = require("./routes/spotRoutes");
 const userRouter = require("./routes/userRoutes");
 const mapRouter = require("./routes/mapRoutes");
 const chatRouter = require("./routes/chatRoutes");
@@ -58,9 +58,9 @@ app.use(
 
 app.use("/uploads/images", express.static(path.join("uploads", "images")));
 
-app.get("/favicon.ico", (req, res) => res.status(204).end());
+app.get("/spoticon.ico", (req, res) => res.status(204).end());
 
-app.use("/api/v1/favourites", favRouter);
+app.use("/api/v1/spots", spotRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/maps", mapRouter);
 app.use("/api/v1/chats", chatRouter);

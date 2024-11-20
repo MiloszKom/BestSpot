@@ -16,7 +16,7 @@ export default function Favourites() {
           headers: {
             "Content-Type": "application/json",
           },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/favourites`,
+          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots`,
           withCredentials: true,
         });
 
