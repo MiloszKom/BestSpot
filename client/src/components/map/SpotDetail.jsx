@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { AlertContext } from "../context/AlertContext";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
@@ -13,8 +13,6 @@ import {
   faGlobe,
   faChevronDown,
   faChevronUp,
-  faEarthAmerica,
-  faLock,
   faHeart,
   faUserFriends,
 } from "@fortawesome/free-solid-svg-icons";
@@ -24,9 +22,14 @@ import { starRating } from "../utils/helperFunctions";
 import {
   fetchFromDatabase,
   fetchFromApi,
-  saveSpotToDatabse,
   getNearestTime,
 } from "../utils/spotUtils";
+
+import AddToSpotlist from "./components/AddToSpotlist";
+import CreateNewSpotlist from "./components/CreateNewSpotlist";
+import AddNote from "./components/AddNote";
+
+import axios from "axios";
 
 export default function SpotDetail({ setShowNavbar }) {
   const [imageError, setImageError] = useState(false);
@@ -35,15 +38,17 @@ export default function SpotDetail({ setShowNavbar }) {
   const [showHours, setShowHours] = useState(false);
 
   const [placeDetails, setPlaceDetails] = useState(null);
-  const [selectedOption, setSelectedOption] = useState("Public");
   const [placeNote, setPlaceNote] = useState("");
-
-  const [justFetched, setJustFetched] = useState(false);
   const [isFavourite, setIsFavourite] = useState(false);
-
+  const [spotlistId, setSpotlistId] = useState(null);
   const [alsoSavedBy, setAlsoSavedBy] = useState(null);
 
-  const auth = useContext(AuthContext);
+  // const [spotlist, setSpotlist] = useState([])
+  const [addingNote, setAddingNote] = useState(false);
+  const [addingToSpotlist, setAddingToSpotlist] = useState(false);
+  const [creatingNewSpotlist, setCreatingNewSpotlist] = useState(false);
+
+  const { showAlert } = useContext(AlertContext);
   const params = useParams();
 
   useEffect(() => {
@@ -57,17 +62,13 @@ export default function SpotDetail({ setShowNavbar }) {
     fetchFromDatabase(
       params.id,
       setPlaceDetails,
-      setIsFavourite,
       setPlaceNote,
-      setJustFetched,
+      setIsFavourite,
       setAlsoSavedBy,
+      setSpotlistId,
       fetchFromApi
     );
   }, [params.id]);
-
-  useEffect(() => {
-    if (placeDetails && justFetched) saveSpotToDatabse(placeDetails, auth);
-  }, [placeDetails, justFetched]);
 
   const nextImg = (direction) => {
     if (direction === "right") {
@@ -86,73 +87,34 @@ export default function SpotDetail({ setShowNavbar }) {
     setShowHours(!showHours);
   };
 
-  const addToFavourites = async () => {
-    try {
-      const res = await axios({
-        method: "POST",
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/favourites/${placeDetails._id}`,
-        withCredentials: true,
-        data: {
-          note: placeNote,
-          privacyOption: selectedOption,
-        },
-      });
-
-      console.log(res);
-    } catch (err) {
-      console.log(err);
-    }
-    setIsFavourite(true);
-    hideNote();
+  const saveToSpotlist = () => {
+    setAddingToSpotlist(true);
   };
 
-  const removeFromFavourites = async () => {
+  const removeFromSpotlist = async () => {
+    console.log(spotlistId);
+    console.log(placeDetails._id);
     try {
       const res = await axios({
         method: "DELETE",
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/favourites/${placeDetails._id}`,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${spotlistId}/spot/${placeDetails._id}`,
         withCredentials: true,
       });
       console.log(res);
+      showAlert(res.data.message, res.data.status);
+      setIsFavourite(false);
     } catch (err) {
+      showAlert(err.response.data.message, err.response.data.status);
       console.log(err);
     }
-    setIsFavourite(false);
   };
-
-  const addNote = () => {
-    const spotDetail = document.querySelector(".spot-detail");
-    spotDetail.style.opacity = ".4";
-    spotDetail.style.overflowY = "hidden";
-
-    const popup = document.querySelector(".popup-container");
-    popup.style.transform = "translate(-50%, -50%)";
-    popup.style.opacity = "1";
-    popup.style.pointerEvents = "all";
-  };
-
-  const hideNote = () => {
-    const spotDetail = document.querySelector(".spot-detail");
-    spotDetail.style.opacity = "1";
-    spotDetail.style.overflowY = "auto";
-
-    const popup = document.querySelector(".popup-container");
-    popup.style.transform = "translate(-50%, -20%)";
-    popup.style.opacity = "0";
-    popup.style.pointerEvents = "none";
-  };
-
-  const handleOptionClick = (option) => {
-    setSelectedOption(option);
-  };
-
-  if (placeNote === "") setPlaceNote("Added to favourites");
 
   if (!placeDetails) return <div className="loader"></div>;
 
-  const photoUrl = justFetched
-    ? ""
-    : `http://${process.env.REACT_APP_SERVER}:5000/uploads/images/`;
+  const photoUrl = `http://${process.env.REACT_APP_SERVER}:5000/uploads/images/`;
 
   return (
     <>
@@ -283,14 +245,37 @@ export default function SpotDetail({ setShowNavbar }) {
               <p>{placeDetails.international_phone_number}</p>
             </div>
           )}
+
           {isFavourite && (
             <div className="spot-detail-info-el">
               <div className="icon icon-pink">
                 <FontAwesomeIcon icon={faHeart} />
               </div>
-              <p>{placeNote ? placeNote : "Saved to favourites"}</p>
+              {placeNote ? (
+                <div className="note">
+                  <div className="note-content">{placeNote}</div>
+                  <div
+                    className="note-edit"
+                    onClick={() => setAddingNote(true)}
+                  >
+                    Edit Note
+                  </div>
+                </div>
+              ) : (
+                <div className="note">
+                  <div className="note-content">Saved in spotlist</div>
+                  <div
+                    className="note-edit"
+                    onClick={() => setAddingNote(true)}
+                  >
+                    Add Note
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
+          {console.log(alsoSavedBy)}
 
           {alsoSavedBy?.length > 0 && (
             <>
@@ -308,10 +293,10 @@ export default function SpotDetail({ setShowNavbar }) {
                       <div
                         className="friend-favourited-header-img"
                         style={{
-                          backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${friend.userId.photo})`,
+                          backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${friend.photo})`,
                         }}
                       ></div>
-                      <div>{friend.userId.name}</div>
+                      <div>{friend.name}</div>
                     </div>
                     <div className="friend-favourited-note">{friend.note}</div>
                   </div>
@@ -359,59 +344,43 @@ export default function SpotDetail({ setShowNavbar }) {
               <div>View in Google Maps</div>
             </a>
             {isFavourite ? (
-              <div className="add-favorite-btn" onClick={removeFromFavourites}>
-                Remove from favourites
+              <div className="add-favorite-btn" onClick={removeFromSpotlist}>
+                Remove from spotlist
               </div>
             ) : (
-              <div className="add-favorite-btn-2" onClick={addNote}>
-                Add to favourites
+              <div className="add-favorite-btn-2" onClick={saveToSpotlist}>
+                Add to spotlist
               </div>
             )}
           </div>
         </div>
       </div>
-      <div className="popup-container">
-        <div className="popup-container-body">
-          <span>Add to favourites</span>
-          <p className="title">Visibility</p>
-          <div className="privacy-options">
-            <div
-              className={`privacy-options-el ${
-                selectedOption === "Public" ? "selected" : ""
-              }`}
-              onClick={() => handleOptionClick("Public")}
-            >
-              <p>Public</p>
-              <FontAwesomeIcon icon={faEarthAmerica} />
-            </div>
-            <div
-              className={`privacy-options-el ${
-                selectedOption === "Private" ? "selected" : ""
-              }`}
-              onClick={() => handleOptionClick("Private")}
-            >
-              <p>Private</p>
-              <FontAwesomeIcon icon={faLock} />
-            </div>
-          </div>
-
-          <p className="title">Add a note</p>
-          <textarea
-            className="note"
-            value={placeNote}
-            onChange={(e) => setPlaceNote(e.target.value)}
-          />
-        </div>
-
-        <div className="popup-container-footer">
-          <div className="button" onClick={hideNote}>
-            Cancel
-          </div>
-          <div className="button" onClick={addToFavourites}>
-            Create
-          </div>
-        </div>
-      </div>
+      {addingNote && (
+        <AddNote
+          setAddingNote={setAddingNote}
+          placeNote={placeNote}
+          setPlaceNote={setPlaceNote}
+          spotlistId={spotlistId}
+          spotId={placeDetails._id}
+        />
+      )}
+      {addingToSpotlist && (
+        <AddToSpotlist
+          setAddingToSpotlist={setAddingToSpotlist}
+          setCreatingNewSpotlist={setCreatingNewSpotlist}
+          spotId={placeDetails._id}
+          setIsFavourite={setIsFavourite}
+          setSpotlistId={setSpotlistId}
+        />
+      )}
+      {creatingNewSpotlist && (
+        <CreateNewSpotlist
+          setCreatingNewSpotlist={setCreatingNewSpotlist}
+          setIsFavourite={setIsFavourite}
+          spotId={placeDetails._id}
+          setSpotlistId={setSpotlistId}
+        />
+      )}
     </>
   );
 }

@@ -29,7 +29,7 @@ exports.adjustUserPhoto = async (req, res, next) => {
   if (!req.files || !req.files["photo"]) return next();
   await Promise.all(
     req.files["photo"].map(async (file, index) => {
-      const filename = `spot-${req.body._id}-${index + 1}.jpeg`;
+      const filename = `spot-${req.body.google_id}-${index + 1}.jpeg`;
 
       await sharp(file.buffer)
         .toFormat("jpeg")
@@ -91,37 +91,70 @@ exports.createSpot = catchAsync(async (req, res) => {
 });
 
 exports.getSpot = catchAsync(async (req, res, next) => {
-  const spot = await Spot.findById(req.params.id).populate(
+  const spot = await Spot.findOne({ google_id: req.params.id }).populate(
     "favouritedBy.userId",
-    "photo name"
+    "photo name spotlists"
   );
+
+  console.log(spot.favouritedBy);
 
   const user = await User.findById(req.user._id);
 
   if (!spot) {
-    return next(new AppError("No favourite found with that ID", 404));
+    return next(new AppError("No spot found with that ID", 404));
   }
 
-  const isFavourite = user.favouritePlaces.includes(spot._id);
+  const spotlistData = user.spotlists.find((spotlist) =>
+    spotlist.spots.some(
+      (spotItem) => spotItem.spot.toString() === spot._id.toString()
+    )
+  );
 
-  let userNote;
-  let friendsWhoFavourited = [];
+  const spotlistId = spotlistData ? spotlistData._id : null;
+  const isFavourite = !!spotlistData;
 
-  spot.favouritedBy.forEach((el) => {
-    if (el.userId.toString() === user._id.toString()) userNote = el.note;
-    if (
-      user.friends.includes(el.userId._id.toString()) &&
-      el.privacyOption !== "Private"
-    ) {
-      friendsWhoFavourited.push(el);
-    }
-  });
+  const userNote = spotlistData
+    ? spotlistData.spots.find(
+        (spotItem) => spotItem.spot.toString() === spot._id.toString()
+      )?.note
+    : null;
+
+  const friendsWhoFavourited = spot.favouritedBy
+    .filter((fav) =>
+      user.friends.some((friend) => friend._id.equals(fav.userId._id))
+    )
+    .map((fav) => {
+      const friendSpotlist = fav.userId.spotlists.find((spotlist) =>
+        spotlist.spots.some(
+          (spotItem) => spotItem.spot.toString() === spot._id.toString()
+        )
+      );
+
+      if (!friendSpotlist || friendSpotlist.visibility === "private") {
+        return undefined;
+      }
+
+      const friendNote = friendSpotlist
+        ? friendSpotlist.spots.find(
+            (spotItem) => spotItem.spot.toString() === spot._id.toString()
+          )?.note
+        : null;
+
+      return {
+        id: fav.userId._id,
+        name: fav.userId.name,
+        photo: fav.userId.photo,
+        note: friendNote,
+      };
+    })
+    .filter((item) => item !== undefined);
 
   res.status(200).json({
     status: "success",
     data: {
       spot,
       isFavourite,
+      spotlistId,
       userNote,
       friendsWhoFavourited,
     },
@@ -148,24 +181,6 @@ exports.updateSpot = catchAsync(async (req, res) => {
 
 exports.deleteSpot = catchAsync(async (req, res, next) => {
   const fav = await Spot.findById(req.params.id);
-
-  // if (!fav) {
-  //   return next(new AppError("No favourite found with that ID", 404));
-  // }
-
-  // if (fav.photos && fav.photos.length > 0) {
-  //   fav.photos.forEach((photo) => {
-  //     const filePath = path.join(__dirname, "..", "uploads", "images", photo);
-  //     fs.unlink(filePath, (err) => {
-  //       if (err) {
-  //         console.error(`Failed to delete image ${photo}:`, err);
-  //       } else {
-  //         console.log(`Successfully deleted image: ${photo}`);
-  //       }
-  //     });
-  //   });
-  // }
-
   await Spot.findByIdAndDelete(req.params.id);
 
   res.status(204).json({

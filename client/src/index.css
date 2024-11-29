@@ -328,6 +328,19 @@ a {
 
 .spot-detail-info .icon-pink {
   color: #fa507d;
+  align-self: flex-start;
+}
+
+.note-content {
+  margin-top: 0.25rem;
+  word-break: break-word;
+}
+
+.note-edit {
+  margin-top: 0.25rem;
+  cursor: pointer;
+  color: #0088ff;
+  font-weight: 500;
 }
 
 .friend-favourited {
@@ -430,92 +443,376 @@ a {
   border: 1px solid #fa507d;
 }
 
-.popup-container {
-  height: 400px;
-  width: 75%;
-  padding: 1rem;
-  border-radius: 1rem;
-  background-color: white;
+/* SPOTLISTS */
 
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -20%);
-  opacity: 0;
+.spotlists {
+  height: calc(100dvh - 75px);
+  overflow: auto;
+  padding: 0 1rem;
+}
+
+.spotlists-header {
+  font-size: 2rem;
+  font-weight: 500;
+  margin: 2rem 0;
+  color: #fff;
+}
+
+.spotlists-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.25);
-  transition: all 0.3s;
-  pointer-events: none;
-}
-
-.popup-container span {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.popup-container p {
-  margin: 0;
-}
-
-.popup-container .title {
-  margin-top: 1rem;
-  width: 100%;
-}
-
-.privacy-options {
-  margin-top: 0.5rem;
-  display: flex;
   gap: 1rem;
 }
 
-.privacy-options .selected {
-  background-color: #888;
+.spotlists-el {
+  display: grid;
+  grid-template-columns: 50% auto 44px;
+  color: #fff;
+  width: 100%;
 }
 
-.privacy-options-el {
-  border: 1px solid #000;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
+.spotlists-thumbnail {
+  position: relative;
   width: 100%;
+  aspect-ratio: 16 / 9;
+  background-size: cover;
+  background-position: center;
+}
+
+.spotlists-spot-count {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.spotlists-info {
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  overflow: hidden;
+  padding-left: 0.5rem;
+}
+
+.spotlists-info p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  font-weight: 300;
+}
+
+.spotlists-menu-button {
+  position: relative;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.5rem;
+  padding: 8px;
+  cursor: pointer;
+  margin-bottom: auto;
+  border-radius: 100%;
+}
+
+.spotlists-menu-button:hover,
+.spotlists-options-popup .options-item:hover {
+  background-color: #4b4b4b;
   cursor: pointer;
 }
 
-.note {
+.spotlists-options-popup {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  right: 2rem;
+  margin-top: 2.7rem;
+  z-index: 2;
+  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.spotlists-options-popup .options-item {
+  display: flex;
+  place-items: center;
+  height: 49px;
   width: 100%;
-  overflow: auto;
-  resize: none;
+  text-align: left;
+  font-size: 1rem;
+  padding-left: 1rem;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  gap: 1rem;
+}
+
+/* ADD NOTE */
+
+.add-note-container {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 2rem);
+  max-width: 385px;
+  background-color: #282828;
+  color: #fff;
+  border-radius: 1rem;
+  padding: 1rem 1.5rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.add-note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.35rem;
+}
+
+.add-note-header .close-button {
+  background-color: #282828;
+  color: #fff;
+  padding: 0;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.add-note-textarea {
+  margin-top: 1.5rem;
+  width: 100%;
+  height: 90px;
   padding: 0.5rem;
   font-size: 1rem;
-  font-family: "Roboto", sans-serif;
-  border-radius: 0.5rem;
-}
-
-.note:focus {
-  border: 1px solid black;
   outline: none;
+  font-family: "Roboto", sans-serif;
+  resize: none;
 }
 
-.popup-container-footer {
+.add-note-textarea:focus {
+  border: 1px solid #0088ff;
+}
+
+.add-note-btn {
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  align-self: flex-end;
+  font-size: 1.1rem;
+  color: #0088ff;
+  border-radius: 1rem;
+  cursor: pointer;
+  background-color: #282828;
+  border: none;
+  transition: all 0.2s;
+}
+
+.add-note-btn:hover {
+  background-color: #444;
+}
+
+/* ADD TO SPOTLIST */
+
+.spotlist-add-container {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: calc(100% - 2rem);
+  max-width: 385px;
+  max-height: 430px;
+  background-color: #282828;
+  color: #fff;
+  border-radius: 1rem;
+  padding: 1rem 0rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.spotlist-add-header {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  padding: 0 2rem;
+  font-size: 1.15rem;
 }
 
-.popup-container-footer .button {
+.spotlist-add-header .close-button {
+  background-color: #282828;
+  color: #fff;
+  padding: 0;
+  border: none;
+  font-size: 2rem;
   cursor: pointer;
+}
+
+.spotlist-add-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0rem;
+  height: 100%;
+  padding-left: 2rem;
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+.spotlist-add-list-item {
+  display: flex;
+  justify-content: space-between;
   width: 100%;
+  height: fit-content;
+  padding-right: 2rem;
+}
+
+.spotlist-add-checkbox {
+  all: unset;
+  display: inline-block;
+  min-width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px; /* Rounded corners */
+  position: relative;
+  transition: background-color 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.spotlist-add-checkbox:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.spotlist-add-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 14px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -55%) rotate(45deg);
+  transform-origin: center;
+}
+
+.spotlist-add-list-item label {
+  width: 100%;
+  margin-left: 1rem;
+}
+
+.spotlist-btn {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 50px;
-  border-radius: 1rem;
-  border: 1px solid black;
+  border: none;
+  margin: 0 2rem;
+  height: 40px;
+  padding: 1rem;
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: all 0.2s;
 }
+
+.spotlist-add-new-btn {
+  background-color: #626262;
+}
+
+.spotlist-add-new-btn:hover {
+  background-color: #4b4b4b;
+}
+
+.spotlist-add-to-btn {
+  margin-top: 0.5rem;
+  background-color: #0088ff;
+}
+
+.spotlist-add-to-btn:hover {
+  background-color: #0056b3;
+}
+
+.spotlist-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  opacity: 0.5;
+}
+/* CREATE NEW SPOTLIST */
+
+.spotlist-create-container {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 2rem);
+  max-width: 320px;
+  background-color: #282828;
+  color: #fff;
+  border-radius: 1rem;
+  padding: 1rem 2rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.spotlist-create-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  font-size: 1.5rem;
+}
+
+.spotlist-create-header .close-button {
+  background-color: #282828;
+  color: #fff;
+  padding: 0;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.spotlist-create-input label,
+.spotlist-create-visibility label {
+  display: block;
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.spotlist-create-visibility option {
+  padding: 1rem;
+}
+
+.spotlist-create-container input,
+.spotlist-create-container select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  background-color: #404040;
+  color: #fff;
+  outline: none;
+}
+
+.spotlist-create-btn {
+  background-color: #0088ff;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 1rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
 /* MAP */
 
 .map-container {
@@ -852,13 +1149,13 @@ a {
   align-items: start;
 }
 
-label {
+.form-group label {
   font-size: 14px;
   color: #ccc;
   margin-bottom: 5px;
 }
 
-input {
+.form-group input {
   width: 100%;
   padding: 10px;
   font-size: 16px;
@@ -868,11 +1165,11 @@ input {
   color: #fff;
 }
 
-input::placeholder {
+.form-group input::placeholder {
   color: #888;
 }
 
-input:focus {
+.form-group input:focus {
   outline: none;
   border-color: #007bff;
 }
@@ -1664,6 +1961,10 @@ input:focus {
   border-radius: 2rem;
   padding-left: 1.25rem;
   font-size: 1.2rem;
+  width: 100%;
+  background-color: #404040;
+  color: #fff;
+  border: none;
 }
 
 .send-button {

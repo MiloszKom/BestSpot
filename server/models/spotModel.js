@@ -1,13 +1,10 @@
 const mongoose = require("mongoose");
 
 const spotSchema = new mongoose.Schema({
-  _id: {
+  google_id: {
     type: String,
     required: true,
-  },
-  user_id: {
-    type: String,
-    required: true,
+    unique: true,
   },
   photos: {
     type: [String],
@@ -90,8 +87,6 @@ const spotSchema = new mongoose.Schema({
   favouritedBy: [
     {
       userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      note: { type: String },
-      privacyOption: { type: String },
     },
   ],
 });

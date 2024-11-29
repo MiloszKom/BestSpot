@@ -27,6 +27,7 @@ import Signup from "./components/auth/Signup";
 import Account from "./components/account/Account";
 import Settings from "./components/account/Settings";
 import Favourites from "./components/favourites/Favourites";
+import Spotlists from "./components/favourites/Spotlists";
 import SpotDetail from "./components/map/SpotDetail";
 import Chats from "./components/friends/Chats";
 import Friends from "./components/friends/Friends";
@@ -36,6 +37,7 @@ import ChatSearchBar from "./components/friends/ChatSearchBar";
 import ContactRequests from "./components/friends/ContactRequests";
 
 import { io } from "socket.io-client";
+import SpotlistContent from "./components/favourites/SpotlistContent";
 
 function Layout({ showNavbar }) {
   return (
@@ -150,7 +152,15 @@ function App() {
                     element={<SpotDetail setShowNavbar={setShowNavbar} />}
                   />
 
+                  <Route path="spotlists" element={<Spotlists />} />
+                  <Route path="spotlists/:name" element={<SpotlistContent />} />
+                  <Route
+                    path="spotlists/:name/:id"
+                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
+                  />
+
                   <Route path="favourites" element={<Favourites />} />
+
                   <Route
                     path="favourites/:id"
                     element={<SpotDetail setShowNavbar={setShowNavbar} />}

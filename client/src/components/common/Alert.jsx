@@ -15,7 +15,7 @@ export default function Alert({ msg, type }) {
 
     const timeout = setTimeout(() => {
       setSlide(false);
-    }, 3000);
+    }, 2500);
 
     return () => clearTimeout(timeout);
   }, [type, msg]);

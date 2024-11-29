@@ -29,9 +29,9 @@ export default function Navbar() {
           </Link>
         </div>
         <div className="nav-element">
-          <Link to="/favourites">
+          <Link to="/spotlists">
             <FontAwesomeIcon icon={faHeart} className="icon" />
-            <p>Favourites</p>
+            <p>Spotlists</p>
           </Link>
         </div>
         <div className="nav-element">

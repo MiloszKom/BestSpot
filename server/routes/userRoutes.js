@@ -31,9 +31,26 @@ router.delete("/deleteMe", authController.protect, userController.deleteMe);
 router.get("/searchUsers", authController.protect, userController.searchUsers);
 
 router
-  .route("/favourites/:id")
-  .post(authController.protect, userController.addToFavourites)
-  .delete(authController.protect, userController.removeFromFavourites);
+  .route("/spotlist")
+  .get(authController.protect, userController.getSpotlist)
+  .post(authController.protect, userController.createSpotlist);
+
+router
+  .route("/spotlist/:id")
+  .get(authController.protect, userController.getSpotsInSpotlist)
+  .post(authController.protect, userController.addToSpotlist)
+  .delete(authController.protect, userController.deleteSpotlist)
+  .patch(authController.protect, userController.editSpotlist);
+
+router.delete(
+  "/spotlist/:spotlistId/spot/:spotId",
+  authController.protect,
+  userController.removeFromSpotlist
+);
+
+router
+  .route("/spotlist/:spotlistId/spot/:spotId/note")
+  .patch(authController.protect, userController.editNote);
 
 router
   .route("/")

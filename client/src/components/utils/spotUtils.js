@@ -3,10 +3,10 @@ import axios from "axios";
 export const fetchFromDatabase = async (
   id,
   setPlaceDetails,
-  setIsFavourite,
   setPlaceNote,
-  setJustFetched,
+  setIsFavourite,
   setAlsoSavedBy,
+  setSpotlistId,
   fetchFromApi
 ) => {
   try {
@@ -23,21 +23,21 @@ export const fetchFromDatabase = async (
 
     if (res.data.data.spot) {
       setPlaceDetails(res.data.data.spot);
-      setIsFavourite(res.data.data.isFavourite);
-      setJustFetched(false);
       setPlaceNote(res.data.data.userNote);
+      setIsFavourite(res.data.data.isFavourite);
+      setSpotlistId(res.data.data.spotlistId);
       setAlsoSavedBy(res.data.data.friendsWhoFavourited);
     } else {
       console.log("No data found in the database, proceeding with API fetch.");
-      fetchFromApi(id, setPlaceDetails, setJustFetched);
+      fetchFromApi(id, setPlaceDetails);
     }
   } catch (err) {
     console.log("Error fetching from the database:", err);
-    fetchFromApi(id, setPlaceDetails, setJustFetched);
+    fetchFromApi(id, setPlaceDetails);
   }
 };
 
-export const fetchFromApi = async (id, setPlaceDetails, setJustFetched) => {
+export const fetchFromApi = async (id, setPlaceDetails) => {
   try {
     const res = await axios({
       method: "POST",
@@ -54,7 +54,6 @@ export const fetchFromApi = async (id, setPlaceDetails, setJustFetched) => {
     placeData._id = placeData.place_id;
     console.log("Place Data:", placeData);
     setPlaceDetails(placeData);
-    setJustFetched(true);
 
     const photos = placeData.photos || [];
     if (photos.length === 0) {
@@ -88,10 +87,16 @@ export const fetchFromApi = async (id, setPlaceDetails, setJustFetched) => {
 
     const photoUrls = await Promise.all(fetchPhotoPromises);
 
-    setPlaceDetails((prev) => ({
-      ...prev,
-      photos: photoUrls.filter((url) => url !== null),
-    }));
+    setPlaceDetails((currentPlaceDetails) => {
+      const updatedDetails = {
+        ...currentPlaceDetails,
+        photos: photoUrls.filter((url) => url !== null),
+      };
+
+      saveSpotToDatabse(updatedDetails, setPlaceDetails);
+
+      return updatedDetails;
+    });
   } catch (err) {
     console.log("Error fetching place data or photos:", err);
   }
@@ -103,24 +108,7 @@ const blobToFile = (theBlob, fileName) => {
   return theBlob;
 };
 
-const urlToBlob = async (imageUrl) => {
-  console.log("Processed url :", imageUrl);
-  try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch image. Status: ${response.status}`);
-    }
-    const blob = await response.blob();
-    console.log(`Blob created with type: ${blob.type}`);
-    return blob;
-  } catch (error) {
-    console.error("Error converting image URL to Blob:", error);
-    return null;
-  }
-};
-
-export const saveSpotToDatabse = async (placeDetails, auth) => {
-  console.log("Saving the spot to the database");
+export const saveSpotToDatabse = async (placeDetails, setPlaceDetails) => {
   try {
     const formData = new FormData();
 
@@ -128,14 +116,8 @@ export const saveSpotToDatabse = async (placeDetails, auth) => {
       const photoPromises = placeDetails.photos.map(async (photoUrl, i) => {
         let blob;
 
-        if (photoUrl.endsWith(".jpeg")) {
-          blob = await urlToBlob(
-            `http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${placeDetails.photos[i]}`
-          );
-        } else {
-          const response = await fetch(photoUrl);
-          blob = await response.blob();
-        }
+        const response = await fetch(photoUrl);
+        blob = await response.blob();
 
         if (blob) {
           const file = blobToFile(blob, `image-${i + 1}.jpg`);
@@ -148,7 +130,7 @@ export const saveSpotToDatabse = async (placeDetails, auth) => {
       await Promise.all(photoPromises);
     }
 
-    formData.append("_id", placeDetails._id);
+    formData.append("google_id", placeDetails._id);
     formData.append("name", placeDetails.name);
     formData.append("rating", placeDetails.rating);
     formData.append("user_ratings_total", placeDetails.user_ratings_total);
@@ -178,7 +160,8 @@ export const saveSpotToDatabse = async (placeDetails, auth) => {
       }
     );
 
-    console.log("Success:", res.data);
+    console.log("Success:", res.data.data.fav);
+    setPlaceDetails(res.data.data.fav);
   } catch (err) {
     console.error(
       "Error adding to favourites:",
