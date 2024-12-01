@@ -102,7 +102,7 @@ function App() {
   useEffect(() => {
     if (!userData) return;
 
-    socketRef.current = io("http://localhost:5000");
+    socketRef.current = io(`http://${process.env.REACT_APP_SERVER}:5000`);
 
     socketRef.current.on("connect", () => {
       setSocket(socketRef.current);
