@@ -49,16 +49,17 @@ function Layout({ showNavbar }) {
 }
 
 function PrivateRoute({ children }) {
-  const { isLoggedIn } = useContext(AuthContext);
-  if (isLoggedIn === null) {
-    return <div>Loading...</div>; // Show loading state if needed
+  const { isDataFetched } = useContext(AuthContext);
+  if (isDataFetched === false) {
+    return <div>Loading...</div>;
   }
-  return isLoggedIn ? children : <Navigate to="/login" replace />;
+  return isDataFetched ? children : <Navigate to="/login" replace />;
 }
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [isDataFetched, setIsDataFetched] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const [alertData, setAlertData] = useState({});
   const [searchResults, setSearchResults] = useState(null);
@@ -70,7 +71,9 @@ function App() {
         setIsLoggedIn(true);
         setUserData(result.user);
       }
+      setIsDataFetched(true);
     };
+
     fetchCookies();
   }, []);
 
@@ -132,7 +135,9 @@ function App() {
   return (
     <AlertContext.Provider value={{ showAlert }}>
       <SocketContext.Provider value={{ socket }}>
-        <AuthContext.Provider value={{ isLoggedIn, login, logout, userData }}>
+        <AuthContext.Provider
+          value={{ isLoggedIn, login, logout, userData, isDataFetched }}
+        >
           <ResultsContext.Provider
             value={{ searchResults, getResults, deleteResults }}
           >
