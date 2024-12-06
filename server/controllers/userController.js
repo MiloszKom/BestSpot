@@ -69,16 +69,25 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   const filteredBody = filterObj(req.body, "name", "email");
+
   if (req.file) filteredBody.photo = req.file.filename;
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
-    new: true,
-    runValidators: true,
-  });
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(new AppError("User not found.", 404));
+  }
+
+  user.name = filteredBody.name || user.name;
+  user.email = filteredBody.email || user.email;
+  if (req.file) user.photo = req.file.filename;
+
+  await user.save();
 
   res.status(200).json({
     status: "success",
     data: {
-      user: updatedUser,
+      user: user,
     },
   });
 });

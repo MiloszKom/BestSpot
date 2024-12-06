@@ -7,6 +7,17 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "A user must have a name"],
+    unique: true,
+  },
+  handle: {
+    type: String,
+    unique: true,
+    minlength: [3, "Handle must be at least 3 characters long"],
+    maxlength: [30, "Handle cannot exceed 30 characters"],
+    match: [
+      /^[a-zA-Z0-9_]+$/,
+      "Handle can only contain letters, numbers, and underscores",
+    ],
   },
   email: {
     type: String,
@@ -32,7 +43,6 @@ const userSchema = new mongoose.Schema({
   },
   passwordConfirm: {
     type: String,
-    required: [true, "Please confirm your password"],
     validate: {
       validator: function (el) {
         return el === this.password;
@@ -65,10 +75,20 @@ const userSchema = new mongoose.Schema({
       ],
     },
   ],
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   chatsJoined: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chat" }],
+  notifications: [
+    {
+      message: { type: String, required: true },
+      sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      relatedEntity: { type: mongoose.Schema.Types.ObjectId },
+      createdAt: { type: Date, default: Date.now },
+      isRead: { type: Boolean, default: false },
+    },
+  ],
   isOnline: {
     type: Boolean,
     default: true,
@@ -92,6 +112,25 @@ userSchema.pre("save", function (next) {
 
 userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
+  next();
+});
+
+const generateHandle = async function (name, model) {
+  let baseHandle = name.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+  let handle = baseHandle;
+  let count = 1;
+
+  while (await model.exists({ handle })) {
+    handle = `${baseHandle}_${count}`;
+    count++;
+  }
+
+  return handle;
+};
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("name")) return next();
+  this.handle = await generateHandle(this.name, this.constructor);
   next();
 });
 

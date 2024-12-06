@@ -10,7 +10,7 @@ export default function Settings() {
   const auth = useContext(AuthContext);
   const user = auth.userData;
 
-  console.log(user);
+  console.log(auth);
 
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -33,6 +33,7 @@ export default function Settings() {
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${auth.token}`,
         },
         withCredentials: true,
       });
@@ -50,6 +51,7 @@ export default function Settings() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.token}`,
         },
         url: "http://localhost:5000/api/v1/users/updateMyPassword",
         data: {
@@ -96,15 +98,15 @@ export default function Settings() {
           />
         </div>
         <div className="form-group form__photo-upload">
-          <div class="form__user-photo">
+          <div className="form__user-photo">
             <img
-              crossorigin="anonymous"
+              crossOrigin="anonymous"
               src={`http://localhost:5000/uploads/images/${user.photo}`}
               alt="User"
             />
           </div>
           <input type="file" accept="image/*" id="photo" name="photo" />
-          <label for="photo">Choose new photo</label>
+          <label htmlFor="photo">Choose new photo</label>
         </div>
         <button className="btn" onClick={saveSettings}>
           Save Settings

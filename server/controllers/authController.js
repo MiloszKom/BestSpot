@@ -152,6 +152,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     console.log(err);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
+
     await user.save({ validateBeforeSave: false });
 
     return next(
@@ -221,6 +222,7 @@ exports.checkCookies = catchAsync(async (req, res, next) => {
       return res.status(200).json({
         status: "success",
         user: currentUser,
+        token,
       });
     } catch (err) {
       return next(

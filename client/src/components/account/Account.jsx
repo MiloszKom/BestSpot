@@ -15,7 +15,7 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        url: "http://localhost:5000/api/v1/users/logout",
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/logout`,
         withCredentials: true,
       });
 
@@ -32,7 +32,7 @@ export default function Login() {
       <div className="account-photo">
         <img
           crossOrigin="anonymous"
-          src={`http://localhost:5000/uploads/images/${user.photo}`}
+          src={`http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${user.photo}`}
           alt="User"
         />
       </div>
