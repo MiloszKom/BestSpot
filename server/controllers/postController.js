@@ -2,8 +2,67 @@ const Post = require("./../models/postModel");
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+const multer = require("multer");
+const sharp = require("sharp");
 
 const { getPostCommentReply } = require("../utils/helpers");
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images", 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadPostPhotos = upload.array("photos", 5);
+
+exports.resizePostPhotos = async (req, res, next) => {
+  if (!req.files || req.files.length === 0) return next();
+
+  req.body.photos = [];
+
+  try {
+    await Promise.all(
+      req.files.map(async (file, index) => {
+        const filename = `user-${req.user._id}-${Date.now()}-${index + 1}.jpeg`;
+
+        await sharp(file.buffer)
+          .toFormat("jpeg")
+          .jpeg({ quality: 90 })
+          .toFile(`uploads/images/${filename}`);
+
+        req.body.photos.push(filename);
+      })
+    );
+
+    next();
+  } catch (err) {
+    console.log(err);
+    return next(
+      new AppError("Error processing images. Please try again.", 500)
+    );
+  }
+};
+
+exports.uploadErrorHandler = (err, req, res, next) => {
+  if (err.code === "LIMIT_UNEXPECTED_FILE") {
+    return next(
+      new AppError(
+        "Too many files uploaded. A maximum of 5 photos is allowed.",
+        400
+      )
+    );
+  }
+  next(err);
+};
 
 const createNotifications = async (
   notifiedUsers,
@@ -29,45 +88,6 @@ const createNotifications = async (
 
   await Promise.all(updatePromises);
 };
-
-exports.getPosts = catchAsync(async (req, res, next) => {
-  const posts = await Post.aggregate([
-    {
-      $lookup: {
-        from: "users",
-        localField: "author",
-        foreignField: "_id",
-        as: "authorDetails",
-      },
-    },
-    {
-      $unwind: "$authorDetails",
-    },
-    {
-      $project: {
-        _id: 1,
-        content: 1,
-        visibility: 1,
-        spots: 1,
-        spotlists: 1,
-        likes: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        commentsLength: { $size: "$comments" },
-        author: {
-          _id: "$authorDetails._id",
-          name: "$authorDetails.name",
-          photo: "$authorDetails.photo",
-        },
-      },
-    },
-  ]);
-
-  res.status(200).json({
-    status: "success",
-    data: posts,
-  });
-});
 
 const extractAndValidateHandles = async (content) => {
   const handlePattern = /@([a-zA-Z0-9_]{3,30})/g;
@@ -98,13 +118,61 @@ const filterFriends = (validUsers, friends) => {
   return filteredFriends;
 };
 
+exports.getPosts = catchAsync(async (req, res, next) => {
+  const posts = await Post.aggregate([
+    {
+      $lookup: {
+        from: "users",
+        localField: "author",
+        foreignField: "_id",
+        as: "authorDetails",
+      },
+    },
+    {
+      $unwind: "$authorDetails",
+    },
+    {
+      $lookup: {
+        from: "spots",
+        localField: "spots",
+        foreignField: "_id",
+        as: "populatedSpots",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        content: 1,
+        visibility: 1,
+        spotlists: 1,
+        photos: 1,
+        likes: 1,
+        createdAt: 1,
+        commentsLength: { $size: "$comments" },
+        author: {
+          _id: "$authorDetails._id",
+          name: "$authorDetails.name",
+          photo: "$authorDetails.photo",
+          handle: "$authorDetails.handle",
+        },
+        spots: "$populatedSpots",
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: posts,
+  });
+});
+
 exports.createPost = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).populate(
     "friends",
     "_id handle"
   );
 
-  const { visibility, content, spots, spotlists } = req.body;
+  const { visibility, content, spots, spotlists, photos } = req.body;
 
   if (!user) {
     return next(new AppError("No user found", 404));
@@ -119,12 +187,12 @@ exports.createPost = catchAsync(async (req, res, next) => {
     );
   }
 
-  if (spotlists?.length > 5) {
-    return next(new AppError("Spotlists limit exceeded", 400));
+  if (Array.isArray(spots) && spots.length > 5) {
+    return next(new AppError("Spots limit exceeded", 400));
   }
 
-  if (spots?.length > 10) {
-    return next(new AppError("Spots limit exceeded", 400));
+  if (Array.isArray(spotlists) && spotlists.length > 3) {
+    return next(new AppError("Spotlists limit exceeded", 400));
   }
 
   const mentionedUsers = await extractAndValidateHandles(content);
@@ -136,6 +204,7 @@ exports.createPost = catchAsync(async (req, res, next) => {
     content,
     spots,
     spotlists,
+    photos: photos ? photos : null,
   });
 
   user.posts.push(newPost._id);
@@ -162,7 +231,7 @@ exports.createPost = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.deletePost = catchAsync(async (req, res) => {
+exports.deletePost = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
   if (!user) {
@@ -198,7 +267,7 @@ exports.likePost = catchAsync(async (req, res, next) => {
     return next(new AppError("Post not found", 404));
   }
 
-  if (post.likes.includes(user)) {
+  if (post.likes.includes(user._id)) {
     return next(new AppError("You already liked this post", 400));
   }
 
@@ -240,26 +309,39 @@ exports.unlikePost = catchAsync(async (req, res, next) => {
 });
 
 exports.getPost = catchAsync(async (req, res, next) => {
-  const sortBy = req.query.sortBy || "likes";
+  const userId = req.user._id;
 
   const post = await Post.findById(req.params.id)
-    .populate("author", "name photo")
+    .populate("author", "name photo handle")
+    .populate("comments.user", "name handle photo")
+    .populate("comments.replies.user", "name handle photo")
     .lean();
 
   if (!post) {
     return next(new AppError("Post not found", 404));
   }
 
-  if (sortBy === "likes") {
-    post.comments.sort((a, b) => b.likes.length - a.likes.length);
-  } else if (sortBy === "newest") {
-    post.comments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }
+  post.comments.sort((a, b) => {
+    const aIsUser = a.user._id.toString() === userId.toString();
+    const bIsUser = b.user._id.toString() === userId.toString();
+
+    if (aIsUser && !bIsUser) return -1;
+    if (!aIsUser && bIsUser) return 1;
+
+    return b.likes.length - a.likes.length;
+  });
+
+  const totalComments = post.comments.reduce((total, comment) => {
+    return total + 1 + comment.replies.length;
+  }, 0);
 
   res.status(200).json({
     status: "success",
     message: "Post data retrieved successfully",
-    data: post,
+    data: {
+      ...post,
+      totalComments,
+    },
   });
 });
 
@@ -277,6 +359,17 @@ exports.addPostComment = catchAsync(async (req, res, next) => {
   post.comments.push(newComment);
 
   await post.save();
+
+  const addedComment = await post
+    .populate({
+      path: "comments.user",
+      select: "name _id handle photo",
+      match: { _id: user._id },
+    })
+    .then(
+      (populatedPost) =>
+        populatedPost.comments[populatedPost.comments.length - 1]
+    );
 
   const mentionedUsers = await extractAndValidateHandles(comment);
 
@@ -324,6 +417,7 @@ exports.addPostComment = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: "success",
     message: "Comment added successfully",
+    comment: addedComment,
   });
 });
 
@@ -411,7 +505,7 @@ exports.likeComment = catchAsync(async (req, res, next) => {
     return next(new AppError("Comment not found", 404));
   }
 
-  if (comment.likes.includes(user)) {
+  if (comment.likes.includes(user._id)) {
     return next(new AppError("You already liked this comment", 400));
   }
 
@@ -534,9 +628,17 @@ exports.addReply = catchAsync(async (req, res, next) => {
 
   await post.save();
 
+  const addedReply = comment.replies[comment.replies.length - 1];
+
+  const populatedReply = await Post.populate(addedReply, {
+    path: "user",
+    select: "name photo handle",
+  });
+
   res.status(200).json({
     status: "success",
     message: "Replied successfully",
+    reply: populatedReply,
   });
 });
 

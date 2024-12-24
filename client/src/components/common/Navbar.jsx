@@ -1,7 +1,7 @@
 import React from "react";
 // import {useContext} from 'react'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faHouse } from "@fortawesome/free-solid-svg-icons";
 
 import { Link } from "react-router-dom";
 // import { AuthContext } from "./AuthContext";
@@ -23,9 +23,15 @@ export default function Navbar() {
     <div className="spots">
       <div className="navigation">
         <div className="nav-element">
+          <Link to="/home">
+            <FontAwesomeIcon icon={faHouse} className="icon" />
+            <p>Home</p>
+          </Link>
+        </div>
+        <div className="nav-element">
           <Link to="/search">
             <FontAwesomeIcon icon={faMagnifyingGlass} className="icon" />
-            <p>Explore</p>
+            <p>Discover</p>
           </Link>
         </div>
         <div className="nav-element">

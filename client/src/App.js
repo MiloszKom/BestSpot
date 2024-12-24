@@ -35,9 +35,13 @@ import ChatRoom from "./components/friends/ChatRoom";
 import Profile from "./components/friends/Profile";
 import ChatSearchBar from "./components/friends/ChatSearchBar";
 import ContactRequests from "./components/friends/ContactRequests";
+import Posts from "./components/posts/Posts";
+
+import NotFoundPage from "./components/pages/NotFoundPage";
 
 import { io } from "socket.io-client";
 import SpotlistContent from "./components/favourites/SpotlistContent";
+import PostDetail from "./components/posts/PostDetail";
 
 function Layout({ showNavbar }) {
   return (
@@ -149,64 +153,56 @@ function App() {
               <Alert msg={alertData.alertMsg} type={alertData.alertType} />
               <Routes>
                 <Route path="/" element={<Layout showNavbar={showNavbar} />}>
-                  <Route index element={<Navigate to="/search" replace />} />
+                  <Route path="/home" element={<Posts />} />
 
+                  <Route
+                    path="/:handle/:postId"
+                    element={<PostDetail setShowNavbar={setShowNavbar} />}
+                  />
                   <Route
                     path="search"
                     element={<GoogleMap setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route
                     path="search/:id"
                     element={<SpotDetail setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route path="spotlists" element={<Spotlists />} />
                   <Route path="spotlists/:name" element={<SpotlistContent />} />
                   <Route
                     path="spotlists/:name/:id"
                     element={<SpotDetail setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route path="favourites" element={<Favourites />} />
-
                   <Route
                     path="favourites/:id"
                     element={<SpotDetail setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route
                     path="messages"
                     element={<Chats setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route
                     path="messages/search-bar"
                     element={<ChatSearchBar setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route
                     path="messages/friend-requests"
                     element={<Friends setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route
                     path="messages/contact-requests"
                     element={<ContactRequests setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route
                     path="messages/chat-room/:id"
                     element={<ChatRoom setShowNavbar={setShowNavbar} />}
                   />
-
                   <Route path="/profile/:id" element={<Profile />} />
-
                   <Route path="login" element={<Login />} />
                   <Route path="signup" element={<Signup />} />
-
                   <Route
-                    path="account"
+                    path="/:handle"
                     element={
                       <PrivateRoute>
                         <Account />
@@ -214,15 +210,14 @@ function App() {
                     }
                   />
                   <Route
-                    path="account/settings"
+                    path="/:handle/settings"
                     element={
                       <PrivateRoute>
                         <Settings />
                       </PrivateRoute>
                     }
                   />
-
-                  <Route path="*" element={<Navigate to="/search" replace />} />
+                  <Route path="*" element={<NotFoundPage />} />
                 </Route>
               </Routes>
             </BrowserRouter>

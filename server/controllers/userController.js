@@ -554,10 +554,23 @@ exports.searchUsers = catchAsync(async (req, res) => {
     const users = await User.find({
       name: { $regex: searchTerm, $options: "i" },
       _id: { $ne: req.user._id },
-    });
+    }).select("name _id photo handle friends");
 
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
+});
+
+exports.searchHandles = catchAsync(async (req, res) => {
+  const searchTerm = req.query.q;
+  const users = await User.find({
+    handle: { $regex: searchTerm, $options: "i" },
+    _id: { $ne: req.user._id },
+  }).select("name _id photo handle");
+
+  res.status(200).json({
+    status: "success",
+    users,
+  });
 });

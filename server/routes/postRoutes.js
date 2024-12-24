@@ -6,9 +6,16 @@ const authController = require("../controllers/authController");
 const router = express.Router();
 
 router.get("/", postController.getPosts);
-router.post("/", authController.protect, postController.createPost);
+router.post(
+  "/",
+  authController.protect,
+  postController.uploadPostPhotos,
+  postController.resizePostPhotos,
+  postController.uploadErrorHandler,
+  postController.createPost
+);
 
-router.get("/:id", postController.getPost);
+router.get("/:id", authController.protect, postController.getPost);
 router.delete("/:id", authController.protect, postController.deletePost);
 
 router

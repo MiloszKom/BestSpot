@@ -30,6 +30,12 @@ router.delete("/deleteMe", authController.protect, userController.deleteMe);
 
 router.get("/searchUsers", authController.protect, userController.searchUsers);
 
+router.get(
+  "/searchHandles",
+  authController.protect,
+  userController.searchHandles
+);
+
 router
   .route("/spotlist")
   .get(authController.protect, userController.getSpotlist)
