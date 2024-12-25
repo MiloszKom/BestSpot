@@ -24,6 +24,9 @@ import PostCreate from "./PostCreate";
 import { formatTimeAgo } from "../utils/helperFunctions";
 import { togglePostLike } from "../utils/postUtils";
 import ShowOptions from "./ShowOptions";
+import PostImageCarousel from "./components/PostImageCarousel";
+import PostSpots from "./components/PostSpots";
+import PostSpotlists from "./components/PostSpotlists";
 
 export default function Posts() {
   const { userData } = useContext(AuthContext);
@@ -85,11 +88,11 @@ export default function Posts() {
         </div>
 
         {posts.map((post) => {
-          console.log(post);
           const isLiked = post.likes.includes(userData._id);
           const postOptions =
             post.author._id === userData._id ? ["delete"] : ["report"];
 
+          console.log(post);
           return (
             <Link
               to={`/${post.author.handle}/${post._id}`}
@@ -118,8 +121,9 @@ export default function Posts() {
                     >
                       {post.author.name}
                     </span>
-                    <span className="handle">
-                      @{post.author.handle} · {formatTimeAgo(post.createdAt)}
+                    <span className="handle">@{post.author.handle}</span>
+                    <span className="timestamp">
+                      · {formatTimeAgo(post.createdAt)}
                     </span>
                   </div>
                   <button
@@ -134,7 +138,29 @@ export default function Posts() {
                     <FontAwesomeIcon icon={faEllipsisVertical} />
                   </button>
                 </div>
-                <div className="post-content">{post.content}</div>
+                <div className="post-content">
+                  {post.photos && (
+                    <div
+                      className="post-content-photos"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <PostImageCarousel photoPreviews={post.photos} />
+                    </div>
+                  )}
+                  {post.content && (
+                    <div className="post-content-text">{post.content}</div>
+                  )}
+                  {post.spots.length > 0 && (
+                    <div className="post-content-spots">
+                      <PostSpots selectedSpots={post.spots} />
+                    </div>
+                  )}
+                  {post.spotlists.length > 0 && (
+                    <div className="post-content-spotlists">
+                      <PostSpotlists selectedSpotlists={post.spotlists} />
+                    </div>
+                  )}
+                </div>
                 <div className="post-footer">
                   <div
                     className="footer-el"
@@ -165,7 +191,7 @@ export default function Posts() {
                     <button className="svg-wrapper">
                       <FontAwesomeIcon icon={faComment} />
                     </button>
-                    <span>{post.commentsLength}</span>
+                    <span>{post.comments.length}</span>
                   </div>
                   <div
                     className="footer-el bookmark"

@@ -51,19 +51,24 @@ export default function PostImageCarousel({
         className="image-previews"
         style={{ transform: `translateX(-${imgOffset}%)` }}
       >
-        {photoPreviews.map((preview, index) => (
-          <div key={index} className="image-previews-el">
-            <div
-              className="image-preview-fade"
-              style={{
-                backgroundImage: `url(${preview})`,
-              }}
-            />
-            <img src={preview} alt={`preview-image-${index}`} />
-          </div>
-        ))}
+        {photoPreviews.map((preview, index) => {
+          const photoUrl = setSelectedPhotos
+            ? preview
+            : `http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${preview}`;
+
+          return (
+            <div key={index} className="image-previews-el">
+              <div
+                className="image-preview-fade"
+                style={{
+                  backgroundImage: `url(${photoUrl})`,
+                }}
+              />
+              <img src={photoUrl} alt={`preview-image-${index}`} />
+            </div>
+          );
+        })}
       </div>
-      {console.log(imgOffset)}
       <div className="image-preview-controls">
         {imgOffset !== 0 && (
           <div className="control-swipe left" onClick={() => swipeImg("left")}>
@@ -88,13 +93,17 @@ export default function PostImageCarousel({
             ))}
           </div>
         )}
-        <div className="control-swipe delete" onClick={deleteImage}>
-          <FontAwesomeIcon icon={faTrashCan} />
-        </div>
-        <div className="image-counter">
-          <span>{photoPreviews.length}/5</span>
-          <FontAwesomeIcon icon={faImage} />
-        </div>
+        {setSelectedPhotos && (
+          <>
+            <div className="control-swipe delete" onClick={deleteImage}>
+              <FontAwesomeIcon icon={faTrashCan} />
+            </div>
+            <div className="image-counter">
+              <span>{photoPreviews.length}/5</span>
+              <FontAwesomeIcon icon={faImage} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ const path = require("path");
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
-  console.log("MulterFilter :", file);
+  console.log("MulterFilter:", file);
   if (file.mimetype.startsWith("image")) {
     cb(null, true);
   } else {
@@ -23,23 +23,23 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-exports.uploadTourImages = upload.fields([{ name: "photo", maxCount: 3 }]);
+exports.uploadTourImage = upload.single("photo");
 
 exports.adjustUserPhoto = async (req, res, next) => {
-  if (!req.files || !req.files["photo"]) return next();
-  await Promise.all(
-    req.files["photo"].map(async (file, index) => {
-      const filename = `spot-${req.body.google_id}-${index + 1}.jpeg`;
+  if (!req.file) return next();
 
-      await sharp(file.buffer)
-        .toFormat("jpeg")
-        .jpeg({ quality: 90 })
-        .toFile(`uploads/images/${filename}`);
+  const filename = `spot-${req.body.google_id}.jpeg`;
 
-      if (!req.body.photos) req.body.photos = [];
-      req.body.photos.push(filename);
-    })
-  );
+  try {
+    await sharp(req.file.buffer)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`uploads/images/${filename}`);
+
+    req.body.photo = filename;
+  } catch (error) {
+    return next(new AppError("Error processing image", 500));
+  }
 
   next();
 };
@@ -91,72 +91,71 @@ exports.createSpot = catchAsync(async (req, res) => {
 });
 
 exports.getSpot = catchAsync(async (req, res, next) => {
-  const spot = await Spot.findOne({ google_id: req.params.id }).populate(
-    "favouritedBy.userId",
-    "photo name spotlists"
-  );
+  const spot = await Spot.findOne({ google_id: req.params.id });
 
-  console.log(spot.favouritedBy);
+  // console.log("SPOT :", spot);
 
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user._id).populate("spotlists");
 
   if (!spot) {
     return next(new AppError("No spot found with that ID", 404));
   }
 
+  // if a spot belongs to a spotlist, find it's id and pass it to spotlistId
+
   const spotlistData = user.spotlists.find((spotlist) =>
     spotlist.spots.some(
-      (spotItem) => spotItem.spot.toString() === spot._id.toString()
+      (spotItem) => spotItem._id.toString() === spot._id.toString()
     )
   );
 
-  const spotlistId = spotlistData ? spotlistData._id : null;
-  const isFavourite = !!spotlistData;
+  console.log(spotlistData);
 
-  const userNote = spotlistData
-    ? spotlistData.spots.find(
-        (spotItem) => spotItem.spot.toString() === spot._id.toString()
-      )?.note
-    : null;
+  const isFavourite = spotlistData ? true : false;
 
-  const friendsWhoFavourited = spot.favouritedBy
-    .filter((fav) =>
-      user.friends.some((friend) => friend._id.equals(fav.userId._id))
-    )
-    .map((fav) => {
-      const friendSpotlist = fav.userId.spotlists.find((spotlist) =>
-        spotlist.spots.some(
-          (spotItem) => spotItem.spot.toString() === spot._id.toString()
-        )
-      );
+  const userNote =
+    spot.favouritedBy.find(
+      (fav) => fav.userId.toString() === user._id.toString()
+    )?.note || null;
 
-      if (!friendSpotlist || friendSpotlist.visibility === "private") {
-        return undefined;
-      }
+  // const friendsWhoFavourited = spot.favouritedBy
+  //   .filter((fav) =>
+  //     user.friends.some((friend) => friend._id.equals(fav.userId._id))
+  //   )
+  //   .map((fav) => {
+  //     const friendSpotlist = fav.userId.spotlists.find((spotlist) =>
+  //       spotlist.spots.some(
+  //         (spotItem) => spotItem.spot.toString() === spot._id.toString()
+  //       )
+  //     );
 
-      const friendNote = friendSpotlist
-        ? friendSpotlist.spots.find(
-            (spotItem) => spotItem.spot.toString() === spot._id.toString()
-          )?.note
-        : null;
+  //     if (!friendSpotlist || friendSpotlist.visibility === "private") {
+  //       return undefined;
+  //     }
 
-      return {
-        id: fav.userId._id,
-        name: fav.userId.name,
-        photo: fav.userId.photo,
-        note: friendNote,
-      };
-    })
-    .filter((item) => item !== undefined);
+  //     const friendNote = friendSpotlist
+  //       ? friendSpotlist.spots.find(
+  //           (spotItem) => spotItem.spot.toString() === spot._id.toString()
+  //         )?.note
+  //       : null;
+
+  //     return {
+  //       id: fav.userId._id,
+  //       name: fav.userId.name,
+  //       photo: fav.userId.photo,
+  //       note: friendNote,
+  //     };
+  //   })
+  //   .filter((item) => item !== undefined);
 
   res.status(200).json({
     status: "success",
     data: {
       spot,
       isFavourite,
-      spotlistId,
+      spotlistId: spotlistData?._id,
       userNote,
-      friendsWhoFavourited,
+      // friendsWhoFavourited,
     },
   });
 });

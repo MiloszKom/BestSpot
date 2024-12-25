@@ -159,6 +159,12 @@ function App() {
                     path="/:handle/:postId"
                     element={<PostDetail setShowNavbar={setShowNavbar} />}
                   />
+
+                  <Route
+                    path="/spot/:id"
+                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
+                  />
+
                   <Route
                     path="search"
                     element={<GoogleMap setShowNavbar={setShowNavbar} />}

@@ -119,44 +119,18 @@ const filterFriends = (validUsers, friends) => {
 };
 
 exports.getPosts = catchAsync(async (req, res, next) => {
-  const posts = await Post.aggregate([
+  const posts = await Post.find().populate([
     {
-      $lookup: {
-        from: "users",
-        localField: "author",
-        foreignField: "_id",
-        as: "authorDetails",
-      },
+      path: "author",
+      select: "_id name photo handle",
     },
     {
-      $unwind: "$authorDetails",
+      path: "spots",
+      select: "_id google_id name photo city country",
     },
     {
-      $lookup: {
-        from: "spots",
-        localField: "spots",
-        foreignField: "_id",
-        as: "populatedSpots",
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        content: 1,
-        visibility: 1,
-        spotlists: 1,
-        photos: 1,
-        likes: 1,
-        createdAt: 1,
-        commentsLength: { $size: "$comments" },
-        author: {
-          _id: "$authorDetails._id",
-          name: "$authorDetails.name",
-          photo: "$authorDetails.photo",
-          handle: "$authorDetails.handle",
-        },
-        spots: "$populatedSpots",
-      },
+      path: "spotlists",
+      select: "_id name cover visibility spots",
     },
   ]);
 
@@ -313,6 +287,8 @@ exports.getPost = catchAsync(async (req, res, next) => {
 
   const post = await Post.findById(req.params.id)
     .populate("author", "name photo handle")
+    .populate("spots", "_id google_id name photo city country ")
+    .populate("spotlists", "_id name cover visibility spots")
     .populate("comments.user", "name handle photo")
     .populate("comments.replies.user", "name handle photo")
     .lean();

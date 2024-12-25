@@ -32,7 +32,11 @@ import {
 } from "../utils/postUtils";
 
 import ShowOptions from "./ShowOptions";
-import PostTagging from "./PostTagging";
+import PostTagging from "./components/PostTagging";
+
+import PostImageCarousel from "./components/PostImageCarousel";
+import PostSpots from "./components/PostSpots";
+import PostSpotlists from "./components/PostSpotlists";
 
 export default function PostDetail() {
   const { userData } = useContext(AuthContext);
@@ -152,8 +156,30 @@ export default function PostDetail() {
             <FontAwesomeIcon icon={faEllipsisVertical} />
           </div>
         </div>
-        <div className="post-detail-content">
-          {highlightHandles(post.content)}
+        <div className="post-content">
+          {post.photos && (
+            <div
+              className="post-content-photos"
+              onClick={(e) => e.preventDefault()}
+            >
+              <PostImageCarousel photoPreviews={post.photos} />
+            </div>
+          )}
+          {post.content && (
+            <div className="post-content-text">
+              {highlightHandles(post.content)}
+            </div>
+          )}
+          {post.spots.length > 0 && (
+            <div className="post-content-spots">
+              <PostSpots selectedSpots={post.spots} />
+            </div>
+          )}
+          {post.spotlists.length > 0 && (
+            <div className="post-content-spotlists">
+              <PostSpotlists selectedSpotlists={post.spotlists} />
+            </div>
+          )}
         </div>
         <span className="post-detail-date">
           {formatPostTimestamp(post.createdAt)}

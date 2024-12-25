@@ -26,7 +26,7 @@ export default function AddNote({
         data: {
           note: note,
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${spotlistId}/spot/${spotId}/note`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}/spot/${spotId}/note`,
         withCredentials: true,
       });
 

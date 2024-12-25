@@ -113,3 +113,13 @@ export function formatPostTimestamp(timestamp) {
 
   return `${time} · ${month} ${day}, ${year}`;
 }
+
+export const getVisibilityDisplayName = (visibility) => {
+  const visibilityMap = {
+    private: "Private",
+    public: "Public",
+    "friends-only": "Friends only",
+  };
+
+  return visibilityMap[visibility] || "Unknown";
+};

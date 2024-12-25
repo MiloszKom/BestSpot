@@ -29,11 +29,11 @@ export const fetchFromDatabase = async (
       setAlsoSavedBy(res.data.data.friendsWhoFavourited);
     } else {
       console.log("No data found in the database, proceeding with API fetch.");
-      fetchFromApi(id, setPlaceDetails);
+      // fetchFromApi(id, setPlaceDetails);
     }
   } catch (err) {
     console.log("Error fetching from the database:", err);
-    fetchFromApi(id, setPlaceDetails);
+    // fetchFromApi(id, setPlaceDetails);
   }
 };
 
@@ -113,28 +113,42 @@ export const saveSpotToDatabse = async (placeDetails, setPlaceDetails) => {
     const formData = new FormData();
 
     if (placeDetails.photos && placeDetails.photos.length > 0) {
-      const photoPromises = placeDetails.photos.map(async (photoUrl, i) => {
-        let blob;
+      const photoUrl = placeDetails.photos[0]; // Get the first photo
 
+      try {
         const response = await fetch(photoUrl);
-        blob = await response.blob();
+        const blob = await response.blob();
 
         if (blob) {
-          const file = blobToFile(blob, `image-${i + 1}.jpg`);
+          const file = blobToFile(blob, "image-1.jpg");
           formData.append("photo", file);
         } else {
           console.error(`Failed to create blob for photo: ${photoUrl}`);
         }
-      });
-
-      await Promise.all(photoPromises);
+      } catch (error) {
+        console.error(`Error fetching photo: ${photoUrl}`, error);
+      }
     }
+
+    let city = null;
+    let country = null;
+
+    placeDetails.address_components.forEach((component) => {
+      if (component.types.includes("locality")) {
+        city = component.long_name;
+      }
+      if (component.types.includes("country")) {
+        country = component.long_name;
+      }
+    });
 
     formData.append("google_id", placeDetails._id);
     formData.append("name", placeDetails.name);
     formData.append("rating", placeDetails.rating);
     formData.append("user_ratings_total", placeDetails.user_ratings_total);
     formData.append("vicinity", placeDetails.vicinity);
+    formData.append("city", city);
+    formData.append("country", country);
     formData.append(
       "current_opening_hours",
       JSON.stringify(placeDetails.current_opening_hours)

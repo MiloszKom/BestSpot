@@ -40,6 +40,7 @@ const userRouter = require("./routes/userRoutes");
 const mapRouter = require("./routes/mapRoutes");
 const chatRouter = require("./routes/chatRoutes");
 const postRouter = require("./routes/postRoutes");
+const spotlistRouter = require("./routes/spotlistRoutes");
 
 app.use(express.json());
 
@@ -66,6 +67,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/maps", mapRouter);
 app.use("/api/v1/chats", chatRouter);
 app.use("/api/v1/posts", postRouter);
+app.use("/api/v1/spotlists", spotlistRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`));

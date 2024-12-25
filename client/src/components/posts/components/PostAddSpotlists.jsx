@@ -4,6 +4,8 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faList } from "@fortawesome/free-solid-svg-icons";
 
+import { getVisibilityDisplayName } from "./../../utils/helperFunctions";
+
 export default function PostAddSpotlists({
   setIsAddingSpotlists,
   setSelectedSpotlists,
@@ -19,16 +21,18 @@ export default function PostAddSpotlists({
 
   const handleSpotlistSelection = (spotlist) => {
     setPicketSpotlists((prevSelected) => {
-      const isAlreadySelected = prevSelected.some((s) => s.id === spotlist._id);
+      const isAlreadySelected = prevSelected.some(
+        (s) => s._id === spotlist._id
+      );
 
       if (isAlreadySelected) {
-        return prevSelected.filter((s) => s.id !== spotlist._id);
+        return prevSelected.filter((s) => s._id !== spotlist._id);
       }
 
       return [
         ...prevSelected,
         {
-          id: spotlist._id,
+          _id: spotlist._id,
           name: spotlist.name,
           visibility: spotlist.visibility,
           cover: spotlist.cover,
@@ -46,7 +50,7 @@ export default function PostAddSpotlists({
           headers: {
             "Content-Type": "application/json",
           },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist`,
+          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists`,
           withCredentials: true,
         });
         const filteredSpotlists = res.data.data.filter(
@@ -85,7 +89,7 @@ export default function PostAddSpotlists({
       <div className="post-add-spotlists-body">
         {spotlists.map((spotlist) => {
           const isSpotlistSelected = pickedSpotlists.some(
-            (s) => s.id === spotlist._id
+            (s) => s._id === spotlist._id
           );
 
           console.log(spotlist);
@@ -111,14 +115,14 @@ export default function PostAddSpotlists({
               <div className="post-spotlist-info">
                 <div className="post-spotlist-title">{spotlist.name}</div>
                 <div className="post-spotlist-visibility">
-                  {spotlist.visibility}
+                  {getVisibilityDisplayName(spotlist.visibility)}
                 </div>
                 <div className="post-spotlist-description">No Description</div>
               </div>
               <div className="post-spotlist-check">
                 <input
                   type="checkbox"
-                  checked={pickedSpotlists.some((s) => s.id === spotlist._id)}
+                  checked={pickedSpotlists.some((s) => s._id === spotlist._id)}
                   onChange={() => handleSpotlistSelection(spotlist)}
                 />
               </div>
@@ -126,7 +130,6 @@ export default function PostAddSpotlists({
           );
         })}
       </div>
-      {console.log(pickedSpotlists)}
 
       <div className="spot-counter">
         <FontAwesomeIcon icon={faList} />

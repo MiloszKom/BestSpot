@@ -26,7 +26,7 @@ export default function EditSpotlist({ editingSpotlist, setEditingSpotlist }) {
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${editingSpotlist._id}`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${editingSpotlist._id}`,
         data: {
           nameIsChanged: editingSpotlist.name !== name,
           newName: name,

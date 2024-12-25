@@ -25,7 +25,7 @@ const postSchema = new mongoose.Schema(
     spotlists: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
+        ref: "Spotlist",
       },
     ],
     photos: {

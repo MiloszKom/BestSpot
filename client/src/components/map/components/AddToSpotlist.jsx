@@ -29,11 +29,12 @@ export default function AddToSpotlist({
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists`,
         withCredentials: true,
       });
 
       console.log(res);
+      console.log(res.data.data);
       setSpotlists(res.data.data);
     } catch (err) {
       console.log(err);
@@ -77,7 +78,7 @@ export default function AddToSpotlist({
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${selectedSpotlist}`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${selectedSpotlist}`,
         data: {
           spotId,
         },
@@ -86,7 +87,7 @@ export default function AddToSpotlist({
 
       console.log(res);
       setIsFavourite(true);
-      setSpotlistId(res.data.data.spotlistId);
+      setSpotlistId(res.data.data._id);
       setAddingToSpotlist(false);
       showAlert(res.data.message, res.data.status);
     } catch (err) {

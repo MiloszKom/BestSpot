@@ -15,7 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faImage } from "@fortawesome/free-regular-svg-icons";
 import PostPrivacy from "./PostPrivacy";
-import PostTagging from "./PostTagging";
+import PostTagging from "./components/PostTagging";
 
 import PostImageCarousel from "./components/PostImageCarousel";
 import PostAddSpots from "./components/PostAddSpots";
@@ -27,7 +27,7 @@ export default function PostCreate({ setCreatingPost }) {
   const [settingPrivacy, setSettingPrivacy] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [postVisibility, setPostVisibility] = useState("Public");
-  const [isTagging, setIsTagging] = useState(false);
+  const [isTagging, setIsTagging] = useState(true);
   const [taggedWord, setTaggedWord] = useState("");
 
   const [selectedPhotos, setSelectedPhotos] = useState([]);
@@ -103,11 +103,11 @@ export default function PostCreate({ setCreatingPost }) {
       });
 
       selectedSpotlists.forEach((spotlist) => {
-        formData.append("spotlists", spotlist);
+        formData.append("spotlists", spotlist._id);
       });
 
       selectedSpots.forEach((spot) => {
-        formData.append("spots", spot.id);
+        formData.append("spots", spot._id);
       });
 
       const res = await axios({
@@ -176,10 +176,12 @@ export default function PostCreate({ setCreatingPost }) {
               setSelectedSpots={setSelectedSpots}
             />
           )}
-          <PostSpotlists
-            selectedSpotlists={selectedSpotlists}
-            setSelectedSpotlists={setSelectedSpotlists}
-          />
+          {selectedSpotlists.length > 0 && (
+            <PostSpotlists
+              selectedSpotlists={selectedSpotlists}
+              setSelectedSpotlists={setSelectedSpotlists}
+            />
+          )}
           {isTagging && (
             <PostTagging
               taggedWord={taggedWord}

@@ -1,15 +1,19 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
 import { AlertContext } from "../context/AlertContext";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEllipsisVertical,
   faTrash,
   faPen,
 } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
 
 import EditSpotlist from "./components/EditSpotlist";
+
+import { getVisibilityDisplayName } from "./../utils/helperFunctions";
 
 export default function Spotlists() {
   const [spotlists, setSpotlists] = useState([]);
@@ -25,7 +29,7 @@ export default function Spotlists() {
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists`,
         withCredentials: true,
       });
 
@@ -50,16 +54,6 @@ export default function Spotlists() {
     setActivePopup(null);
   };
 
-  const getVisibilityDisplayName = (visibility) => {
-    const visibilityMap = {
-      private: "Private",
-      public: "Public",
-      "friends-only": "Friends only",
-    };
-
-    return visibilityMap[visibility] || "Unknown";
-  };
-
   const deleteSpotlist = async (spotlistId) => {
     try {
       const res = await axios({
@@ -67,7 +61,7 @@ export default function Spotlists() {
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${spotlistId}`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}`,
         withCredentials: true,
       });
       showAlert(res.data.message, res.data.status);

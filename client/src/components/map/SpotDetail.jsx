@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { AlertContext } from "../context/AlertContext";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
@@ -33,7 +33,6 @@ import axios from "axios";
 
 export default function SpotDetail({ setShowNavbar }) {
   const [imageError, setImageError] = useState(false);
-  const [imgMargin, setImgMargin] = useState(0);
 
   const [showHours, setShowHours] = useState(false);
 
@@ -43,13 +42,13 @@ export default function SpotDetail({ setShowNavbar }) {
   const [spotlistId, setSpotlistId] = useState(null);
   const [alsoSavedBy, setAlsoSavedBy] = useState(null);
 
-  // const [spotlist, setSpotlist] = useState([])
   const [addingNote, setAddingNote] = useState(false);
   const [addingToSpotlist, setAddingToSpotlist] = useState(false);
   const [creatingNewSpotlist, setCreatingNewSpotlist] = useState(false);
 
   const { showAlert } = useContext(AlertContext);
   const params = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setShowNavbar(false);
@@ -70,19 +69,6 @@ export default function SpotDetail({ setShowNavbar }) {
     );
   }, [params.id]);
 
-  const nextImg = (direction) => {
-    if (direction === "right") {
-      setImgMargin((imgMargin) => {
-        return imgMargin + 100;
-      });
-    }
-    if (direction === "left") {
-      setImgMargin((imgMargin) => {
-        return imgMargin - 100;
-      });
-    }
-  };
-
   const toggleHours = () => {
     setShowHours(!showHours);
   };
@@ -92,15 +78,13 @@ export default function SpotDetail({ setShowNavbar }) {
   };
 
   const removeFromSpotlist = async () => {
-    console.log(spotlistId);
-    console.log(placeDetails._id);
     try {
       const res = await axios({
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${spotlistId}/spot/${placeDetails._id}`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}/spot/${placeDetails._id}`,
         withCredentials: true,
       });
       console.log(res);
@@ -114,63 +98,24 @@ export default function SpotDetail({ setShowNavbar }) {
 
   if (!placeDetails) return <div className="loader"></div>;
 
-  const photoUrl = `http://${process.env.REACT_APP_SERVER}:5000/uploads/images/`;
-
   return (
     <>
       <div className="spot-detail">
         <div className="spot-detail-wrapper">
-          <div
-            className="spot-detail-carousel"
-            style={{ transform: `translateX(-${imgMargin}%)` }}
-          >
-            {placeDetails.photos ? (
-              placeDetails.photos.map((photo) => (
-                <div
-                  className="spot-detail-img"
-                  style={{
-                    backgroundImage: `url(${photoUrl}${photo})`,
-                  }}
-                ></div>
-              ))
-            ) : (
-              <div
-                className="spot-detail-img"
-                style={{
-                  backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/no-img-found.jpg)`,
-                }}
-              ></div>
-            )}
+          <div className="spot-detail-carousel">
+            <div
+              className="spot-detail-img"
+              style={{
+                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${placeDetails.photo})`,
+              }}
+            ></div>
           </div>
-          <Link
-            to=".."
-            relative="path"
+          <div
+            onClick={() => navigate(-1)}
             className="spot-detail-img-btn spot-detail-btn"
           >
             <FontAwesomeIcon icon={faChevronLeft} />
-          </Link>
-          {placeDetails.photos && placeDetails.photos.length > 1 && (
-            <div className="spot-detail-controlls">
-              <div
-                className={`spot-detail-btn ${
-                  imgMargin === 0 ? "disabled" : ""
-                }`}
-                onClick={() => nextImg("left")}
-              >
-                <FontAwesomeIcon icon={faArrowLeft} />
-              </div>
-              <div
-                className={`spot-detail-btn ${
-                  imgMargin === 100 * placeDetails.photos.length - 100
-                    ? "disabled"
-                    : ""
-                }`}
-                onClick={() => nextImg("right")}
-              >
-                <FontAwesomeIcon icon={faArrowRight} />
-              </div>
-            </div>
-          )}
+          </div>
         </div>
         <div className="padding-container">
           <h2 className="spot-detail-name">{placeDetails.name}</h2>
@@ -274,9 +219,6 @@ export default function SpotDetail({ setShowNavbar }) {
               )}
             </div>
           )}
-
-          {console.log(alsoSavedBy)}
-
           {alsoSavedBy?.length > 0 && (
             <>
               <div className="spot-detail-info-el">

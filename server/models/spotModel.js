@@ -6,9 +6,9 @@ const spotSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  photos: {
-    type: [String],
-    default: undefined,
+  photo: {
+    type: String,
+    default: "no-img-found.jpg",
   },
   name: {
     type: String,
@@ -22,6 +22,12 @@ const spotSchema = new mongoose.Schema({
     default: 0,
   },
   vicinity: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
+  city: {
     type: String,
   },
   current_opening_hours: {
@@ -86,7 +92,15 @@ const spotSchema = new mongoose.Schema({
   },
   favouritedBy: [
     {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      note: {
+        type: String,
+        default: "",
+      },
+      _id: false,
     },
   ],
 });

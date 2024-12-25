@@ -25,11 +25,12 @@ export default function PostAddSpots({
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${spotlistId}`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}`,
         withCredentials: true,
       });
-      setSpots(res.data.data);
+      setSpots(res.data.data.spots);
       setIsSpotlistPicked(true);
+      console.log(res);
     } catch (err) {
       console.log(err);
     }
@@ -37,20 +38,21 @@ export default function PostAddSpots({
 
   const handleSpotSelection = (spot) => {
     setPickedSpots((prevSelected) => {
-      const isAlreadySelected = prevSelected.some(
-        (s) => s.id === spot.spot._id
-      );
+      const isAlreadySelected = prevSelected.some((s) => s._id === spot._id);
 
       if (isAlreadySelected) {
-        return prevSelected.filter((s) => s.id !== spot.spot._id);
+        return prevSelected.filter((s) => s._id !== spot._id);
       }
 
       return [
         ...prevSelected,
         {
-          id: spot.spot._id,
-          photo: spot.spot.photos[0],
-          name: spot.spot.name,
+          _id: spot._id,
+          google_id: spot.google_id,
+          photo: spot.photo,
+          name: spot.name,
+          city: spot.city,
+          country: spot.country,
         },
       ];
     });
@@ -62,14 +64,14 @@ export default function PostAddSpots({
   };
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchSpotlists = async () => {
       try {
         const res = await axios({
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist`,
+          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists`,
           withCredentials: true,
         });
         const filteredSpotlists = res.data.data.filter(
@@ -82,7 +84,7 @@ export default function PostAddSpots({
       }
     };
 
-    fetchPosts();
+    fetchSpotlists();
   }, []);
 
   return (
@@ -141,7 +143,7 @@ export default function PostAddSpots({
             </div>
             {spots.map((spot) => {
               const isSpotSelected = pickedSpots.some(
-                (s) => s.id === spot.spot._id
+                (s) => s._id === spot._id
               );
 
               return (
@@ -151,20 +153,20 @@ export default function PostAddSpots({
                       ? "disabled"
                       : ""
                   }`}
-                  key={spot.spot._id}
+                  key={spot._id}
                 >
                   <input
                     type="checkbox"
-                    checked={pickedSpots.some((s) => s.id === spot.spot._id)}
+                    checked={pickedSpots.some((s) => s._id === spot._id)}
                     onChange={() => handleSpotSelection(spot)}
                   />
                   <div
                     className="spot-el-img"
                     style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.spot.photos[0]}`,
+                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo}`,
                     }}
                   />
-                  <div className="spot-el-info">{spot.spot.name}</div>
+                  <div className="spot-el-info">{spot.name}</div>
                 </label>
               );
             })}

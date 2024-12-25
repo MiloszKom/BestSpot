@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot, faTrashCan } from "@fortawesome/free-solid-svg-icons";
@@ -6,7 +7,7 @@ import { faLocationDot, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 export default function PostSpots({ selectedSpots, setSelectedSpots }) {
   const removeSpot = (spotId) => {
     setSelectedSpots((prevSelectedSpots) =>
-      prevSelectedSpots.filter((spot) => spot.id !== spotId)
+      prevSelectedSpots.filter((spot) => spot._id !== spotId)
     );
   };
 
@@ -14,28 +15,32 @@ export default function PostSpots({ selectedSpots, setSelectedSpots }) {
     <div className="post-spots-container">
       {selectedSpots.map((spot) => {
         return (
-          <div
+          <Link
+            to={`/spot/${spot.google_id}`}
             className="spot-el"
             style={{
               backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
             }}
+            key={spot._id}
           >
             <div className="spot-el-info">
               <div className="spot-el-info-upper">
                 <div className="spot-el-location">
                   <FontAwesomeIcon icon={faLocationDot} />
-                  Wroclaw, Poland la la la la
+                  {spot.city}, {spot.country}
                 </div>
-                <div
-                  className="spot-el-delete"
-                  onClick={() => removeSpot(spot.id)}
-                >
-                  <FontAwesomeIcon icon={faTrashCan} />
-                </div>
+                {setSelectedSpots && (
+                  <div
+                    className="spot-el-delete"
+                    onClick={() => removeSpot(spot._id)}
+                  >
+                    <FontAwesomeIcon icon={faTrashCan} />
+                  </div>
+                )}
               </div>
               <div>{spot.name}</div>
             </div>
-          </div>
+          </Link>
         );
       })}
     </div>

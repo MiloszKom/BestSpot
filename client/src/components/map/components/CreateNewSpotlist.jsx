@@ -29,7 +29,7 @@ export default function CreateNewSpotlist({
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist`,
+        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists`,
         data: {
           name: title,
           spotId,
@@ -41,7 +41,7 @@ export default function CreateNewSpotlist({
       console.log(res);
       setCreatingNewSpotlist(false);
       setIsFavourite(true);
-      setSpotlistId(res.data.data.spotlistId);
+      setSpotlistId(res.data.data._id);
       showAlert(res.data.message, res.data.status);
     } catch (err) {
       showAlert(err.response.data.message, err.response.data.status);

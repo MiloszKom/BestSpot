@@ -8,7 +8,7 @@ router
   .get(authController.protect, spotController.getAllUserSpot)
   .post(
     authController.protect,
-    spotController.uploadTourImages,
+    spotController.uploadTourImage,
     spotController.adjustUserPhoto,
     spotController.createSpot
   );

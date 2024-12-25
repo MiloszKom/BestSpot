@@ -57,24 +57,7 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
-  spotlists: [
-    {
-      name: { type: String, required: true },
-      visibility: { type: String, required: true },
-      cover: { type: String, default: "no-img-found.jpg" },
-      spots: [
-        {
-          spot: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Spot",
-            required: true,
-          },
-          note: { type: String, default: "" },
-          _id: false,
-        },
-      ],
-    },
-  ],
+  spotlists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Spotlist" }],
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

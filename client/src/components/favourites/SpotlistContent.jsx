@@ -15,12 +15,12 @@ export default function SpotlistContent() {
           headers: {
             "Content-Type": "application/json",
           },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/spotlist/${spotlistId}`,
+          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}`,
           withCredentials: true,
         });
 
-        console.log(res.data.data);
-        setSpots(res.data.data);
+        console.log(res.data.data.spots);
+        setSpots(res.data.data.spots);
       } catch (err) {
         console.log(err);
       }
@@ -36,17 +36,17 @@ export default function SpotlistContent() {
         {spots.length > 0 ? (
           spots.map((spot) => (
             <Link
-              to={spot.spot.google_id}
+              to={spot.google_id}
               className="fav-el"
-              key={spot.spot._id}
+              key={spot._id}
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.spot.photos[0]})`,
+                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
               }}
             >
               <div className="fav-el-info">
-                <div className="fav-el-info-name">{spot.spot.name}</div>
+                <div className="fav-el-info-name">{spot.name}</div>
                 <div className="fav-el-info-details">
-                  {spot.spot.rating} ({spot.spot.user_ratings_total})
+                  {spot.rating} ({spot.user_ratings_total})
                 </div>
               </div>
             </Link>
