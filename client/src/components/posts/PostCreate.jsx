@@ -1,4 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import { AlertContext } from "../context/AlertContext";
@@ -10,7 +11,6 @@ import {
   faEarthAmericas,
   faList,
   faLocationDot,
-  faTrashCan,
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { faImage } from "@fortawesome/free-regular-svg-icons";
@@ -27,7 +27,7 @@ export default function PostCreate({ setCreatingPost }) {
   const [settingPrivacy, setSettingPrivacy] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [postVisibility, setPostVisibility] = useState("Public");
-  const [isTagging, setIsTagging] = useState(true);
+  const [isTagging, setIsTagging] = useState(false);
   const [taggedWord, setTaggedWord] = useState("");
 
   const [selectedPhotos, setSelectedPhotos] = useState([]);
@@ -41,6 +41,8 @@ export default function PostCreate({ setCreatingPost }) {
 
   const { showAlert } = useContext(AlertContext);
   const { userData } = useContext(AuthContext);
+
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const content = e.target.value;
@@ -120,7 +122,7 @@ export default function PostCreate({ setCreatingPost }) {
         withCredentials: true,
       });
 
-      setCreatingPost(false);
+      navigate("/home");
       showAlert(res.data.message, res.data.status);
     } catch (err) {
       console.log(err);
@@ -131,10 +133,9 @@ export default function PostCreate({ setCreatingPost }) {
   return (
     <div className="post-create">
       <div className="post-create-header">
-        <FontAwesomeIcon
-          icon={faArrowLeft}
-          onClick={() => setCreatingPost(false)}
-        />
+        <Link to="/home" className="svg-wrapper">
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </Link>
         <span>Create a post</span>
       </div>
       <div className="post-create-body">
@@ -145,15 +146,23 @@ export default function PostCreate({ setCreatingPost }) {
           }}
         ></div>
         <span>{userData.name}</span>
-        <div
-          className="post-create-privacy"
-          onClick={() => setSettingPrivacy(true)}
-        >
-          <span>{postVisibility}</span>
-          {postVisibility === "Public" ? (
-            <FontAwesomeIcon icon={faEarthAmericas} />
-          ) : (
-            <FontAwesomeIcon icon={faUserGroup} />
+        <div className="post-privacy-control">
+          <div
+            className="post-create-privacy"
+            onClick={() => setSettingPrivacy(true)}
+          >
+            <span>{postVisibility}</span>
+            {postVisibility === "Public" ? (
+              <FontAwesomeIcon icon={faEarthAmericas} />
+            ) : (
+              <FontAwesomeIcon icon={faUserGroup} />
+            )}
+          </div>
+          {settingPrivacy && (
+            <PostPrivacy
+              setSettingPrivacy={setSettingPrivacy}
+              setPostVisibility={setPostVisibility}
+            />
           )}
         </div>
         <div className="post-create-input-wrapper">
@@ -232,16 +241,6 @@ export default function PostCreate({ setCreatingPost }) {
         Create Post
       </button>
 
-      {settingPrivacy && (
-        <div>
-          <PostPrivacy
-            setSettingPrivacy={setSettingPrivacy}
-            setPostVisibility={setPostVisibility}
-          />
-          <div className="overlay"></div>
-        </div>
-      )}
-
       {isAddingSpots && (
         <PostAddSpots
           setIsAddingSpots={setIsAddingSpots}
@@ -255,6 +254,13 @@ export default function PostCreate({ setCreatingPost }) {
           setIsAddingSpotlists={setIsAddingSpotlists}
           setSelectedSpotlists={setSelectedSpotlists}
           selectedSpotlists={selectedSpotlists}
+        />
+      )}
+
+      {settingPrivacy && (
+        <div
+          className="privacy-overlay"
+          onClick={() => setSettingPrivacy(false)}
         />
       )}
     </div>

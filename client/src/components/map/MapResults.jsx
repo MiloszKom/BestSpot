@@ -13,13 +13,11 @@ export default function MapResults({
   moreDetails,
   location,
   highlightedMarker,
-  setShowNavbar,
 }) {
   const results = useContext(ResultsContext);
 
   const deleteResults = () => {
     results.deleteResults();
-    setShowNavbar(true);
   };
 
   const searchResults = points;

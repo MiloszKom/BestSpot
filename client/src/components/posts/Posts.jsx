@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { AlertContext } from "../context/AlertContext";
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -19,8 +19,6 @@ import {
   faHeart as solidHeart,
 } from "@fortawesome/free-solid-svg-icons";
 
-import PostCreate from "./PostCreate";
-
 import { formatTimeAgo } from "../utils/helperFunctions";
 import { togglePostLike } from "../utils/postUtils";
 import ShowOptions from "./ShowOptions";
@@ -33,12 +31,10 @@ export default function Posts() {
   const { showAlert } = useContext(AlertContext);
   const navigate = useNavigate();
 
-  const [creatingPost, setCreatingPost] = useState(false);
-  const [showingOptions, setShowingOptions] = useState(false);
-  const [selectedPostId, setSelectedPostId] = useState(null);
   const [posts, setPosts] = useState(null);
+  const [options, setOptions] = useState(false);
 
-  const [entityType, setEntityType] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -70,29 +66,22 @@ export default function Posts() {
 
   return (
     <div className="posts-container">
-      <header className="posts-header">
-        <h3>BestSpot</h3>
-      </header>
-
       <main className="posts-content">
-        <div className="post-add-box">
+        <Link to="create-post" className="post-add-box">
           <div
             className="profile-icon"
             style={{
               backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData.photo})`,
             }}
           ></div>
-          <div className="post-add-div" onClick={() => setCreatingPost(true)}>
-            Add a post here
-          </div>
-        </div>
+          <div className="post-add-div">Add a post here</div>
+        </Link>
 
         {posts.map((post) => {
           const isLiked = post.likes.includes(userData._id);
           const postOptions =
             post.author._id === userData._id ? ["delete"] : ["report"];
 
-          console.log(post);
           return (
             <Link
               to={`/${post.author.handle}/${post._id}`}
@@ -126,17 +115,30 @@ export default function Posts() {
                       · {formatTimeAgo(post.createdAt)}
                     </span>
                   </div>
-                  <button
-                    className="svg-wrapper"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowingOptions(postOptions);
-                      setSelectedPostId(post._id);
-                      setEntityType("post");
-                    }}
+                  <div
+                    className="post-options"
+                    onClick={(e) => e.preventDefault()}
                   >
-                    <FontAwesomeIcon icon={faEllipsisVertical} />
-                  </button>
+                    <button
+                      className="svg-wrapper"
+                      onClick={() =>
+                        setOptions({
+                          postId: post._id,
+                          aviableOptions: postOptions,
+                          entity: "post",
+                        })
+                      }
+                    >
+                      <FontAwesomeIcon icon={faEllipsisVertical} />
+                    </button>
+                    {options.postId === post._id && (
+                      <ShowOptions
+                        options={options}
+                        setOptions={setOptions}
+                        setData={setPosts}
+                      />
+                    )}
+                  </div>
                 </div>
                 <div className="post-content">
                   {post.photos && (
@@ -209,18 +211,16 @@ export default function Posts() {
             </Link>
           );
         })}
-        {creatingPost && <PostCreate setCreatingPost={setCreatingPost} />}
-        {showingOptions && (
-          <div>
-            <ShowOptions
-              showingOptions={showingOptions}
-              setShowingOptions={setShowingOptions}
-              postId={selectedPostId}
-              setData={setPosts}
-              entityType={entityType}
-            />
-            <div className="overlay"></div>
-          </div>
+        {location.pathname === "/home/create-post" && <Outlet />}
+        {location.pathname === "/home/create-post" && (
+          <div
+            className="post-create-overlay"
+            onClick={() => navigate("/home")}
+          ></div>
+        )}
+
+        {options && (
+          <div className="options-overlay" onClick={() => setOptions(false)} />
         )}
       </main>
     </div>

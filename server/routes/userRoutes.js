@@ -36,6 +36,14 @@ router.get(
   userController.searchHandles
 );
 
+router.get("/friends", authController.protect, userController.getFriends);
+
+router.get(
+  "/friends/requests",
+  authController.protect,
+  userController.getRequests
+);
+
 router
   .route("/")
   .get(userController.getAllUsers)

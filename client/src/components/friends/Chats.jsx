@@ -1,48 +1,43 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 import { formatTime } from "../utils/helperFunctions";
 
-import MobileMenu from "./components/MobileMenu";
 import axios from "axios";
 
-export default function Chats({ setShowNavbar }) {
-  useEffect(() => {
-    setShowNavbar(true);
-  }, [setShowNavbar]);
-
-  const [mobileMenu, setMobileMenu] = useState(false);
+export default function Chats() {
   const [recentChats, setRecentChats] = useState([]);
 
   const auth = useContext(AuthContext);
   const socket = useContext(SocketContext);
 
-  const showMenu = () => {
-    setMobileMenu(true);
-  };
+  const location = useLocation();
+  const pathSegment = location.pathname.split("/")[1];
 
   useEffect(() => {
+    console.log("fetching chats");
     const fetchChats = async () => {
       try {
         const res = await axios({
           method: "GET",
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/chats/approved-chats`,
+          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/chats/${
+            pathSegment === "messages" ? "approved" : "approved"
+          }-chats`,
           withCredentials: true,
         });
         setRecentChats(res.data.data);
-        console.log(res);
       } catch (err) {
         console.log(err);
       }
     };
     fetchChats();
-  }, []);
+  }, [pathSegment]);
 
   useEffect(() => {
     if (!socket.socket) return;
@@ -54,7 +49,8 @@ export default function Chats({ setShowNavbar }) {
             return {
               ...chat,
               lastMessage: message,
-              unreadMessages: (chat.unreadMessages || 0) + 1,
+              unreadMessages:
+                (chat.unreadMessages || 0) + (message.isInChatRoom ? 0 : 1),
             };
           }
           return chat;
@@ -63,6 +59,7 @@ export default function Chats({ setShowNavbar }) {
     });
 
     socket.socket.on("user-is-typing", (userId) => {
+      console.log("user-is-typing");
       setRecentChats((prevChats) => {
         return prevChats.map((chat) => {
           if (chat.otherParticipantData._id === userId) {
@@ -99,24 +96,61 @@ export default function Chats({ setShowNavbar }) {
       );
     });
 
+    socket.socket.on("update-notifications", (otherParticipantId) => {
+      if (!recentChats) return;
+      setRecentChats((prevChats) => {
+        return prevChats.map((chat) => {
+          if (chat.otherParticipantData._id === otherParticipantId) {
+            return {
+              ...chat,
+              lastMessage: {
+                ...chat.lastMessage,
+                isRead: true,
+              },
+              unreadMessages: 0,
+            };
+          }
+          return chat;
+        });
+      });
+    });
+
     return () => {};
   }, [socket.socket]);
 
   const todayDate = formatTime(new Date());
   if (!auth.userData || !recentChats) return <div className="loader"></div>;
   return (
-    <>
-      <div className="messages-container">
-        <div className="messages-header">
-          <div className="messages-menu" onClick={showMenu}>
-            <FontAwesomeIcon icon={faBars} />
-          </div>
-          <h2>Chats</h2>
-        </div>
+    <div className="messages-and-chat-container">
+      <div
+        className={`messages-container ${
+          ["/messages", "/requests"].includes(location.pathname)
+            ? "visible"
+            : "hidden"
+        }`}
+      >
         <Link to="search-bar" className="messages-searchbar">
           <FontAwesomeIcon icon={faMagnifyingGlass} />
           <span>Search</span>
         </Link>
+        <div className="messages-header">
+          <NavLink
+            to="/messages"
+            className={({ isActive }) =>
+              isActive ? "messages-header-el active" : "messages-header-el"
+            }
+          >
+            Messages
+          </NavLink>
+          <NavLink
+            to="/requests"
+            className={({ isActive }) =>
+              isActive ? "messages-header-el active" : "messages-header-el"
+            }
+          >
+            Requests
+          </NavLink>
+        </div>
         <div className="messages-chats">
           {recentChats
             .slice()
@@ -191,7 +225,17 @@ export default function Chats({ setShowNavbar }) {
             })}
         </div>
       </div>
-      {mobileMenu && <MobileMenu setMobileMenu={setMobileMenu} />}
-    </>
+      <div
+        className={`chat-section ${
+          ["/messages", "/requests"].includes(location.pathname) ? "hidden" : ""
+        }`}
+      >
+        {["/messages", "/requests"].includes(location.pathname) ? (
+          <div className="start-chat">Select a contact to start chatting!</div>
+        ) : (
+          <Outlet />
+        )}
+      </div>
+    </div>
   );
 }

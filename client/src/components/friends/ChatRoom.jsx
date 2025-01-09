@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 
 import { formatTime, compareTime } from "../utils/helperFunctions";
@@ -13,7 +13,7 @@ import {
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function ChatRoom({ setShowNavbar }) {
+export default function ChatRoom() {
   const [chatIsApproved, setChatIsApproved] = useState({});
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -29,14 +29,8 @@ export default function ChatRoom({ setShowNavbar }) {
   const socket = useContext(SocketContext);
 
   const params = useParams();
-  const navigate = useNavigate();
-
-  const handleGoBack = () => {
-    navigate(-1);
-  };
 
   useEffect(() => {
-    setShowNavbar(false);
     const getChat = async () => {
       try {
         const res = await axios({
@@ -88,7 +82,7 @@ export default function ChatRoom({ setShowNavbar }) {
 
     if (!auth.userData) return;
     getChat();
-  }, [auth.userData]);
+  }, [auth.userData, params.id]);
 
   const leaveChatRoom = () => {
     if (!socket.socket) return;
@@ -100,6 +94,7 @@ export default function ChatRoom({ setShowNavbar }) {
     socket.socket.emit("enter-chat-room", room);
 
     socket.socket.on("receive-message", (message, approvedStatus) => {
+      console.log("recieve-message");
       setMessages((prevMessages) => {
         return [message, ...prevMessages.filter((msg) => !msg.typingBubble)];
       });
@@ -110,6 +105,7 @@ export default function ChatRoom({ setShowNavbar }) {
     });
 
     socket.socket.on("reciever-online", () => {
+      console.log("reciever-online");
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         updatedMessages[0].isRead = true;
@@ -118,24 +114,27 @@ export default function ChatRoom({ setShowNavbar }) {
     });
 
     socket.socket.on("update-read-state", (newMessages) => {
+      console.log("update-read-state");
       setMessages(newMessages);
     });
 
     socket.socket.on("user-is-typing", () => {
+      console.log("user-is-typing");
       setIsTyping(true);
     });
 
     socket.socket.on("user-no-longer-typing", () => {
+      console.log("user-no-longer-typing");
       setIsTyping(false);
     });
 
     return () => {
       leaveChatRoom();
-      socket.socket.off("receive-message");
+      // socket.socket.off("receive-message");
       socket.socket.off("reciever-online");
       socket.socket.off("update-read-state");
-      socket.socket.off("user-is-typing");
-      socket.socket.off("user-no-longer-typing");
+      // socket.socket.off("user-is-typing");
+      // socket.socket.off("user-no-longer-typing");
     };
   }, [chattingWithUser, socket]);
 
@@ -283,7 +282,11 @@ export default function ChatRoom({ setShowNavbar }) {
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <FontAwesomeIcon icon={faArrowLeft} onClick={handleGoBack} />
+        <Link to="/messages">
+          <div className="svg-wrapper">
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </div>
+        </Link>
         <div
           className="chat-header-img"
           style={{

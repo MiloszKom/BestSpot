@@ -35,7 +35,7 @@ exports.createSpotlist = catchAsync(async (req, res) => {
   const newSpotlist = new Spotlist({
     name,
     visibility,
-    cover: spot.photo[0],
+    cover: spot.photo,
     spots: spot._id,
     author: user._id,
   });

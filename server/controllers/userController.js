@@ -56,8 +56,6 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log(req.file);
-
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
@@ -141,6 +139,30 @@ exports.deleteUser = (req, res) => {
 };
 
 // FRIENDS APIS
+
+exports.getFriends = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id)
+    .select("friends")
+    .populate("friends", "_id name handle photo isOnline");
+
+  const friends = user.friends;
+
+  res.status(200).json({
+    status: "success",
+    data: friends,
+  });
+});
+
+exports.getRequests = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id)
+    .select("pendingRequests")
+    .populate("pendingRequests", "_id name handle photo");
+
+  res.status(200).json({
+    status: "success",
+    data: user,
+  });
+});
 
 exports.sendFriendRequest = catchAsync(async (req, res) => {
   const user = await User.findById(req.user.id);

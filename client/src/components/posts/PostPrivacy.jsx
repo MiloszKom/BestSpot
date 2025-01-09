@@ -37,7 +37,13 @@ export default function PostPrivacy({ setSettingPrivacy, setPostVisibility }) {
         </div>
         <span>Friends</span>
       </div>
-      <button onClick={() => setSettingPrivacy(false)}>Cancel</button>
+      <button
+        onClick={() => {
+          setSettingPrivacy(false);
+        }}
+      >
+        Cancel
+      </button>
     </div>
   );
 }

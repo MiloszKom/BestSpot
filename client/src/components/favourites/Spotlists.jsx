@@ -1,15 +1,13 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-import { AlertContext } from "../context/AlertContext";
+import ShowOptions from "../posts/ShowOptions";
+
+// import { AlertContext } from "../context/AlertContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEllipsisVertical,
-  faTrash,
-  faPen,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 import EditSpotlist from "./components/EditSpotlist";
 
@@ -17,10 +15,9 @@ import { getVisibilityDisplayName } from "./../utils/helperFunctions";
 
 export default function Spotlists() {
   const [spotlists, setSpotlists] = useState([]);
-  const [activePopup, setActivePopup] = useState(null);
   const [editingSpotlist, setEditingSpotlist] = useState(false);
-  const popupRefs = useRef({});
-  const { showAlert } = useContext(AlertContext);
+
+  const [options, setOptions] = useState(null);
 
   const fetchSpotlists = async () => {
     try {
@@ -44,92 +41,67 @@ export default function Spotlists() {
     fetchSpotlists();
   }, []);
 
-  const togglePopup = (id) => {
-    setActivePopup((prevPopup) => (prevPopup === id ? null : id));
-  };
-
-  const editSpotlist = (spotlist) => {
-    console.log("Spotlist is being edited :", spotlist);
-    setEditingSpotlist(spotlist);
-    setActivePopup(null);
-  };
-
-  const deleteSpotlist = async (spotlistId) => {
-    try {
-      const res = await axios({
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}`,
-        withCredentials: true,
-      });
-      showAlert(res.data.message, res.data.status);
-      setSpotlists((prevSpotlists) =>
-        prevSpotlists.filter((spotlist) => spotlist._id !== spotlistId)
-      );
-    } catch (err) {
-      showAlert(err.response.data.message, err.response.data.status);
-      console.log(err);
-    }
-  };
-
   return (
     <div className="spotlists">
-      <div className="spotlists-header">Spotlists</div>
+      <div className="spotlists-header">Your Spotlists</div>
       <div className="spotlists-wrapper">
-        {spotlists.map((item) => (
-          <div className="spotlists-el" key={item._id}>
+        {spotlists.map((spotlist) => {
+          return (
             <Link
-              className="spotlists-thumbnail"
-              to={item.name}
-              style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${item.cover})`,
-              }}
-              onClick={() => {
-                localStorage.setItem("spotlistId", item._id);
-                localStorage.setItem("spotlistName", item.name);
-              }}
+              to={`list/${spotlist._id}`}
+              className="spotlists-el"
+              key={spotlist._id}
             >
-              <span className="spotlists-spot-count">
-                {item.spots.length} spots
-              </span>
-            </Link>
-            <div className="spotlists-info">
-              <span className="spotlists-title">{item.name}</span>
-              <p className="spotlists-details">
-                {getVisibilityDisplayName(item.visibility)}
-              </p>
-            </div>
-            <button
-              className="spotlists-menu-button"
-              onClick={() => togglePopup(item._id)}
-            >
-              <FontAwesomeIcon icon={faEllipsisVertical} />
-            </button>
-
-            {activePopup === item._id && (
               <div
-                className="spotlists-options-popup"
-                ref={(el) => (popupRefs.current[item._id] = el)}
+                className="spotlists-thumbnail"
+                style={{
+                  backgroundImage: `url(http://${
+                    process.env.REACT_APP_SERVER
+                  }:5000/uploads/images/${
+                    spotlist.cover === "s" ? "no-img-found.jpg" : spotlist.cover
+                  })`,
+                }}
               >
-                <button
-                  className="options-item"
-                  onClick={() => deleteSpotlist(item._id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} /> Delete
-                </button>
-                <button
-                  className="options-item"
-                  onClick={() => editSpotlist(item)}
-                >
-                  <FontAwesomeIcon icon={faPen} /> Edit
-                </button>
+                <span className="spotlists-spot-count">
+                  {spotlist.spots.length} spots
+                </span>
               </div>
-            )}
-          </div>
-        ))}
+              <div className="spotlists-info">
+                <span className="spotlists-title">{spotlist.name}</span>
+                <p className="spotlists-details">
+                  {getVisibilityDisplayName(spotlist.visibility)}
+                </p>
+                <p className="spotlists-description">Description</p>
+              </div>
+              <div className="spotlists-menu">
+                <button
+                  onClick={() =>
+                    setOptions({
+                      spotlistId: spotlist._id,
+                      aviableOptions: ["edit", "delete"],
+                      entity: "spotlist",
+                    })
+                  }
+                >
+                  <FontAwesomeIcon icon={faEllipsisVertical} />
+                </button>
+                {options && options.spotlistId === spotlist._id && (
+                  <ShowOptions
+                    options={options}
+                    setOptions={setOptions}
+                    setData={setSpotlists}
+                    setEditingSpotlist={setEditingSpotlist}
+                  />
+                )}
+              </div>
+            </Link>
+          );
+        })}
       </div>
+
+      {options && (
+        <div className="options-overlay" onClick={() => setOptions(false)} />
+      )}
 
       {editingSpotlist && (
         <EditSpotlist

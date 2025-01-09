@@ -1,132 +1,155 @@
-import React, { useState, useContext } from "react";
-import { AlertContext } from "../context/AlertContext";
-import axios from "axios";
+import React, { useContext } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFlag, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faTrash, faFlag } from "@fortawesome/free-solid-svg-icons";
 
-import { deletePost, deleteComment, deleteReply } from "../utils/postUtils";
+import { AlertContext } from "../context/AlertContext";
+
+import { deletePost, deleteComment, deleteSpotlist } from "../utils/postUtils";
 
 export default function ShowOptions({
-  showingOptions,
-  setShowingOptions,
-  postId,
+  options,
+  setOptions,
   setData,
-  entityType,
-  commentId,
-  replyId,
   setIsEditing,
-  content,
   setComment,
+  setEditingSpotlist,
 }) {
   const { showAlert } = useContext(AlertContext);
 
   const editComment = () => {
     setIsEditing({
-      commentId: commentId,
-      messageContent: content,
+      commentId: options.commentId,
+      messageContent: options.message,
     });
-    setComment(content);
-    setShowingOptions(false);
+    setComment(options.message);
+    setOptions(false);
   };
 
   const editReply = () => {
     setIsEditing({
-      commentId: commentId,
-      replyId: replyId,
-      messageContent: content,
+      commentId: options.commentId,
+      replyId: options.replyId,
+      messageContent: options.message,
     });
-    setComment(content);
-    setShowingOptions(false);
+    setComment(options.message);
+    setOptions(false);
+  };
+
+  const editSpotlist = () => {
+    setEditingSpotlist(true);
+    setOptions(false);
   };
 
   return (
     <div className="aviable-options">
-      {showingOptions.includes("delete") && entityType === "post" && (
-        <div
-          className="option delete"
-          onClick={() =>
-            deletePost(postId, setData, setShowingOptions, showAlert)
-          }
-        >
-          <FontAwesomeIcon icon={faTrash} />
-          <span>Delete post</span>
-        </div>
-      )}
+      {console.log(options)}
 
-      {showingOptions.includes("report") && entityType === "post" && (
-        <div className="option">
-          <FontAwesomeIcon icon={faFlag} />
-          <span>Report post</span>
-        </div>
-      )}
+      {/* POST OPTIONS  */}
 
-      {showingOptions.includes("report") && entityType === "comment" && (
-        <div className="option">
-          <FontAwesomeIcon icon={faFlag} />
-          <span>Report comment</span>
-        </div>
-      )}
+      {options.entity === "post" &&
+        options.aviableOptions.includes("report") && (
+          <div className="option">
+            <FontAwesomeIcon icon={faFlag} />
+            <span>Report</span>
+          </div>
+        )}
 
-      {showingOptions.includes("edit") && entityType === "comment" && (
-        <div className="option" onClick={editComment}>
-          <FontAwesomeIcon icon={faPen} />
-          <span>Edit comment</span>
-        </div>
-      )}
+      {options.entity === "post" &&
+        options.aviableOptions.includes("delete") && (
+          <div
+            className="option delete"
+            onClick={() => deletePost(options, setOptions, setData, showAlert)}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
 
-      {showingOptions.includes("delete") && entityType === "comment" && (
-        <div
-          className="option delete"
-          onClick={() =>
-            deleteComment(
-              postId,
-              commentId,
-              setData,
-              setShowingOptions,
-              showAlert
-            )
-          }
-        >
-          <FontAwesomeIcon icon={faTrash} />
-          <span>Delete comment</span>
-        </div>
-      )}
+      {/* COMMENT OPTIONS  */}
 
-      {showingOptions.includes("report") && entityType === "reply" && (
-        <div className="option">
-          <FontAwesomeIcon icon={faFlag} />
-          <span>Report reply</span>
-        </div>
-      )}
+      {options.entity === "comment" &&
+        options.aviableOptions.includes("report") && (
+          <div className="option">
+            <FontAwesomeIcon icon={faFlag} />
+            <span>Report</span>
+          </div>
+        )}
 
-      {showingOptions.includes("edit") && entityType === "reply" && (
-        <div className="option" onClick={editReply}>
-          <FontAwesomeIcon icon={faPen} />
-          <span>Edit reply</span>
-        </div>
-      )}
+      {options.entity === "comment" &&
+        options.aviableOptions.includes("edit") && (
+          <div className="option" onClick={editComment}>
+            <FontAwesomeIcon icon={faPen} />
+            <span>Edit</span>
+          </div>
+        )}
 
-      {showingOptions.includes("delete") && entityType === "reply" && (
-        <div
-          className="option delete"
-          onClick={() =>
-            deleteReply(
-              postId,
-              commentId,
-              replyId,
-              setData,
-              setShowingOptions,
-              showAlert
-            )
-          }
-        >
-          <FontAwesomeIcon icon={faTrash} />
-          <span>Delete reply</span>
-        </div>
-      )}
+      {options.entity === "comment" &&
+        options.aviableOptions.includes("delete") && (
+          <div
+            className="option delete"
+            onClick={() =>
+              deleteComment(options, setOptions, setData, showAlert)
+            }
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
 
-      <button onClick={() => setShowingOptions(false)}>Cancel</button>
+      {/* REPLY OPTIONS  */}
+
+      {options.entity === "reply" &&
+        options.aviableOptions.includes("report") && (
+          <div className="option">
+            <FontAwesomeIcon icon={faFlag} />
+            <span>Report</span>
+          </div>
+        )}
+
+      {options.entity === "reply" &&
+        options.aviableOptions.includes("edit") && (
+          <div className="option" onClick={editReply}>
+            <FontAwesomeIcon icon={faPen} />
+            <span>Edit</span>
+          </div>
+        )}
+
+      {options.entity === "reply" &&
+        options.aviableOptions.includes("delete") && (
+          <div
+            className="option delete"
+            onClick={() => deletePost(options, setOptions, setData, showAlert)}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
+
+      {/* SPOTLIST OPTIONS */}
+
+      {options.entity === "spotlist" &&
+        options.aviableOptions.includes("edit") && (
+          <div className="option" onClick={editSpotlist}>
+            <FontAwesomeIcon icon={faPen} />
+            <span>Edit</span>
+          </div>
+        )}
+
+      {options.entity === "spotlist" &&
+        options.aviableOptions.includes("delete") && (
+          <div
+            className="option delete"
+            onClick={() =>
+              deleteSpotlist(options, setOptions, setData, showAlert)
+            }
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
+
+      <button onClick={() => setOptions(false)}>Cancel</button>
     </div>
   );
 }

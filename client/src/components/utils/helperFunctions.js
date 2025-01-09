@@ -1,10 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStarHalfStroke } from "@fortawesome/free-solid-svg-icons";
 import { faStar as emptyStar } from "@fortawesome/free-regular-svg-icons";
-import {
-  faStar as filledStar,
-  faCircleCheck,
-} from "@fortawesome/free-solid-svg-icons";
+import { faStar as filledStar } from "@fortawesome/free-solid-svg-icons";
 
 import axios from "axios";
 

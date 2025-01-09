@@ -18,7 +18,7 @@ import MapResults from "./MapResults.jsx";
 
 const libraries = ["places"];
 
-export default function GoogleMap({ setShowNavbar }) {
+export default function GoogleMap() {
   const [location, setLocation] = useState("");
   const [sliderValue, setSliderValue] = useState(15);
   const [spotValue, setSpotValue] = useState("Restaurant");
@@ -39,8 +39,6 @@ export default function GoogleMap({ setShowNavbar }) {
   });
 
   const results = useContext(ResultsContext);
-
-  if (results.searchResults) setShowNavbar(false);
 
   const handleSearch = () => {
     const data = {
@@ -195,7 +193,6 @@ export default function GoogleMap({ setShowNavbar }) {
             points={results.searchResults}
             location={location}
             highlightedMarker={highlightedMarker}
-            setShowNavbar={setShowNavbar}
           />
         )}
         <SearchFilters

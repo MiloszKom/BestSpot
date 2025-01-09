@@ -218,32 +218,27 @@ export const toggleReplyLike = async (
   }
 };
 
-export const deletePost = async (
-  postId,
-  setData,
-  setShowingOptions,
-  showAlert
-) => {
+export const deletePost = async (options, setOptions, setData, showAlert) => {
   try {
     const res = await axios({
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${postId}`,
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${options.postId}`,
       withCredentials: true,
     });
     showAlert(res.data.message, res.data.status);
     setData((prevPosts) => {
       if (Array.isArray(prevPosts)) {
-        return prevPosts.filter((post) => post._id !== postId);
+        return prevPosts.filter((post) => post._id !== options.postId);
       } else {
         window.location.href = "/home";
         return prevPosts;
       }
     });
 
-    setShowingOptions(false);
+    setOptions(false);
   } catch (err) {
     console.log(err);
     showAlert(err.response.data.message, err.response.data.status);
@@ -251,10 +246,9 @@ export const deletePost = async (
 };
 
 export const deleteComment = async (
-  postId,
-  commentId,
+  options,
+  setOptions,
   setData,
-  setShowingOptions,
   showAlert
 ) => {
   try {
@@ -263,7 +257,7 @@ export const deleteComment = async (
       headers: {
         "Content-Type": "application/json",
       },
-      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${postId}/comments/${commentId}`,
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${options.postId}/comments/${options.commentId}`,
       withCredentials: true,
     });
 
@@ -271,13 +265,13 @@ export const deleteComment = async (
       return {
         ...prevData,
         comments: prevData.comments.filter(
-          (comment) => comment._id !== commentId
+          (comment) => comment._id !== options.commentId
         ),
         totalComments: prevData.totalComments - 1,
       };
     });
-
-    setShowingOptions(false);
+    setOptions(false);
+    showAlert(res.data.message, res.data.status);
   } catch (err) {
     console.log(err);
     showAlert(err.response.data.message, err.response.data.status);
@@ -410,3 +404,31 @@ export function highlightHandles(str) {
 
   return <>{highlightedWords}</>;
 }
+
+// Separate options functions to it's own file later
+
+export const deleteSpotlist = async (
+  options,
+  setOptions,
+  setData,
+  showAlert
+) => {
+  try {
+    const res = await axios({
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${options.spotlistId}`,
+      withCredentials: true,
+    });
+    setOptions(false);
+    setData((prevData) => {
+      return prevData.filter((data) => data._id !== options.spotlistId);
+    });
+    showAlert(res.data.message, res.data.status);
+  } catch (err) {
+    console.log(err);
+    showAlert(err.response.data.message, err.response.data.status);
+  }
+};

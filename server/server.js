@@ -90,6 +90,12 @@ io.on("connection", (socket) => {
       await targetChat.save();
     }
 
+    const otherParticipantId = targetChat.participants.find((user) => {
+      return user.toString() !== activeUser.user.toString();
+    });
+
+    socket.emit("update-notifications", otherParticipantId);
+
     socket.to(room).emit("update-read-state", targetChat.messages);
   });
 
@@ -104,6 +110,9 @@ io.on("connection", (socket) => {
 
   socket.on("send-message", async (newMessage, room, recieverId) => {
     const targetChat = await Chat.findById(room);
+    const reciever = activeUsers.find(
+      (user) => user.user === recieverId.toString()
+    );
 
     if (!targetChat.isApproved && targetChat.messages.at(-1)?.senderId) {
       targetChat.messages.at(-1).senderId.toString() === newMessage.senderId
@@ -118,6 +127,7 @@ io.on("connection", (socket) => {
     if (recieverIsActive) {
       newMessage.isRead = true;
       socket.emit("reciever-online");
+      newMessage.isInChatRoom = reciever.currentlyInChatRoom === room;
     }
 
     targetChat.messages.unshift(newMessage);

@@ -29,11 +29,11 @@ export const fetchFromDatabase = async (
       setAlsoSavedBy(res.data.data.friendsWhoFavourited);
     } else {
       console.log("No data found in the database, proceeding with API fetch.");
-      // fetchFromApi(id, setPlaceDetails);
+      fetchFromApi(id, setPlaceDetails);
     }
   } catch (err) {
     console.log("Error fetching from the database:", err);
-    // fetchFromApi(id, setPlaceDetails);
+    fetchFromApi(id, setPlaceDetails);
   }
 };
 

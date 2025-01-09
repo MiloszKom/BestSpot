@@ -11,6 +11,7 @@ import {
   Route,
   Outlet,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { AuthContext } from "./components/context/AuthContext";
 import { ResultsContext } from "./components/context/ResultsContext";
@@ -20,22 +21,28 @@ import Alert from "./components/common/Alert";
 
 import { checkCookies } from "./components/utils/helperFunctions";
 
-import Navbar from "./components/common/Navbar";
+import Nav from "./components/common/Nav";
+import Header from "./components/common/Header";
+import Sidenav from "./components/common/Sidenav";
+
 import GoogleMap from "./components/map/GoogleMap";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import Account from "./components/account/Account";
 import Settings from "./components/account/Settings";
-import Favourites from "./components/favourites/Favourites";
 import Spotlists from "./components/favourites/Spotlists";
 import SpotDetail from "./components/map/SpotDetail";
 import Chats from "./components/friends/Chats";
-import Friends from "./components/friends/Friends";
+
+import FriendsPage from "./components/friends/FriendsPage";
+import FriendsList from "./components/friends/FriendsList";
+import FriendsRequests from "./components/friends/FriendsRequests";
+
 import ChatRoom from "./components/friends/ChatRoom";
 import Profile from "./components/friends/Profile";
 import ChatSearchBar from "./components/friends/ChatSearchBar";
-import ContactRequests from "./components/friends/ContactRequests";
 import Posts from "./components/posts/Posts";
+import PostCreate from "./components/posts/PostCreate";
 
 import NotFoundPage from "./components/pages/NotFoundPage";
 
@@ -43,11 +50,20 @@ import { io } from "socket.io-client";
 import SpotlistContent from "./components/favourites/SpotlistContent";
 import PostDetail from "./components/posts/PostDetail";
 
-function Layout({ showNavbar }) {
+function Layout() {
+  const [showMenu, setShowMenu] = useState(false);
+
   return (
     <div className="container">
-      <Outlet />
-      {showNavbar && <Navbar />}
+      <Header setShowMenu={setShowMenu} />
+      <div className="content">
+        <Outlet />
+      </div>
+      <Nav />
+      {showMenu && <Sidenav setShowMenu={setShowMenu} />}
+      {showMenu && (
+        <div className="sidebar-overlay" onClick={() => setShowMenu(false)} />
+      )}
     </div>
   );
 }
@@ -66,7 +82,6 @@ function App() {
   const [userData, setUserData] = useState(null);
   const [token, setToken] = useState(null);
   const [isDataFetched, setIsDataFetched] = useState(false);
-  const [showNavbar, setShowNavbar] = useState(true);
   const [alertData, setAlertData] = useState({});
   const [searchResults, setSearchResults] = useState(null);
 
@@ -152,61 +167,49 @@ function App() {
             <BrowserRouter>
               <Alert msg={alertData.alertMsg} type={alertData.alertType} />
               <Routes>
-                <Route path="/" element={<Layout showNavbar={showNavbar} />}>
-                  <Route path="/home" element={<Posts />} />
+                <Route path="/" element={<Layout />}>
+                  <Route path="/home" element={<Posts />}>
+                    <Route path="create-post" element={<PostCreate />} />
+                  </Route>
 
-                  <Route
-                    path="/:handle/:postId"
-                    element={<PostDetail setShowNavbar={setShowNavbar} />}
-                  />
+                  <Route path="/:handle/:postId" element={<PostDetail />} />
 
-                  <Route
-                    path="/spot/:id"
-                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
-                  />
+                  <Route path="/spot/:id" element={<SpotDetail />} />
 
-                  <Route
-                    path="search"
-                    element={<GoogleMap setShowNavbar={setShowNavbar} />}
-                  />
-                  <Route
-                    path="search/:id"
-                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
-                  />
+                  <Route path="search" element={<GoogleMap />} />
+                  <Route path="search/:id" element={<SpotDetail />} />
+
+                  {/* SPOTLISTS  */}
                   <Route path="spotlists" element={<Spotlists />} />
-                  <Route path="spotlists/:name" element={<SpotlistContent />} />
                   <Route
-                    path="spotlists/:name/:id"
-                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
+                    path="spotlists/list/:id"
+                    element={<SpotlistContent />}
                   />
-                  <Route path="favourites" element={<Favourites />} />
-                  <Route
-                    path="favourites/:id"
-                    element={<SpotDetail setShowNavbar={setShowNavbar} />}
-                  />
-                  <Route
-                    path="messages"
-                    element={<Chats setShowNavbar={setShowNavbar} />}
-                  />
+
+                  <Route path="messages" element={<Chats />}>
+                    <Route path="chat-room/:id" element={<ChatRoom />} />
+                  </Route>
+
+                  <Route path="requests" element={<Chats />}>
+                    <Route path="chat-room/:id" element={<ChatRoom />} />
+                  </Route>
+
                   <Route
                     path="messages/search-bar"
-                    element={<ChatSearchBar setShowNavbar={setShowNavbar} />}
+                    element={<ChatSearchBar />}
                   />
-                  <Route
-                    path="messages/friend-requests"
-                    element={<Friends setShowNavbar={setShowNavbar} />}
-                  />
-                  <Route
-                    path="messages/contact-requests"
-                    element={<ContactRequests setShowNavbar={setShowNavbar} />}
-                  />
-                  <Route
-                    path="messages/chat-room/:id"
-                    element={<ChatRoom setShowNavbar={setShowNavbar} />}
-                  />
+
+                  {/* Friends Section */}
+
+                  <Route path="friends" element={<FriendsPage />}>
+                    <Route index element={<FriendsList />} />
+                    <Route path="requests" element={<FriendsRequests />} />
+                  </Route>
+
                   <Route path="/profile/:id" element={<Profile />} />
                   <Route path="login" element={<Login />} />
                   <Route path="signup" element={<Signup />} />
+
                   <Route
                     path="/:handle"
                     element={
