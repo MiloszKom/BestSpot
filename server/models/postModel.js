@@ -34,10 +34,14 @@ const postSchema = new mongoose.Schema(
     },
     likes: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        isLikeActive: { type: Boolean, default: true },
       },
     ],
+    thresholdsReached: {
+      type: [Number],
+      default: [],
+    },
     comments: [
       {
         user: {
@@ -48,10 +52,14 @@ const postSchema = new mongoose.Schema(
         comment: { type: String, required: true },
         likes: [
           {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            isLikeActive: { type: Boolean, default: true },
           },
         ],
+        thresholdsReached: {
+          type: [Number],
+          default: [],
+        },
         replies: [
           {
             user: {
@@ -62,10 +70,14 @@ const postSchema = new mongoose.Schema(
             comment: { type: String, required: true },
             likes: [
               {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
+                _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                isLikeActive: { type: Boolean, default: true },
               },
             ],
+            thresholdsReached: {
+              type: [Number],
+              default: [],
+            },
             timestamp: { type: Date, default: Date.now },
             isEdited: { type: Boolean, default: false },
           },

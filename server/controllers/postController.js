@@ -68,20 +68,27 @@ const createNotifications = async (
   notifiedUsers,
   sender,
   message,
-  relatedEntity
+  originDetails,
+  title
 ) => {
   const notification = {
-    message,
     sender,
-    relatedEntity,
-    createdAt: new Date(),
-    isRead: false,
+    message,
+    originDetails,
+    title,
   };
 
-  const updatePromises = notifiedUsers.map((user) =>
+  const updatePromises = notifiedUsers.map((userId) =>
     User.findByIdAndUpdate(
-      user._id,
-      { $push: { notifications: notification } },
+      userId,
+      {
+        $push: {
+          notifications: {
+            $each: [notification],
+            $position: 0,
+          },
+        },
+      },
       { new: true }
     )
   );
@@ -100,22 +107,9 @@ const extractAndValidateHandles = async (content) => {
 
   if (handles.length === 0) return [];
 
-  const validUsers = await User.find(
-    { handle: { $in: handles } },
-    "_id handle"
-  );
+  const validUsers = await User.find({ handle: { $in: handles } }, "_id");
 
-  return validUsers;
-};
-
-const filterFriends = (validUsers, friends) => {
-  const validUserIds = validUsers.map((user) => user._id.toString());
-
-  const filteredFriends = friends.filter(
-    (friend) => !validUserIds.includes(friend._id.toString())
-  );
-
-  return filteredFriends;
+  return validUsers.map((user) => user._id.toString());
 };
 
 exports.getPosts = catchAsync(async (req, res, next) => {
@@ -141,10 +135,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
 });
 
 exports.createPost = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user._id).populate(
-    "friends",
-    "_id handle"
-  );
+  const user = await User.findById(req.user._id).populate("friends", "_id");
 
   const { visibility, content, spots, spotlists, photos } = req.body;
 
@@ -169,8 +160,11 @@ exports.createPost = catchAsync(async (req, res, next) => {
     return next(new AppError("Spotlists limit exceeded", 400));
   }
 
-  const mentionedUsers = await extractAndValidateHandles(content);
-  const userFriends = filterFriends(mentionedUsers, user.friends);
+  const userFriends = user.friends.map((friend) => friend._id.toString());
+  const mentions = await extractAndValidateHandles(content);
+  const nonMentionedFriends = userFriends.filter(
+    (friend) => !mentions.includes(friend)
+  );
 
   const newPost = await Post.create({
     author: user._id,
@@ -184,19 +178,32 @@ exports.createPost = catchAsync(async (req, res, next) => {
   user.posts.push(newPost._id);
   await user.save({ validateBeforeSave: false });
 
-  createNotifications(
-    mentionedUsers,
-    user._id,
-    "You have been mentioned in a post",
-    newPost._id
-  );
+  const originDetails = {
+    author: user._id,
+    postId: newPost._id,
+  };
 
-  createNotifications(
-    userFriends,
-    user._id,
-    `${user.name} created a new post`,
-    newPost._id
-  );
+  if (nonMentionedFriends.length > 0) {
+    createNotifications(
+      nonMentionedFriends,
+      user._id,
+      newPost.content,
+      originDetails,
+      `${user.name} created a new post`
+    );
+  }
+  // Works
+
+  if (mentions.length > 0) {
+    createNotifications(
+      mentions,
+      user._id,
+      newPost.content,
+      originDetails,
+      `${user.name} mentioned you in their post`
+    );
+  }
+  // Works
 
   res.status(201).json({
     status: "success",
@@ -241,18 +248,53 @@ exports.likePost = catchAsync(async (req, res, next) => {
     return next(new AppError("Post not found", 404));
   }
 
-  if (post.likes.includes(user._id)) {
-    return next(new AppError("You already liked this post", 400));
+  const originDetails = {
+    author: post.author,
+    postId: post._id,
+  };
+
+  const existingLike = post.likes.find((like) => like._id.equals(user._id));
+  let activeLikesCount = post.likes.filter((like) => like.isLikeActive).length;
+
+  if (existingLike) {
+    if (existingLike.isLikeActive) {
+      return next(new AppError("You already liked this post", 400));
+    }
+    existingLike.isLikeActive = true;
+    activeLikesCount++;
+  } else {
+    post.likes.push({ _id: user._id, isLikeActive: true });
+    activeLikesCount++;
+
+    if (activeLikesCount <= 2 && !post.author.equals(user._id)) {
+      createNotifications(
+        [post.author],
+        user._id,
+        post.content,
+        originDetails,
+        `${user.name} liked your post`
+      );
+    }
+    // Works
   }
 
-  createNotifications(
-    [post.author],
-    user._id,
-    `${user.name} liked your post`,
-    post._id
-  );
+  const thresholds = [3, 5, 10, 20, 50, 100, 200, 500, 1000];
 
-  post.likes.push(user);
+  if (
+    thresholds.includes(activeLikesCount) &&
+    !post.thresholdsReached.includes(activeLikesCount)
+  ) {
+    createNotifications(
+      [post.author],
+      null,
+      post.content,
+      originDetails,
+      `Your post reached ${activeLikesCount} likes`
+    );
+    // Works
+    post.thresholdsReached.push(activeLikesCount);
+  }
+
   await post.save();
 
   res.status(200).json({
@@ -269,11 +311,13 @@ exports.unlikePost = catchAsync(async (req, res, next) => {
     return next(new AppError("Post not found", 404));
   }
 
-  if (!post.likes.includes(user)) {
+  const existingLike = post.likes.find((like) => like._id.equals(user._id));
+
+  if (!existingLike || !existingLike.isLikeActive) {
     return next(new AppError("You have not liked this post", 400));
   }
 
-  post.likes.pull(user);
+  existingLike.isLikeActive = false;
   await post.save();
 
   res.status(200).json({
@@ -286,7 +330,7 @@ exports.getPost = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
 
   const post = await Post.findById(req.params.id)
-    .populate("author", "name photo handle")
+    .populate("author", "_id name photo handle")
     .populate("spots", "_id google_id name photo city country ")
     .populate("spotlists", "_id name cover visibility spots")
     .populate("comments.user", "name handle photo")
@@ -336,6 +380,8 @@ exports.addPostComment = catchAsync(async (req, res, next) => {
 
   await post.save();
 
+  const createdComment = post.comments[post.comments.length - 1];
+
   const addedComment = await post
     .populate({
       path: "comments.user",
@@ -347,46 +393,49 @@ exports.addPostComment = catchAsync(async (req, res, next) => {
         populatedPost.comments[populatedPost.comments.length - 1]
     );
 
+  const originDetails = {
+    author: post.author,
+    postId: post._id,
+    commentId: createdComment._id,
+  };
+
   const mentionedUsers = await extractAndValidateHandles(comment);
-
-  const isAuthorMentioned = mentionedUsers.some((user) =>
-    user._id.equals(post.author)
-  );
-
-  let updatedMentionedUsers = [];
-
-  if (isAuthorMentioned) {
-    updatedMentionedUsers = mentionedUsers.filter((user) => {
-      return !user._id.equals(post.author);
-    });
-  } else {
-    updatedMentionedUsers = mentionedUsers;
-  }
 
   if (user._id.equals(post.author)) {
     // Self-comment on own post, no notification
-  } else if (isAuthorMentioned) {
+  } else if (
+    mentionedUsers.some((mentionedUser) =>
+      mentionedUser._id.equals(post.author)
+    )
+  ) {
     createNotifications(
       [post.author],
       user._id,
-      `${user.name} mentioned you in a comment on your post: ${comment}`,
-      post._id
+      newComment.comment,
+      originDetails,
+      `${user.name} mentioned you in a comment on your post`
     );
   } else {
     createNotifications(
       [post.author],
       user._id,
-      `${user.name} commented on your post: ${comment}`,
-      post._id
+      newComment.comment,
+      originDetails,
+      `${user.name} commented on your post`
     );
   }
 
-  if (updatedMentionedUsers.length > 0) {
+  const filteredMentionedUsers = mentionedUsers.filter(
+    (mentionedUser) => mentionedUser !== post.author.toString()
+  );
+
+  if (filteredMentionedUsers.length > 0) {
     createNotifications(
-      updatedMentionedUsers,
+      filteredMentionedUsers,
       user._id,
-      `${user.name} mentioned you in a comment: ${comment}`,
-      post._id
+      newComment.comment,
+      originDetails,
+      `${user.name} mentioned you in a comment`
     );
   }
 
@@ -481,18 +530,61 @@ exports.likeComment = catchAsync(async (req, res, next) => {
     return next(new AppError("Comment not found", 404));
   }
 
-  if (comment.likes.includes(user._id)) {
-    return next(new AppError("You already liked this comment", 400));
+  const originDetails = {
+    author: post.author,
+    postId: post._id,
+    commentId: comment._id,
+  };
+
+  const existingLike = comment.likes.find((like) => like._id.equals(user._id));
+  let activeLikesCount = comment.likes.filter(
+    (like) => like.isLikeActive
+  ).length;
+
+  console.log;
+
+  if (existingLike) {
+    if (existingLike.isLikeActive) {
+      return next(new AppError("You already liked this comment", 400));
+    }
+    existingLike.isLikeActive = true;
+    activeLikesCount++;
+  } else {
+    comment.likes.push({ _id: user._id, isLikeActive: true });
+    activeLikesCount++;
+
+    if (activeLikesCount <= 2 && !comment.user.equals(user._id)) {
+      console.log("Sending the normal notification");
+      await createNotifications(
+        [comment.user],
+        user._id,
+        comment.comment,
+        originDetails,
+        `${user.name} liked your comment`
+      );
+      //works
+    }
   }
 
-  createNotifications(
-    [comment.user],
-    user._id,
-    `${user.name} liked your comment`,
-    post._id
-  );
+  const thresholds = [3, 5, 10, 20, 50, 100, 200, 500, 1000];
 
-  comment.likes.push(user);
+  if (
+    thresholds.includes(activeLikesCount) &&
+    !comment.thresholdsReached.includes(activeLikesCount)
+  ) {
+    console.log("Sending the threshold notification");
+    createNotifications(
+      [comment.user],
+      null,
+      comment.comment,
+      originDetails,
+      `Your comment reached ${activeLikesCount} likes`
+    );
+    // works
+
+    comment.thresholdsReached.push(activeLikesCount);
+  }
+
   await post.save();
 
   res.status(200).json({
@@ -517,11 +609,13 @@ exports.unlikeComment = catchAsync(async (req, res, next) => {
     return next(new AppError("Comment not found", 404));
   }
 
-  if (!comment.likes.includes(user)) {
+  const existingLike = comment.likes.find((like) => like._id.equals(user._id));
+
+  if (!existingLike || !existingLike.isLikeActive) {
     return next(new AppError("You have not liked this comment", 400));
   }
 
-  comment.likes.pull(user);
+  existingLike.isLikeActive = false;
   await post.save();
 
   res.status(200).json({
@@ -545,56 +639,6 @@ exports.addReply = catchAsync(async (req, res, next) => {
     return next(new AppError("Comment not found", 404));
   }
 
-  const mentionedUsers = await extractAndValidateHandles(req.body.comment);
-
-  const engagedUsers = [
-    comment.user,
-    ...comment.replies.map((reply) => reply.user),
-  ];
-
-  const isEngaged = (mentionedUser) =>
-    engagedUsers.some((userId) => userId.equals(mentionedUser._id));
-
-  if (mentionedUsers.length === 0) {
-    createNotifications(
-      [comment.user],
-      user._id,
-      `${user.name} replied to your comment: ${req.body.comment}`,
-      post._id
-    );
-  } else {
-    mentionedUsers.forEach((mentionedUser) => {
-      if (mentionedUser._id.equals(user._id)) return;
-
-      const message = isEngaged(mentionedUser)
-        ? `${user.name} replied to your comment: ${req.body.comment}`
-        : `${user.name} mentioned you in comment: ${req.body.comment}`;
-
-      createNotifications([mentionedUser], user._id, message, post._id);
-    });
-
-    if (!mentionedUsers.some((user) => user._id.equals(comment.user))) {
-      createNotifications(
-        [comment.user],
-        user._id,
-        `${user.name} replied to your comment: ${req.body.comment}`,
-        post._id
-      );
-    }
-  }
-
-  if (
-    !post.author.equals(user._id) &&
-    !mentionedUsers.some((user) => user._id.equals(post.author))
-  ) {
-    createNotifications(
-      [post.author],
-      user._id,
-      `${user.name} replied to your post: ${req.body.comment}`,
-      post._id
-    );
-  }
-
   const newReply = {
     user: user._id,
     comment: req.body.comment,
@@ -605,6 +649,56 @@ exports.addReply = catchAsync(async (req, res, next) => {
   await post.save();
 
   const addedReply = comment.replies[comment.replies.length - 1];
+
+  const originDetails = {
+    author: post.author,
+    postId: post._id,
+    commentId: comment._id,
+    replyId: addedReply._id,
+  };
+
+  const mentionedUsers = await extractAndValidateHandles(req.body.comment);
+
+  const engagedUsers = Array.from(
+    new Set([
+      comment.user.toString(),
+      ...comment.replies.map((reply) => reply.user.toString()),
+    ])
+  );
+
+  let mentionedEngagedUsers = mentionedUsers.filter((user) =>
+    engagedUsers.includes(user)
+  );
+  const mentionedUnengagedUsers = mentionedUsers.filter(
+    (user) => !engagedUsers.includes(user)
+  );
+
+  if (!mentionedEngagedUsers.includes(comment.user.toString()))
+    mentionedEngagedUsers.push(comment.user.toString());
+
+  if (user._id.toString() === comment.user.toString()) {
+    mentionedEngagedUsers = mentionedEngagedUsers.filter(
+      (user) => user !== comment.user.toString()
+    );
+  }
+
+  createNotifications(
+    mentionedEngagedUsers,
+    user._id,
+    req.body.comment,
+    originDetails,
+    `${user.name} replied to your comment`
+  );
+
+  if (mentionedUnengagedUsers.length > 0) {
+    createNotifications(
+      mentionedUnengagedUsers,
+      user._id,
+      req.body.comment,
+      originDetails,
+      `${user.name} mentioned you in a reply`
+    );
+  }
 
   const populatedReply = await Post.populate(addedReply, {
     path: "user",
@@ -681,24 +775,53 @@ exports.likeReply = catchAsync(async (req, res, next) => {
     replyId
   );
 
-  if (!reply.user.equals(req.user._id)) {
-    return next(
-      new AppError("You are not authorized to delete this reply", 403)
+  const originDetails = {
+    author: post.author,
+    postId: post._id,
+    commentId: comment._id,
+    replyId: reply._id,
+  };
+
+  const existingLike = reply.likes.find((like) => like._id.equals(user._id));
+  let activeLikesCount = reply.likes.filter((like) => like.isLikeActive).length;
+
+  if (existingLike) {
+    if (existingLike.isLikeActive) {
+      return next(new AppError("You already liked this reply", 400));
+    }
+    existingLike.isLikeActive = true;
+    activeLikesCount++;
+  } else {
+    reply.likes.push({ _id: user._id, isLikeActive: true });
+    activeLikesCount++;
+
+    if (activeLikesCount <= 2 && !reply.user.equals(user._id)) {
+      createNotifications(
+        [reply.user],
+        user._id,
+        reply.comment,
+        originDetails,
+        `${user.name} liked your reply`
+      );
+    }
+  }
+
+  const thresholds = [3, 5, 10, 20, 50, 100, 200, 500, 1000];
+
+  if (
+    thresholds.includes(activeLikesCount) &&
+    !reply.thresholdsReached.includes(activeLikesCount)
+  ) {
+    createNotifications(
+      [reply.user],
+      null,
+      reply.comment,
+      originDetails,
+      `Your reply reached ${activeLikesCount} likes`
     );
+
+    reply.thresholdsReached.push(activeLikesCount);
   }
-
-  if (reply.likes.includes(req.user._id)) {
-    return next(new AppError("You have already liked this reply", 400));
-  }
-
-  createNotifications(
-    [reply.user],
-    user._id,
-    `${user.name} liked your comment`,
-    post._id
-  );
-
-  reply.likes.push(req.user._id);
 
   await post.save();
 
@@ -709,6 +832,7 @@ exports.likeReply = catchAsync(async (req, res, next) => {
 });
 
 exports.unlikeReply = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
   const { postId, commentId, replyId } = req.params;
 
   const { post, comment, reply } = await getPostCommentReply(
@@ -717,12 +841,13 @@ exports.unlikeReply = catchAsync(async (req, res, next) => {
     replyId
   );
 
-  if (!reply.likes.includes(req.user._id)) {
+  const existingLike = reply.likes.find((like) => like._id.equals(user._id));
+
+  if (!existingLike || !existingLike.isLikeActive) {
     return next(new AppError("You have not liked this reply", 400));
   }
 
-  reply.likes.pull(req.user._id);
-
+  existingLike.isLikeActive = false;
   await post.save();
 
   res.status(200).json({

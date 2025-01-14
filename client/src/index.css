@@ -2639,10 +2639,6 @@ img {
   gap: 0.5rem;
 }
 
-/* .post-options {
-  position: relative;
-} */
-
 .svg-wrapper {
   display: flex;
   border-radius: 100%;
@@ -3126,6 +3122,13 @@ img {
     "icon commentoptions ."
     "icon viewreplies ."
     "icon replies replies";
+}
+
+.post-detail-comment.active {
+  background-color: #282828;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  padding-right: 0;
 }
 
 .comment-header {
@@ -3868,4 +3871,98 @@ img {
 .post-spotlist-el .post-spotlist-check input {
   height: 20px;
   width: 20px;
+}
+
+/* NOTIFICATIONS */
+
+.notifications-container {
+  color: #fff;
+}
+
+.notifications-header {
+  padding: 1rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.notifications-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 1px;
+  background-color: #333;
+}
+
+.notification-el {
+  display: grid;
+  background-color: #212121;
+  grid-template-columns: 5px 35px auto 35px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  padding-left: 0.1rem;
+  width: 100%;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.notification-el:not(:has(.image)) {
+  grid-template-columns: 5px auto 35px;
+}
+
+.notification-el:not(:has(.aviable-options)):hover {
+  background-color: #282828;
+}
+
+.notification-el .new {
+  width: 5px;
+  height: 5px;
+  border-radius: 100%;
+  background-color: #0088ff;
+}
+
+.notification-el .new.old {
+  background-color: #212121;
+}
+
+.notification-el .info-summary span {
+  opacity: 0.7;
+  font-weight: 300;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.notification-el .info-details {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  font-weight: 300;
+}
+
+.notification-el .image {
+  height: 35px;
+  width: 35px;
+  border-radius: 100%;
+  background-size: cover;
+  background-position: center;
+  align-self: flex-start;
+}
+
+.notification-el .options-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  width: 35px;
+  border-radius: 100%;
+  align-self: flex-start;
+}
+
+.notification-el .options-button:hover {
+  background-color: #333;
+}
+
+@media (min-width: 500px) {
+  .notification-el .options {
+    position: relative;
+  }
 }

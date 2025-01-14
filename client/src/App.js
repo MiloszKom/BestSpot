@@ -49,6 +49,7 @@ import NotFoundPage from "./components/pages/NotFoundPage";
 import { io } from "socket.io-client";
 import SpotlistContent from "./components/favourites/SpotlistContent";
 import PostDetail from "./components/posts/PostDetail";
+import Notifications from "./components/pages/Notifications";
 
 function Layout() {
   const [showMenu, setShowMenu] = useState(false);
@@ -209,6 +210,8 @@ function App() {
                   <Route path="/profile/:id" element={<Profile />} />
                   <Route path="login" element={<Login />} />
                   <Route path="signup" element={<Signup />} />
+
+                  <Route path="notifications" element={<Notifications />} />
 
                   <Route
                     path="/:handle"

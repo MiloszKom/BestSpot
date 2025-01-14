@@ -78,7 +78,14 @@ export default function Posts() {
         </Link>
 
         {posts.map((post) => {
-          const isLiked = post.likes.includes(userData._id);
+          const likeCount = post.likes.filter(
+            (like) => like.isLikeActive === true
+          );
+
+          const isLiked = post.likes.some(
+            (like) => like._id === userData._id && like.isLikeActive
+          );
+
           const postOptions =
             post.author._id === userData._id ? ["delete"] : ["report"];
 
@@ -187,7 +194,7 @@ export default function Posts() {
                         <FontAwesomeIcon icon={regularHeart} />
                       </button>
                     )}
-                    <span>{post.likes.length}</span>
+                    <span>{likeCount.length}</span>
                   </div>
                   <div className="footer-el">
                     <button className="svg-wrapper">

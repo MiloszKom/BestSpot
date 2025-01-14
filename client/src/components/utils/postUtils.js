@@ -14,8 +14,8 @@ export const togglePostLike = async (
         return {
           ...prevPosts,
           likes: isLiked
-            ? prevPosts.likes.filter((id) => id !== userData._id)
-            : [...prevPosts.likes, userData._id],
+            ? prevPosts.likes.filter((like) => like._id !== userData._id)
+            : [...prevPosts.likes, { _id: userData._id, isLikeActive: true }],
         };
       } else if (context === "posts") {
         return prevPosts.map((post) =>
@@ -23,15 +23,15 @@ export const togglePostLike = async (
             ? {
                 ...post,
                 likes: isLiked
-                  ? post.likes.filter((id) => id !== userData._id)
-                  : [...post.likes, userData._id],
+                  ? post.likes.filter((like) => like._id !== userData._id)
+                  : [...post.likes, { _id: userData._id, isLikeActive: true }],
               }
             : post
         );
       }
     });
 
-    const res = await axios({
+    await axios({
       method: isLiked ? "DELETE" : "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,11 +39,8 @@ export const togglePostLike = async (
       url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${postId}/like`,
       withCredentials: true,
     });
-
-    console.log(res);
   } catch (err) {
     console.log(err);
-
     const errorMessage = err.response?.data?.message || "An error occurred.";
     showAlert(errorMessage, "error");
   }
@@ -100,14 +97,14 @@ export const toggleCommentLike = async (
           ? {
               ...comment,
               likes: isLiked
-                ? comment.likes.filter((id) => id !== userData._id)
-                : [...comment.likes, userData._id],
+                ? comment.likes.filter((like) => like._id !== userData._id)
+                : [...comment.likes, { _id: userData._id, isLikeActive: true }],
             }
           : comment
       ),
     }));
 
-    const res = await axios({
+    await axios({
       method: isLiked ? "DELETE" : "POST",
       headers: {
         "Content-Type": "application/json",
@@ -115,10 +112,8 @@ export const toggleCommentLike = async (
       url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${postId}/comments/${commentId}/like`,
       withCredentials: true,
     });
-    console.log(res);
   } catch (err) {
     console.log(err);
-
     const errorMessage = err.response?.data?.message || "An error occurred.";
     showAlert(errorMessage, "error");
   }
@@ -182,29 +177,34 @@ export const toggleReplyLike = async (
   setPost,
   userData
 ) => {
-  setPost((prevPost) => ({
-    ...prevPost,
-    comments: prevPost.comments.map((comment) =>
-      comment._id === commentId
-        ? {
-            ...comment,
-            replies: comment.replies.map((reply) =>
-              reply._id === replyId
-                ? {
-                    ...reply,
-                    likes: isLiked
-                      ? reply.likes.filter((id) => id !== userData._id)
-                      : [...reply.likes, userData._id],
-                  }
-                : reply
-            ),
-          }
-        : comment
-    ),
-  }));
-
   try {
-    const res = await axios({
+    setPost((prevPost) => ({
+      ...prevPost,
+      comments: prevPost.comments.map((comment) =>
+        comment._id === commentId
+          ? {
+              ...comment,
+              replies: comment.replies.map((reply) =>
+                reply._id === replyId
+                  ? {
+                      ...reply,
+                      likes: isLiked
+                        ? reply.likes.filter(
+                            (like) => like._id !== userData._id
+                          )
+                        : [
+                            ...reply.likes,
+                            { _id: userData._id, isLikeActive: true },
+                          ],
+                    }
+                  : reply
+              ),
+            }
+          : comment
+      ),
+    }));
+
+    await axios({
       method: isLiked ? "DELETE" : "POST",
       headers: {
         "Content-Type": "application/json",
@@ -212,7 +212,6 @@ export const toggleReplyLike = async (
       url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${postId}/comments/${commentId}/replies/${replyId}/like`,
       withCredentials: true,
     });
-    console.log(res);
   } catch (err) {
     console.log(err);
   }
@@ -425,6 +424,33 @@ export const deleteSpotlist = async (
     setOptions(false);
     setData((prevData) => {
       return prevData.filter((data) => data._id !== options.spotlistId);
+    });
+    showAlert(res.data.message, res.data.status);
+  } catch (err) {
+    console.log(err);
+    showAlert(err.response.data.message, err.response.data.status);
+  }
+};
+
+export const deleteNotification = async (
+  options,
+  setOptions,
+  setData,
+  showAlert
+) => {
+  try {
+    const res = await axios({
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/notifications/${options.notificationId}`,
+      withCredentials: true,
+    });
+
+    setOptions(false);
+    setData((prevData) => {
+      return prevData.filter((data) => data._id !== options.notificationId);
     });
     showAlert(res.data.message, res.data.status);
   } catch (err) {

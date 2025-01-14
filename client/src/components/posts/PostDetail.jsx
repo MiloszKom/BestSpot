@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { AlertContext } from "../context/AlertContext";
 import axios from "axios";
@@ -43,6 +43,10 @@ export default function PostDetail() {
   const { showAlert } = useContext(AlertContext);
   const navigate = useNavigate();
   const params = useParams();
+  const location = useLocation();
+
+  const highlightedCommentId = location.state?.highlightedCommentId;
+  const highlightedReplyId = location.state?.highlightedReplyId;
 
   const [post, setPost] = useState(null);
   const [comment, setComment] = useState("");
@@ -95,9 +99,33 @@ export default function PostDetail() {
           url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${params.postId}?sortBy=likes`,
           withCredentials: true,
         });
-        console.log(res);
-
         setPost(res.data.data);
+
+        if (highlightedCommentId) {
+          const highlightedComment = res.data.data.comments.find(
+            (comment) => comment._id === highlightedCommentId
+          );
+
+          if (highlightedComment) {
+            const reorderedComments = [
+              highlightedComment,
+              ...res.data.data.comments.filter(
+                (comment) => comment._id !== highlightedCommentId
+              ),
+            ];
+            setPost((prevPost) => ({
+              ...prevPost,
+              comments: reorderedComments,
+            }));
+
+            if (highlightedReplyId) {
+              setVisibleReplies((prev) => ({
+                ...prev,
+                [highlightedComment._id]: true,
+              }));
+            }
+          }
+        }
       } catch (err) {
         console.log(err);
       }
@@ -117,6 +145,14 @@ export default function PostDetail() {
 
   const postOptions =
     post.author._id === userData._id ? ["delete"] : ["report"];
+
+  const likeCount = post.likes.filter((like) => like.isLikeActive === true);
+
+  const isPostLiked = post.likes.some(
+    (like) => like._id === userData._id && like.isLikeActive
+  );
+
+  console.log(visibleReplies);
 
   return (
     <div className="post-detail-container">
@@ -197,7 +233,7 @@ export default function PostDetail() {
             onClick={() =>
               togglePostLike(
                 post._id,
-                post.likes.includes(userData._id),
+                isPostLiked,
                 userData,
                 setPost,
                 showAlert,
@@ -205,7 +241,7 @@ export default function PostDetail() {
               )
             }
           >
-            {post.likes.includes(userData._id) ? (
+            {isPostLiked ? (
               <div className="svg-wrapper liked">
                 <FontAwesomeIcon icon={solidHeart} />
               </div>
@@ -214,7 +250,7 @@ export default function PostDetail() {
                 <FontAwesomeIcon icon={regularHeart} />
               </div>
             )}
-            <span>{post.likes.length}</span>
+            <span>{likeCount.length}</span>
           </div>
           <div className="option">
             <div className="svg-wrapper">
@@ -231,17 +267,30 @@ export default function PostDetail() {
         </div>
 
         {post.comments.map((comment) => {
-          const isLiked = comment.likes.includes(userData._id);
-          const isRepliesVisible = visibleReplies[comment._id];
+          const commentLikeCount = comment.likes.filter(
+            (like) => like.isLikeActive === true
+          );
+
+          const isCommentLiked = comment.likes.some(
+            (like) => like._id === userData._id && like.isLikeActive
+          );
+
+          let isRepliesVisible = visibleReplies[comment._id];
+
           const commentOptions =
             comment.user._id === userData._id
               ? ["delete", "edit"]
               : post.author._id === userData._id
               ? ["delete", "report"]
               : ["report"];
+          const isHiglighted =
+            highlightedCommentId === comment._id && !highlightedReplyId;
 
           return (
-            <div className="post-detail-comment" key={comment._id}>
+            <div
+              className={`post-detail-comment ${isHiglighted ? "active" : ""}`}
+              key={comment._id}
+            >
               <Link
                 to={`/${comment.user.handle}`}
                 className="profile-icon"
@@ -296,14 +345,14 @@ export default function PostDetail() {
                     toggleCommentLike(
                       params.postId,
                       comment._id,
-                      isLiked,
+                      isCommentLiked,
                       userData,
                       setPost,
                       showAlert
                     )
                   }
                 >
-                  {isLiked ? (
+                  {isCommentLiked ? (
                     <div className="svg-wrapper liked">
                       <FontAwesomeIcon icon={solidHeart} />
                     </div>
@@ -312,7 +361,7 @@ export default function PostDetail() {
                       <FontAwesomeIcon icon={regularHeart} />
                     </div>
                   )}
-                  <span>{comment.likes.length}</span>
+                  <span>{commentLikeCount.length}</span>
                 </div>
                 <div
                   className="comment-option-reply"
@@ -344,7 +393,13 @@ export default function PostDetail() {
               {isRepliesVisible && (
                 <div className="post-detail-comment-replies">
                   {comment.replies.map((reply) => {
-                    const isLiked = reply.likes.includes(userData._id);
+                    const likeCount = reply.likes.filter(
+                      (like) => like.isLikeActive === true
+                    );
+                    const isReplyLiked = reply.likes.some(
+                      (like) => like._id === userData._id && like.isLikeActive
+                    );
+
                     const replyOptions =
                       reply.user._id === userData._id
                         ? ["delete", "edit"]
@@ -352,8 +407,15 @@ export default function PostDetail() {
                         ? ["delete", "report"]
                         : ["report"];
 
+                    const isHiglighted = reply._id === highlightedReplyId;
+
                     return (
-                      <div className="post-detail-comment">
+                      <div
+                        className={`post-detail-comment ${
+                          isHiglighted ? "active" : ""
+                        }`}
+                        key={reply._id}
+                      >
                         <Link
                           to={`/${reply.user.handle}`}
                           className="profile-icon"
@@ -412,7 +474,7 @@ export default function PostDetail() {
                             className="comment-option-like"
                             onClick={() =>
                               toggleReplyLike(
-                                isLiked,
+                                isReplyLiked,
                                 params.postId,
                                 comment._id,
                                 reply._id,
@@ -421,7 +483,7 @@ export default function PostDetail() {
                               )
                             }
                           >
-                            {isLiked ? (
+                            {isReplyLiked ? (
                               <div className="svg-wrapper liked">
                                 <FontAwesomeIcon icon={solidHeart} />
                               </div>
@@ -430,7 +492,7 @@ export default function PostDetail() {
                                 <FontAwesomeIcon icon={regularHeart} />
                               </div>
                             )}
-                            <span>{reply.likes.length}</span>
+                            <span>{likeCount.length}</span>
                           </div>
                           <div
                             className="comment-option-reply"

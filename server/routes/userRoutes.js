@@ -44,6 +44,18 @@ router.get(
   userController.getRequests
 );
 
+router.get(
+  "/notifications",
+  authController.protect,
+  userController.getNotifications
+);
+
+router.delete(
+  "/notifications/:id",
+  authController.protect,
+  userController.deleteNotification
+);
+
 router
   .route("/")
   .get(userController.getAllUsers)

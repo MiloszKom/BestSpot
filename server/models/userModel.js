@@ -65,9 +65,15 @@ const userSchema = new mongoose.Schema({
   chatsJoined: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chat" }],
   notifications: [
     {
-      message: { type: String, required: true },
       sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      relatedEntity: { type: mongoose.Schema.Types.ObjectId },
+      originDetails: {
+        author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
+        commentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
+        replyId: { type: mongoose.Schema.Types.ObjectId, ref: "Reply" },
+      },
+      title: { type: String },
+      message: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
       isRead: { type: Boolean, default: false },
     },

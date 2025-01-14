@@ -5,7 +5,12 @@ import { faPen, faTrash, faFlag } from "@fortawesome/free-solid-svg-icons";
 
 import { AlertContext } from "../context/AlertContext";
 
-import { deletePost, deleteComment, deleteSpotlist } from "../utils/postUtils";
+import {
+  deletePost,
+  deleteComment,
+  deleteSpotlist,
+  deleteNotification,
+} from "../utils/postUtils";
 
 export default function ShowOptions({
   options,
@@ -142,6 +147,21 @@ export default function ShowOptions({
             className="option delete"
             onClick={() =>
               deleteSpotlist(options, setOptions, setData, showAlert)
+            }
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
+
+      {/* NOTIFICATION OPTIONS */}
+
+      {options.entity === "notification" &&
+        options.aviableOptions.includes("delete") && (
+          <div
+            className="option delete"
+            onClick={() =>
+              deleteNotification(options, setOptions, setData, showAlert)
             }
           >
             <FontAwesomeIcon icon={faTrash} />

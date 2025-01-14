@@ -337,3 +337,70 @@ exports.searchHandles = catchAsync(async (req, res) => {
     users,
   });
 });
+
+// NOTIFICATION APIS
+
+exports.getNotifications = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id)
+    .populate("notifications.sender", "_id photo name handle")
+    .populate("notifications.originDetails.author", "handle");
+
+  const updatedNotifications = user.notifications.map((notification) => {
+    return {
+      ...notification.toObject(),
+    };
+  });
+
+  await User.updateOne(
+    { _id: req.user.id },
+    {
+      $set: { "notifications.$[].isRead": true },
+    }
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: updatedNotifications,
+  });
+});
+
+exports.deleteNotification = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return res.status(404).json({
+      status: "fail",
+      message: "User not found",
+    });
+  }
+
+  const avaiableNotificationsIds = user.notifications.map((notification) => {
+    return notification._id.toString();
+  });
+
+  if (!avaiableNotificationsIds.includes(req.params.id)) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Notification not found",
+    });
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    { $pull: { notifications: { _id: req.params.id } } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    return res.status(500).json({
+      status: "fail",
+      message: "Error deleting notification",
+    });
+  }
+
+  res.status(200).json({
+    status: "success",
+    message: "Notification deleted",
+    data: updatedUser.notifications,
+  });
+});
