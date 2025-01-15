@@ -192,7 +192,6 @@ exports.createPost = catchAsync(async (req, res, next) => {
       `${user.name} created a new post`
     );
   }
-  // Works
 
   if (mentions.length > 0) {
     createNotifications(
@@ -203,7 +202,6 @@ exports.createPost = catchAsync(async (req, res, next) => {
       `${user.name} mentioned you in their post`
     );
   }
-  // Works
 
   res.status(201).json({
     status: "success",
@@ -275,7 +273,6 @@ exports.likePost = catchAsync(async (req, res, next) => {
         `${user.name} liked your post`
       );
     }
-    // Works
   }
 
   const thresholds = [3, 5, 10, 20, 50, 100, 200, 500, 1000];
@@ -291,7 +288,7 @@ exports.likePost = catchAsync(async (req, res, next) => {
       originDetails,
       `Your post reached ${activeLikesCount} likes`
     );
-    // Works
+
     post.thresholdsReached.push(activeLikesCount);
   }
 
@@ -580,7 +577,6 @@ exports.likeComment = catchAsync(async (req, res, next) => {
       originDetails,
       `Your comment reached ${activeLikesCount} likes`
     );
-    // works
 
     comment.thresholdsReached.push(activeLikesCount);
   }

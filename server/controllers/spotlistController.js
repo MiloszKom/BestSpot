@@ -9,7 +9,6 @@ const {
   findSpot,
   findSpotlist,
   checkDuplicateSpotlistName,
-  checkSpotInOtherSpotlist,
 } = require("../utils/spotlistUtils");
 
 exports.getSpotlists = catchAsync(async (req, res) => {
@@ -24,20 +23,20 @@ exports.getSpotlists = catchAsync(async (req, res) => {
 });
 
 exports.createSpotlist = catchAsync(async (req, res) => {
-  const { name, spotId, visibility, note } = req.body;
+  const { name, visibility, description, spotId } = req.body;
 
   const user = await findUser(req.user.id);
   const spot = await findSpot(spotId);
 
   checkDuplicateSpotlistName(user, name);
-  checkSpotInOtherSpotlist(user, spot);
 
   const newSpotlist = new Spotlist({
+    author: user._id,
     name,
     visibility,
     cover: spot.photo,
+    description,
     spots: spot._id,
-    author: user._id,
   });
 
   await newSpotlist.save();
@@ -45,11 +44,16 @@ exports.createSpotlist = catchAsync(async (req, res) => {
   user.spotlists.push(newSpotlist._id);
   await user.save({ validateBeforeSave: false });
 
-  await Spot.findByIdAndUpdate(spot._id, {
-    $push: {
-      favouritedBy: { userId: user._id, note: note },
-    },
-  });
+  const existingSpot = await Spot.findById(spot._id);
+
+  const alreadyFavourited = existingSpot.favouritedBy.some(
+    (entry) => entry.userId.toString() === user._id.toString()
+  );
+
+  if (!alreadyFavourited) {
+    existingSpot.favouritedBy.push({ userId: user._id, note: "" });
+    await existingSpot.save();
+  }
 
   res.status(201).json({
     status: "success",
@@ -59,7 +63,7 @@ exports.createSpotlist = catchAsync(async (req, res) => {
 });
 
 exports.editSpotlist = catchAsync(async (req, res) => {
-  const { nameIsChanged, newName, newVisibility } = req.body;
+  const { nameIsChanged, newName, newVisibility, newDescription } = req.body;
   const spotlistId = req.params.id;
 
   const user = await findUser(req.user.id);
@@ -69,12 +73,16 @@ exports.editSpotlist = catchAsync(async (req, res) => {
 
   if (newName) spotlist.name = newName;
   if (newVisibility) spotlist.visibility = newVisibility;
+  spotlist.description = newDescription;
 
   await spotlist.save();
 
   res.status(200).json({
     status: "success",
     message: "Spotlist updated",
+    data: {
+      spotlist,
+    },
   });
 });
 
@@ -88,18 +96,34 @@ exports.deleteSpotlist = catchAsync(async (req, res, next) => {
     $pull: { spotlists: spotlist._id },
   });
 
-  await Spot.updateMany(
-    { _id: { $in: spotsToRemove } },
-    {
-      $pull: {
-        favouritedBy: { userId: user._id },
-      },
-    }
+  const otherSpotlists = await Spotlist.find({
+    _id: { $ne: spotlist._id },
+    spots: { $in: spotsToRemove },
+    author: user._id,
+  });
+
+  const spotsToKeep = new Set(
+    otherSpotlists.flatMap((list) => list.spots.map((spot) => spot.toString()))
   );
 
-  await user.save({ validateBeforeSave: false });
+  const spotsToUpdate = spotsToRemove.filter(
+    (spot) => !spotsToKeep.has(spot.toString())
+  );
+
+  if (spotsToUpdate.length > 0) {
+    await Spot.updateMany(
+      { _id: { $in: spotsToUpdate } },
+      {
+        $pull: {
+          favouritedBy: { userId: user._id },
+        },
+      }
+    );
+  }
 
   await Spotlist.findByIdAndDelete(spotlist._id);
+
+  // Works for now but needs further testing
 
   res.status(200).json({
     status: "success",
@@ -107,41 +131,103 @@ exports.deleteSpotlist = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.addToSpotlist = catchAsync(async (req, res) => {
-  const { spotId, note } = req.body;
-  const spotlistId = req.params.id;
+exports.updateSpotlists = catchAsync(async (req, res) => {
+  const { spotId, spotlistsAdded, spotlistsRemoved } = req.body;
 
   const user = await findUser(req.user.id);
   const spot = await findSpot(spotId);
-  const spotlist = await findSpotlist(spotlistId);
 
-  checkSpotInOtherSpotlist(user, spot);
+  const spotPresentInSpotlists = await Spotlist.find({
+    spots: { $in: [spotId] },
+  }).select("_id");
 
-  if (spotlist.spots.some((existingSpot) => existingSpot.equals(spot._id))) {
-    return res.status(400).json({
-      status: "fail",
-      message: "Spot is already in the spotlist",
-    });
+  let spotPresentInSpotlistsModified = spotPresentInSpotlists.map((spot) =>
+    spot._id.toString()
+  );
+
+  for (const spotlistId of spotlistsAdded) {
+    const spotlist = await findSpotlist(spotlistId);
+
+    if (!spotlist) {
+      return res.status(404).json({
+        status: "fail",
+        message: `Spotlist with ID ${spotlistId} not found`,
+      });
+    }
+
+    if (!spotlist.spots.some((existingSpot) => existingSpot.equals(spot._id))) {
+      spotPresentInSpotlistsModified.push(spotlist._id.toString());
+
+      spotlist.spots.push(spot._id);
+
+      if (
+        spotlist.cover === "no-img-found.jpg" ||
+        spotlist.spots.length === 1
+      ) {
+        spotlist.cover = spot.photo;
+      }
+
+      await spotlist.save();
+    }
   }
 
-  spotlist.spots.push(spot._id);
+  for (const spotlistId of spotlistsRemoved) {
+    const spotlist = await findSpotlist(spotlistId);
 
-  if (spotlist.cover === "no-img-found.jpg" || spotlist.spots.length === 1) {
-    spotlist.cover = spot.photo;
+    if (!spotlist) {
+      return res.status(404).json({
+        status: "fail",
+        message: `Spotlist with ID ${spotlistId} not found`,
+      });
+    }
+
+    if (spotlist.spots.some((existingSpot) => existingSpot.equals(spot._id))) {
+      spotPresentInSpotlistsModified = spotPresentInSpotlistsModified.filter(
+        (id) => id !== spotlist._id.toString()
+      );
+
+      spotlist.spots = spotlist.spots.filter(
+        (existingSpotId) => !existingSpotId.equals(spot._id)
+      );
+
+      if (spotlist.cover === spot.photo) {
+        if (spotlist.spots.length > 0) {
+          const newCoverSpotId = spotlist.spots[0];
+          const newCoverSpot = await findSpot(newCoverSpotId);
+          spotlist.cover = newCoverSpot.photo || "no-img-found.jpg";
+        } else {
+          spotlist.cover = "no-img-found.jpg";
+        }
+      }
+
+      await spotlist.save();
+    }
   }
 
-  await spotlist.save();
+  const isSavedInAnySpotlist = spotPresentInSpotlistsModified.length > 0;
 
-  await user.save({ validateBeforeSave: false });
+  if (
+    spotPresentInSpotlists.length === 0 &&
+    spotPresentInSpotlistsModified.length > 0
+  ) {
+    spot.favouritedBy.push({ userId: user._id, note: "" });
+    await spot.save();
+  }
 
-  await Spot.findByIdAndUpdate(spot._id, {
-    $push: { favouritedBy: { userId: user._id, note } },
-  });
+  if (
+    spotPresentInSpotlists.length > 0 &&
+    spotPresentInSpotlistsModified.length === 0
+  ) {
+    spot.favouritedBy = spot.favouritedBy.filter(
+      (entry) => entry.userId.toString() !== user._id.toString()
+    );
+    await spot.save();
+  }
 
   res.status(200).json({
     status: "success",
-    message: "Spot added to the spotlist",
-    data: spotlist,
+    message: "Spotlists have been updated",
+    isSavedInAnySpotlist,
   });
 });
 
@@ -150,7 +236,17 @@ exports.removeFromSpotlist = catchAsync(async (req, res) => {
 
   const user = await findUser(req.user.id);
   const spot = await findSpot(spotId);
-  const spotlist = await findSpotlist(spotlistId);
+  const spotlist = await Spotlist.findById(spotlistId).populate(
+    "spots",
+    "_id google_id name rating user_ratings_total photo city country"
+  );
+  if (!spotlist) throw new AppError("Spotlist not found", 404);
+
+  const spotPresentInSpotlists = await Spotlist.find({
+    spots: { $in: [spotId] },
+  }).select("_id");
+
+  console.log(spotPresentInSpotlists.length);
 
   if (!spotlist.spots.some((existingSpot) => existingSpot.equals(spot._id))) {
     return res.status(400).json({
@@ -175,13 +271,17 @@ exports.removeFromSpotlist = catchAsync(async (req, res) => {
 
   await spotlist.save();
 
-  await Spot.findByIdAndUpdate(spot._id, {
-    $pull: { favouritedBy: { userId: user._id } },
-  });
+  if (spotPresentInSpotlists.length === 1) {
+    spot.favouritedBy = spot.favouritedBy.filter(
+      (entry) => entry.userId.toString() !== user._id.toString()
+    );
+    await spot.save();
+  }
 
   res.status(200).json({
     status: "success",
     message: "Spot removed from the spotlist",
+    data: spotlist,
   });
 });
 

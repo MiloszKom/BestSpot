@@ -10,7 +10,8 @@ export default function CreateNewSpotlist({
   setSpotlistId,
 }) {
   const [title, setTitle] = useState("");
-  const [visibility, setVisibility] = useState("private");
+  const [visibility, setVisibility] = useState("public");
+  const [description, setDescription] = useState("");
 
   const { showAlert } = useContext(AlertContext);
 
@@ -34,6 +35,7 @@ export default function CreateNewSpotlist({
           name: title,
           spotId,
           visibility,
+          description,
         },
         withCredentials: true,
       });
@@ -49,47 +51,55 @@ export default function CreateNewSpotlist({
   };
 
   return (
-    <>
-      <div className="spotlist-shade"></div>
-      <div className="spotlist-create-container">
-        <div className="spotlist-create-header">
-          New spotlist{" "}
-          <button className="close-button" onClick={close}>
-            <FontAwesomeIcon icon={faXmark} />
-          </button>
-        </div>
-
-        <div className="spotlist-create-input">
-          <label htmlFor="spotlist-title">Choose a title</label>
-          <input
-            type="text"
-            id="spotlist-title"
-            placeholder="Enter title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-
-        <div className="spotlist-create-visibility">
-          <label htmlFor="spotlist-visibility">Visibility</label>
-          <select
-            id="spotlist-visibility"
-            value={visibility} // Set the value based on the state
-            onChange={handleVisibilityChange} // Update state on change
-          >
-            <option value="private">Private</option>
-            <option value="friends-only">Friends only</option>
-            <option value="public">Public</option>
-          </select>
-        </div>
-
-        <button
-          className={`spotlist-create-btn ${title ? "" : "disabled"}`}
-          onClick={createSpotlist}
-        >
-          Create
+    <div className="spotlist-create-container">
+      <div className="spotlist-create-header">
+        <span>New spotlist</span>
+        <button className="close-button" onClick={close}>
+          <FontAwesomeIcon icon={faXmark} />
         </button>
       </div>
-    </>
+
+      <div className="spotlist-create-input">
+        <label htmlFor="spotlist-title">Choose a title</label>
+        <input
+          type="text"
+          id="spotlist-title"
+          placeholder="Enter title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
+
+      <div className="spotlist-create-input">
+        <label htmlFor="spotlist-visibility">Visibility</label>
+        <select
+          id="spotlist-visibility"
+          value={visibility} // Set the value based on the state
+          onChange={handleVisibilityChange} // Update state on change
+        >
+          <option value="private">Private</option>
+          <option value="friends-only">Friends only</option>
+          <option value="public">Public</option>
+        </select>
+      </div>
+
+      <div className="spotlist-create-input">
+        <label htmlFor="spotlist-description">Description (optional)</label>
+        <input
+          type="text"
+          id="spotlist-title"
+          placeholder="Enter title"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+
+      <button
+        className={`spotlist-create-btn ${title ? "" : "disabled"}`}
+        onClick={createSpotlist}
+      >
+        Create
+      </button>
+    </div>
   );
 }

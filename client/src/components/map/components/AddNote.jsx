@@ -41,31 +41,28 @@ export default function AddNote({
   };
 
   return (
-    <>
-      <div className="spotlist-shade"></div>
-      <div className="add-note-container">
-        <div className="add-note-header">
-          <span>Add Note</span>
-          <FontAwesomeIcon
-            icon={faXmark}
-            className="close-button"
-            onClick={() => setAddingNote(false)}
-          />
-        </div>
-        <div className="add-note-input">
-          <textarea
-            className="add-note-textarea"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </div>
-        <button
-          className={`add-note-btn ${placeNote === note ? "disabled" : ""}`}
-          onClick={saveNote}
-        >
-          Save
-        </button>
+    <div className="add-note-container">
+      <div className="add-note-header">
+        <span>Add Note</span>
+        <FontAwesomeIcon
+          icon={faXmark}
+          className="close-button"
+          onClick={() => setAddingNote(false)}
+        />
       </div>
-    </>
+      <div className="add-note-input">
+        <textarea
+          className="add-note-textarea"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </div>
+      <button
+        className={`add-note-btn ${placeNote === note ? "disabled" : ""}`}
+        onClick={saveNote}
+      >
+        Save
+      </button>
+    </div>
   );
 }

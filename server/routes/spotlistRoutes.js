@@ -9,17 +9,18 @@ router
   .post(authController.protect, spotlistController.createSpotlist);
 
 router
+  .route("/manage")
+  .patch(authController.protect, spotlistController.updateSpotlists);
+
+router
   .route("/:id")
   .get(authController.protect, spotlistController.getSpotsInSpotlist)
-  .post(authController.protect, spotlistController.addToSpotlist)
   .delete(authController.protect, spotlistController.deleteSpotlist)
   .patch(authController.protect, spotlistController.editSpotlist);
 
-router.delete(
-  "/:spotlistId/spot/:spotId",
-  authController.protect,
-  spotlistController.removeFromSpotlist
-);
+router
+  .route("/:spotlistId/spot/:spotId")
+  .delete(authController.protect, spotlistController.removeFromSpotlist);
 
 router
   .route("/:spotlistId/spot/:spotId/note")

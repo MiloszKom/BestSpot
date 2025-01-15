@@ -4,8 +4,6 @@ import axios from "axios";
 
 import ShowOptions from "../posts/ShowOptions";
 
-// import { AlertContext } from "../context/AlertContext";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
@@ -71,13 +69,26 @@ export default function Spotlists() {
                 <p className="spotlists-details">
                   {getVisibilityDisplayName(spotlist.visibility)}
                 </p>
-                <p className="spotlists-description">Description</p>
+                {spotlist.description && (
+                  <p className="spotlists-description">
+                    {spotlist.description}
+                  </p>
+                )}
               </div>
-              <div className="spotlists-menu">
+              <div
+                className="spotlists-menu"
+                onClick={(e) => e.preventDefault()}
+              >
                 <button
                   onClick={() =>
                     setOptions({
-                      spotlistId: spotlist._id,
+                      spotlistInfo: {
+                        id: spotlist._id,
+                        name: spotlist.name,
+                        visibility: spotlist.visibility,
+                        description: spotlist.description,
+                        context: "spotlists",
+                      },
                       aviableOptions: ["edit", "delete"],
                       entity: "spotlist",
                     })
@@ -85,7 +96,7 @@ export default function Spotlists() {
                 >
                   <FontAwesomeIcon icon={faEllipsisVertical} />
                 </button>
-                {options && options.spotlistId === spotlist._id && (
+                {options && options.spotlistInfo.id === spotlist._id && (
                   <ShowOptions
                     options={options}
                     setOptions={setOptions}
@@ -104,10 +115,14 @@ export default function Spotlists() {
       )}
 
       {editingSpotlist && (
-        <EditSpotlist
-          editingSpotlist={editingSpotlist}
-          setEditingSpotlist={setEditingSpotlist}
-        />
+        <>
+          <EditSpotlist
+            setData={setSpotlists}
+            editingSpotlist={editingSpotlist}
+            setEditingSpotlist={setEditingSpotlist}
+          />
+          <div className="spotlist-shade"></div>
+        </>
       )}
     </div>
   );

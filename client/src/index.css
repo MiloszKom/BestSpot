@@ -417,8 +417,8 @@ img {
   height: 100dvh;
   background-color: #14161a;
   color: #fff;
-  overflow-y: scroll;
   transition: opacity 0.5s;
+  overflow-y: auto;
   z-index: 10;
 }
 
@@ -820,6 +820,7 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 11;
 }
 
 .add-note-header {
@@ -839,6 +840,9 @@ img {
 }
 
 .add-note-textarea {
+  background-color: inherit;
+  color: #fff;
+  border-radius: 0.5rem;
   margin-top: 1.5rem;
   width: 100%;
   height: 90px;
@@ -854,8 +858,7 @@ img {
 }
 
 .add-note-btn {
-  margin-top: 1rem;
-  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
   align-self: flex-end;
   font-size: 1.1rem;
   color: #0088ff;
@@ -863,6 +866,7 @@ img {
   cursor: pointer;
   background-color: #282828;
   border: none;
+  padding: 0.5rem 1rem;
   transition: all 0.2s;
 }
 
@@ -887,6 +891,7 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 11;
 }
 
 .spotlist-add-header {
@@ -915,6 +920,10 @@ img {
   padding-left: 2rem;
   overflow: hidden;
   overflow-y: auto;
+}
+
+.spotlist-add-list svg {
+  width: 20px;
 }
 
 .spotlist-add-list-item {
@@ -977,20 +986,20 @@ img {
 }
 
 .spotlist-add-new-btn {
-  background-color: #626262;
+  background-color: #4b4b4b;
 }
 
 .spotlist-add-new-btn:hover {
-  background-color: #4b4b4b;
+  background-color: #626262;
 }
 
 .spotlist-add-to-btn {
   margin-top: 0.5rem;
-  background-color: #0088ff;
+  background-color: #0056b3;
 }
 
 .spotlist-add-to-btn:hover {
-  background-color: #0056b3;
+  background-color: #007bff;
 }
 
 .spotlist-shade {
@@ -1001,7 +1010,9 @@ img {
   width: 100%;
   background-color: #000;
   opacity: 0.5;
+  z-index: 10;
 }
+
 /* CREATE NEW SPOTLIST */
 
 .spotlist-create-container {
@@ -1017,6 +1028,7 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 11;
 }
 
 .spotlist-create-header {
@@ -1036,8 +1048,7 @@ img {
   cursor: pointer;
 }
 
-.spotlist-create-input label,
-.spotlist-create-visibility label {
+.spotlist-create-input label {
   display: block;
   margin: 0.5rem 0;
   font-size: 1.2rem;
@@ -1629,7 +1640,7 @@ img {
   position: absolute;
   width: 100%;
   z-index: 10;
-  height: calc(100% - 50px);
+  height: 100%;
   top: 0;
   overflow-y: auto;
 }
@@ -1733,7 +1744,8 @@ img {
   gap: 1rem;
 }
 
-.spotlist-detail-options .option {
+.spotlist-detail-menu button,
+.spotlist-detail-options .spotlist-detail-options-el {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1742,10 +1754,21 @@ img {
   border-radius: 100%;
   background-color: #333;
   color: #0088ff;
+  transition: background-color 0.2s;
+  cursor: pointer;
 }
 
-.spotlist-detail-options .options {
+.spotlist-detail-menu button:hover,
+.spotlist-detail-options .spotlist-detail-options-el:hover {
+  background-color: #404040;
+}
+
+.spotlist-detail-menu {
   margin-left: auto;
+}
+
+.spotlist-detail-menu .aviable-options {
+  transform: translate(-165px, -35px);
 }
 
 .spotlist-detail-spots {
@@ -1790,7 +1813,7 @@ img {
   opacity: 0.6;
 }
 
-.spotlist-detail-spots-el svg {
+.spotlist-detail-spots-el .location svg {
   margin-right: 0.25rem;
 }
 
@@ -1801,6 +1824,11 @@ img {
   height: 35px;
   width: 35px;
   border-radius: 100%;
+  transition: background-color 0.2s;
+}
+
+.spotlist-detail-spots-el .options:hover {
+  background-color: #333;
 }
 
 @media (min-width: 850px) {

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+import ShowOptions from "../posts/ShowOptions";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeftLong,
@@ -10,11 +12,14 @@ import {
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart } from "@fortawesome/free-regular-svg-icons";
-
 import { getVisibilityDisplayName } from "./../utils/helperFunctions";
+import EditSpotlist from "./components/EditSpotlist";
 
 export default function SpotlistContent() {
   const [spotlistData, setSpotlistData] = useState([]);
+  const [editingSpotlist, setEditingSpotlist] = useState(false);
+
+  const [options, setOptions] = useState(null);
 
   const params = useParams();
   const navigate = useNavigate();
@@ -31,7 +36,6 @@ export default function SpotlistContent() {
           withCredentials: true,
         });
 
-        console.log(res.data.data);
         setSpotlistData(res.data.data);
       } catch (err) {
         console.log(err);
@@ -40,6 +44,8 @@ export default function SpotlistContent() {
 
     fetchFavourites();
   }, []);
+
+  console.log(spotlistData);
 
   return (
     <div className="spotlist-detail-container">
@@ -71,18 +77,46 @@ export default function SpotlistContent() {
               Views
             </span>
           </div>
-          <div className="spotlist-detail-description">Description</div>
+          {spotlistData.description && (
+            <div className="spotlist-detail-description">
+              {spotlistData.description}
+            </div>
+          )}
         </div>
         <div className="spotlist-detail-options">
-          <button className="option">
+          <button className="spotlist-detail-options-el">
             <FontAwesomeIcon icon={faHeart} />
           </button>
-          <button className="option">
+          <button className="spotlist-detail-options-el">
             <FontAwesomeIcon icon={faClone} />
           </button>
-          <button className="option options">
-            <FontAwesomeIcon icon={faEllipsisVertical} />
-          </button>
+          <div className="spotlist-detail-menu">
+            <button
+              onClick={() =>
+                setOptions({
+                  spotlistInfo: {
+                    id: spotlistData._id,
+                    name: spotlistData.name,
+                    visibility: spotlistData.visibility,
+                    description: spotlistData.description,
+                    context: "spotlistContent",
+                  },
+                  aviableOptions: ["edit", "delete"],
+                  entity: "spotlist",
+                })
+              }
+            >
+              <FontAwesomeIcon icon={faEllipsisVertical} />
+            </button>
+            {options && options.spotlistInfo?.id === spotlistData._id && (
+              <ShowOptions
+                options={options}
+                setOptions={setOptions}
+                setData={setSpotlistData}
+                setEditingSpotlist={setEditingSpotlist}
+              />
+            )}
+          </div>
         </div>
       </div>
       <div className="spotlist-detail-spots">
@@ -106,13 +140,46 @@ export default function SpotlistContent() {
                   {spot.city}, {spot.country}
                 </div>
               </div>
-              <button className="options">
-                <FontAwesomeIcon icon={faEllipsisVertical} />
-              </button>
+              <div className="menu" onClick={(e) => e.preventDefault()}>
+                <button
+                  className="options"
+                  onClick={() =>
+                    setOptions({
+                      spotlistId: spotlistData._id,
+                      spotId: spot._id,
+                      aviableOptions: ["delete"],
+                      entity: "spot",
+                    })
+                  }
+                >
+                  <FontAwesomeIcon icon={faEllipsisVertical} />
+                </button>
+                {options?.spotId === spot._id && (
+                  <ShowOptions
+                    options={options}
+                    setOptions={setOptions}
+                    setData={setSpotlistData}
+                  />
+                )}
+              </div>
             </Link>
           );
         })}
       </div>
+      {options && (
+        <div className="options-overlay" onClick={() => setOptions(false)} />
+      )}
+
+      {editingSpotlist && (
+        <>
+          <EditSpotlist
+            setData={setSpotlistData}
+            editingSpotlist={editingSpotlist}
+            setEditingSpotlist={setEditingSpotlist}
+          />
+          <div className="spotlist-shade"></div>
+        </>
+      )}
     </div>
   );
 }

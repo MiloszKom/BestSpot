@@ -29,8 +29,6 @@ import AddToSpotlist from "./components/AddToSpotlist";
 import CreateNewSpotlist from "./components/CreateNewSpotlist";
 import AddNote from "./components/AddNote";
 
-import axios from "axios";
-
 export default function SpotDetail() {
   const [imageError, setImageError] = useState(false);
 
@@ -68,25 +66,6 @@ export default function SpotDetail() {
 
   const saveToSpotlist = () => {
     setAddingToSpotlist(true);
-  };
-
-  const removeFromSpotlist = async () => {
-    try {
-      const res = await axios({
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}/spot/${placeDetails._id}`,
-        withCredentials: true,
-      });
-      console.log(res);
-      showAlert(res.data.message, res.data.status);
-      setIsFavourite(false);
-    } catch (err) {
-      showAlert(err.response.data.message, err.response.data.status);
-      console.log(err);
-    }
   };
 
   if (!placeDetails) return <div className="loader"></div>;
@@ -205,7 +184,7 @@ export default function SpotDetail() {
                   </div>
                 ) : (
                   <div className="note">
-                    <div className="note-content">Saved in spotlist</div>
+                    <div className="note-content">Saved</div>
                     <div
                       className="note-edit"
                       onClick={() => setAddingNote(true)}
@@ -282,12 +261,12 @@ export default function SpotDetail() {
             <div>View in Google Maps</div>
           </a>
           {isFavourite ? (
-            <div className="add-favorite-btn" onClick={removeFromSpotlist}>
-              Remove from spotlist
+            <div className="add-favorite-btn" onClick={saveToSpotlist}>
+              Modify Spotlists
             </div>
           ) : (
             <div className="add-favorite-btn-2" onClick={saveToSpotlist}>
-              Add to spotlist
+              Save to spotlist
             </div>
           )}
         </div>
@@ -318,6 +297,9 @@ export default function SpotDetail() {
           setSpotlistId={setSpotlistId}
         />
       )}
+      {addingToSpotlist && <div className="spotlist-shade" />}
+      {creatingNewSpotlist && <div className="spotlist-shade" />}
+      {addingNote && <div className="spotlist-shade" />}
     </>
   );
 }

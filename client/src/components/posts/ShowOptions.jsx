@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faFlag } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +10,7 @@ import {
   deletePost,
   deleteComment,
   deleteSpotlist,
+  deleteFromSpotlist,
   deleteNotification,
 } from "../utils/postUtils";
 
@@ -20,6 +22,8 @@ export default function ShowOptions({
   setComment,
   setEditingSpotlist,
 }) {
+  const navigate = useNavigate();
+
   const { showAlert } = useContext(AlertContext);
 
   const editComment = () => {
@@ -42,14 +46,21 @@ export default function ShowOptions({
   };
 
   const editSpotlist = () => {
-    setEditingSpotlist(true);
+    setEditingSpotlist(options.spotlistInfo);
     setOptions(false);
+  };
+
+  const deleteSpotlistAndMove = () => {
+    deleteSpotlist(options, setOptions, setData, showAlert);
+    if (options.spotlistInfo.context === "spotlistContent") {
+      setTimeout(() => {
+        navigate("/spotlists");
+      }, 500);
+    }
   };
 
   return (
     <div className="aviable-options">
-      {console.log(options)}
-
       {/* POST OPTIONS  */}
 
       {options.entity === "post" &&
@@ -143,10 +154,20 @@ export default function ShowOptions({
 
       {options.entity === "spotlist" &&
         options.aviableOptions.includes("delete") && (
+          <div className="option delete" onClick={deleteSpotlistAndMove}>
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
+
+      {/* SPOTLIST CONTENT OPTIONS */}
+
+      {options.entity === "spot" &&
+        options.aviableOptions.includes("delete") && (
           <div
             className="option delete"
             onClick={() =>
-              deleteSpotlist(options, setOptions, setData, showAlert)
+              deleteFromSpotlist(options, setOptions, setData, showAlert)
             }
           >
             <FontAwesomeIcon icon={faTrash} />

@@ -28,12 +28,3 @@ exports.checkDuplicateSpotlistName = (user, name) => {
   if (existingSpotlist)
     throw new AppError("A spotlist with this name already exists", 409);
 };
-
-exports.checkSpotInOtherSpotlist = (user, spot) => {
-  const alreadyInSpotlist = user.spotlists.some((spotlist) =>
-    spotlist.spots.some((existingSpot) => existingSpot.equals(spot._id))
-  );
-
-  if (alreadyInSpotlist)
-    throw new AppError("Spot is already saved in a spotlist", 409);
-};

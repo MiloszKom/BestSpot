@@ -418,13 +418,39 @@ export const deleteSpotlist = async (
       headers: {
         "Content-Type": "application/json",
       },
-      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${options.spotlistId}`,
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${options.spotlistInfo.id}`,
       withCredentials: true,
     });
     setOptions(false);
-    setData((prevData) => {
-      return prevData.filter((data) => data._id !== options.spotlistId);
+    if (options.spotlistInfo.context === "spotlists") {
+      setData((prevData) => {
+        return prevData.filter((data) => data._id !== options.spotlistInfo.id);
+      });
+    }
+    showAlert(res.data.message, res.data.status);
+  } catch (err) {
+    console.log(err);
+    showAlert(err.response.data.message, err.response.data.status);
+  }
+};
+
+export const deleteFromSpotlist = async (
+  options,
+  setOptions,
+  setData,
+  showAlert
+) => {
+  try {
+    const res = await axios({
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${options.spotlistId}/spot/${options.spotId}`,
+      withCredentials: true,
     });
+    setOptions(false);
+    setData(res.data.data);
     showAlert(res.data.message, res.data.status);
   } catch (err) {
     console.log(err);
