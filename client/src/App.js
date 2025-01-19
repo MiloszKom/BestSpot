@@ -1,172 +1,55 @@
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useContext,
-  useRef,
-} from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Outlet,
-  Navigate,
-} from "react-router-dom";
-import { AuthContext } from "./components/context/AuthContext";
-import { ResultsContext } from "./components/context/ResultsContext";
-import { SocketContext } from "./components/context/SocketContext";
-import { AlertContext } from "./components/context/AlertContext";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthContextProvider } from "./components/context/AuthContext";
+import { ResultsContextProvider } from "./components/context/ResultsContext";
+import { SocketContextProvider } from "./components/context/SocketContext";
+import { AlertContextProvider } from "./components/context/AlertContext";
 import Alert from "./components/common/Alert";
 
-import { checkCookies } from "./components/utils/helperFunctions";
-
-import Nav from "./components/common/Nav";
-import Header from "./components/common/Header";
-import Sidenav from "./components/common/Sidenav";
+import HomePage from "./components/posts/HomePage";
+import PostDetail from "./components/posts/PostDetail";
+import PostCreate from "./components/posts/PostCreate";
 
 import GoogleMap from "./components/map/GoogleMap";
+import SpotDetail from "./components/map/SpotDetail";
+
+import Notifications from "./components/pages/Notifications";
+
+import ChatRoom from "./components/messages/ChatRoom";
+import ChatSearchBar from "./components/messages/ChatSearchBar";
+
+import SpotlistsPage from "./components/spotlists/SpotlistsPage";
+
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
-import Profile from "./components/profile/Profile";
-import Settings from "./components/pages/Settings";
-import SpotlistsPage from "./components/spotlists/SpotlistsPage";
-import SpotDetail from "./components/map/SpotDetail";
+
 import Chats from "./components/messages/Chats";
+
+import SpotlistContent from "./components/spotlists/SpotlistContent";
 
 import FriendsPage from "./components/friends/FriendsPage";
 import FriendsList from "./components/friends/FriendsList";
 import FriendsRequests from "./components/friends/FriendsRequests";
 
-import ChatRoom from "./components/messages/ChatRoom";
-import ChatSearchBar from "./components/messages/ChatSearchBar";
-import HomePage from "./components/posts/HomePage";
-import PostCreate from "./components/posts/PostCreate";
-
-import NotFoundPage from "./components/pages/NotFoundPage";
-
-import { io } from "socket.io-client";
-import SpotlistContent from "./components/spotlists/SpotlistContent";
-import PostDetail from "./components/posts/PostDetail";
-import Notifications from "./components/pages/Notifications";
+import Profile from "./components/profile/Profile";
 import { ProfilePosts } from "./components/profile/ProfilePosts";
 import { ProfileSpotlists } from "./components/profile/ProfileSpotlists";
 
-function Layout() {
-  const [showMenu, setShowMenu] = useState(false);
+import Settings from "./components/pages/Settings";
 
-  return (
-    <div className="container">
-      <Header setShowMenu={setShowMenu} />
-      <div className="content">
-        <Outlet />
-      </div>
-      <Nav />
-      {showMenu && <Sidenav setShowMenu={setShowMenu} />}
-      {showMenu && (
-        <div className="sidebar-overlay" onClick={() => setShowMenu(false)} />
-      )}
-    </div>
-  );
-}
+import PrivateRoute from "./components/auth/PrivateRoute";
+import Layout from "./components/common/Layout";
 
-function PrivateRoute({ children }) {
-  const { isDataFetched, userData } = useContext(AuthContext);
-  if (isDataFetched === false) {
-    return <div>Loading...</div>;
-  } else {
-    return userData ? children : <Navigate to="/login" replace />;
-  }
-}
+import NotFoundPage from "./components/pages/NotFoundPage";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [token, setToken] = useState(null);
-  const [isDataFetched, setIsDataFetched] = useState(false);
-  const [alertData, setAlertData] = useState({});
-  const [searchResults, setSearchResults] = useState(null);
-
-  useEffect(() => {
-    const fetchCookies = async () => {
-      const result = await checkCookies();
-      if (result) {
-        setIsLoggedIn(true);
-        setUserData(result.user);
-        setToken(result.token);
-      }
-      setIsDataFetched(true);
-    };
-
-    fetchCookies();
-  }, []);
-
-  const login = useCallback((data) => {
-    setIsLoggedIn(true);
-    setUserData(data.data.user);
-  }, []);
-
-  const logout = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-    }
-    setIsLoggedIn(false);
-    setUserData(null);
-    setIsDataFetched(false);
-    setSocket(null);
-  }, []);
-
-  const getResults = useCallback((data) => {
-    setSearchResults(data);
-  }, []);
-
-  const deleteResults = useCallback(() => {
-    setSearchResults(null);
-  }, []);
-
-  const socketRef = useRef();
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    if (!userData) return;
-
-    socketRef.current = io(`http://${process.env.REACT_APP_SERVER}:5000`);
-
-    socketRef.current.on("connect", () => {
-      setSocket(socketRef.current);
-      console.log(`You connected with the server!`);
-
-      socketRef.current.emit("user-online", userData._id, userData.chatsJoined);
-    });
-
-    socketRef.current.on("connect_error", (err) => {
-      console.error("Connection failed:", err);
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, [userData]);
-
-  const showAlert = useCallback((msg, type) => {
-    setAlertData({
-      alertMsg: msg,
-      alertType: type,
-    });
-  }, []);
-
   return (
-    <AlertContext.Provider value={{ showAlert }}>
-      <SocketContext.Provider value={{ socket }}>
-        <AuthContext.Provider
-          value={{ isLoggedIn, login, logout, userData, isDataFetched, token }}
-        >
-          <ResultsContext.Provider
-            value={{ searchResults, getResults, deleteResults }}
-          >
+    <AlertContextProvider>
+      <AuthContextProvider>
+        <SocketContextProvider>
+          <ResultsContextProvider>
             <BrowserRouter>
-              <Alert msg={alertData.alertMsg} type={alertData.alertType} />
+              <Alert />
               <Routes>
                 <Route path="/" element={<Layout />}>
                   <Route path="/home" element={<HomePage />}>
@@ -243,10 +126,10 @@ function App() {
                 </Route>
               </Routes>
             </BrowserRouter>
-          </ResultsContext.Provider>
-        </AuthContext.Provider>
-      </SocketContext.Provider>
-    </AlertContext.Provider>
+          </ResultsContextProvider>
+        </SocketContextProvider>
+      </AuthContextProvider>
+    </AlertContextProvider>
   );
 }
 
