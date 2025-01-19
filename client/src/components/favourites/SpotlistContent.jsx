@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+
+import { AuthContext } from "../context/AuthContext";
 
 import ShowOptions from "../posts/ShowOptions";
 
@@ -16,16 +18,21 @@ import { getVisibilityDisplayName } from "./../utils/helperFunctions";
 import EditSpotlist from "./components/EditSpotlist";
 
 export default function SpotlistContent() {
-  const [spotlistData, setSpotlistData] = useState([]);
+  const [spotlistData, setSpotlistData] = useState(null);
   const [editingSpotlist, setEditingSpotlist] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [options, setOptions] = useState(null);
 
   const params = useParams();
   const navigate = useNavigate();
 
+  const { userData } = useContext(AuthContext);
+
   useEffect(() => {
     const fetchFavourites = async () => {
+      setIsLoading(true);
       try {
         const res = await axios({
           method: "GET",
@@ -37,15 +44,24 @@ export default function SpotlistContent() {
         });
 
         setSpotlistData(res.data.data);
+        setIsLoading(false);
       } catch (err) {
         console.log(err);
+        setErrorMessage(err.response.data.message);
+        setIsLoading(false);
       }
     };
 
     fetchFavourites();
   }, []);
 
-  console.log(spotlistData);
+  if (!spotlistData && isLoading) return <div className="loader" />;
+  if (!spotlistData && !isLoading)
+    return (
+      <div className="spotlist-detail-error">
+        {errorMessage} <button onClick={() => navigate(-1)}> Return </button>
+      </div>
+    );
 
   return (
     <div className="spotlist-detail-container">
@@ -61,15 +77,18 @@ export default function SpotlistContent() {
         />
         <div className="spotlist-detail-info">
           <div className="spotlist-detail-title">{spotlistData.name}</div>
-          <div className="spotlist-detail-author">
+          <Link
+            to={`/${spotlistData.author?.handle}`}
+            className="spotlist-detail-author"
+          >
             <div
               className="image"
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/user-66f8f55210af8d3b128954d0-1735126269284-1.jpeg)`,
+                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlistData.author?.photo})`,
               }}
             />
-            <span>XoNi</span>
-          </div>
+            <span>{spotlistData.author?.name}</span>
+          </Link>
           <div className="spot-detail-details">
             <span>
               {spotlistData.spots?.length} Spots ·{" "}
@@ -90,33 +109,35 @@ export default function SpotlistContent() {
           <button className="spotlist-detail-options-el">
             <FontAwesomeIcon icon={faClone} />
           </button>
-          <div className="spotlist-detail-menu">
-            <button
-              onClick={() =>
-                setOptions({
-                  spotlistInfo: {
-                    id: spotlistData._id,
-                    name: spotlistData.name,
-                    visibility: spotlistData.visibility,
-                    description: spotlistData.description,
-                    context: "spotlistContent",
-                  },
-                  aviableOptions: ["edit", "delete"],
-                  entity: "spotlist",
-                })
-              }
-            >
-              <FontAwesomeIcon icon={faEllipsisVertical} />
-            </button>
-            {options && options.spotlistInfo?.id === spotlistData._id && (
-              <ShowOptions
-                options={options}
-                setOptions={setOptions}
-                setData={setSpotlistData}
-                setEditingSpotlist={setEditingSpotlist}
-              />
-            )}
-          </div>
+          {userData?._id === spotlistData.author?._id && (
+            <div className="spotlist-detail-menu">
+              <button
+                onClick={() =>
+                  setOptions({
+                    spotlistInfo: {
+                      id: spotlistData._id,
+                      name: spotlistData.name,
+                      visibility: spotlistData.visibility,
+                      description: spotlistData.description,
+                      context: "spotlistContent",
+                    },
+                    aviableOptions: ["edit", "delete"],
+                    entity: "spotlist",
+                  })
+                }
+              >
+                <FontAwesomeIcon icon={faEllipsisVertical} />
+              </button>
+              {options && options.spotlistInfo?.id === spotlistData._id && (
+                <ShowOptions
+                  options={options}
+                  setOptions={setOptions}
+                  setData={setSpotlistData}
+                  setEditingSpotlist={setEditingSpotlist}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
       <div className="spotlist-detail-spots">
@@ -140,28 +161,30 @@ export default function SpotlistContent() {
                   {spot.city}, {spot.country}
                 </div>
               </div>
-              <div className="menu" onClick={(e) => e.preventDefault()}>
-                <button
-                  className="options"
-                  onClick={() =>
-                    setOptions({
-                      spotlistId: spotlistData._id,
-                      spotId: spot._id,
-                      aviableOptions: ["delete"],
-                      entity: "spot",
-                    })
-                  }
-                >
-                  <FontAwesomeIcon icon={faEllipsisVertical} />
-                </button>
-                {options?.spotId === spot._id && (
-                  <ShowOptions
-                    options={options}
-                    setOptions={setOptions}
-                    setData={setSpotlistData}
-                  />
-                )}
-              </div>
+              {userData._id === spotlistData.author._id && (
+                <div className="menu" onClick={(e) => e.preventDefault()}>
+                  <button
+                    className="options"
+                    onClick={() =>
+                      setOptions({
+                        spotlistId: spotlistData._id,
+                        spotId: spot._id,
+                        aviableOptions: ["delete"],
+                        entity: "spot",
+                      })
+                    }
+                  >
+                    <FontAwesomeIcon icon={faEllipsisVertical} />
+                  </button>
+                  {options?.spotId === spot._id && (
+                    <ShowOptions
+                      options={options}
+                      setOptions={setOptions}
+                      setData={setSpotlistData}
+                    />
+                  )}
+                </div>
+              )}
             </Link>
           );
         })}

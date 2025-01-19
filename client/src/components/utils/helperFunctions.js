@@ -87,8 +87,7 @@ export const formatTimeAgo = (timestamp) => {
   if (seconds < 60) return `${seconds}s ago`;
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
-  if (days === 1) return `${days} day ago`;
-  if (days < 7) return `${days} days ago`;
+  if (days < 7) return `${days}d ago`;
 
   const options = { year: "numeric", month: "short", day: "numeric" };
   return new Date(timestamp).toLocaleDateString(undefined, options);
@@ -119,4 +118,21 @@ export const getVisibilityDisplayName = (visibility) => {
   };
 
   return visibilityMap[visibility] || "Unknown";
+};
+
+export const logout = async (auth) => {
+  try {
+    const res = await axios({
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/logout`,
+      withCredentials: true,
+    });
+    auth.logout();
+    if ((res.data.status = "success")) window.location.href = "/login";
+  } catch (err) {
+    console.log(err);
+  }
 };

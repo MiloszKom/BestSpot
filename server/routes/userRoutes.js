@@ -56,16 +56,11 @@ router.delete(
   userController.deleteNotification
 );
 
-router
-  .route("/")
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+router.route("/").get(userController.getAllUsers);
 
 router
-  .route("/:id")
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .route("/:handle")
+  .get(authController.protect, userController.getUserProfile);
 
 router.post(
   "/sendFriendRequest/:id",

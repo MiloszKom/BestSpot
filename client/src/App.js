@@ -11,7 +11,6 @@ import {
   Route,
   Outlet,
   Navigate,
-  useLocation,
 } from "react-router-dom";
 import { AuthContext } from "./components/context/AuthContext";
 import { ResultsContext } from "./components/context/ResultsContext";
@@ -28,8 +27,8 @@ import Sidenav from "./components/common/Sidenav";
 import GoogleMap from "./components/map/GoogleMap";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
-import Account from "./components/account/Account";
-import Settings from "./components/account/Settings";
+import Profile from "./components/profile/Profile";
+import Settings from "./components/pages/Settings";
 import Spotlists from "./components/favourites/Spotlists";
 import SpotDetail from "./components/map/SpotDetail";
 import Chats from "./components/friends/Chats";
@@ -39,9 +38,8 @@ import FriendsList from "./components/friends/FriendsList";
 import FriendsRequests from "./components/friends/FriendsRequests";
 
 import ChatRoom from "./components/friends/ChatRoom";
-import Profile from "./components/friends/Profile";
 import ChatSearchBar from "./components/friends/ChatSearchBar";
-import Posts from "./components/posts/Posts";
+import HomePage from "./components/posts/HomePage";
 import PostCreate from "./components/posts/PostCreate";
 
 import NotFoundPage from "./components/pages/NotFoundPage";
@@ -50,6 +48,8 @@ import { io } from "socket.io-client";
 import SpotlistContent from "./components/favourites/SpotlistContent";
 import PostDetail from "./components/posts/PostDetail";
 import Notifications from "./components/pages/Notifications";
+import { ProfilePosts } from "./components/profile/ProfilePosts";
+import { ProfileSpotlists } from "./components/profile/ProfileSpotlists";
 
 function Layout() {
   const [showMenu, setShowMenu] = useState(false);
@@ -169,7 +169,7 @@ function App() {
               <Alert msg={alertData.alertMsg} type={alertData.alertType} />
               <Routes>
                 <Route path="/" element={<Layout />}>
-                  <Route path="/home" element={<Posts />}>
+                  <Route path="/home" element={<HomePage />}>
                     <Route path="create-post" element={<PostCreate />} />
                   </Route>
 
@@ -207,28 +207,38 @@ function App() {
                     <Route path="requests" element={<FriendsRequests />} />
                   </Route>
 
-                  <Route path="/profile/:id" element={<Profile />} />
                   <Route path="login" element={<Login />} />
                   <Route path="signup" element={<Signup />} />
 
                   <Route path="notifications" element={<Notifications />} />
 
+                  {/* Profile section  */}
                   <Route
                     path="/:handle"
                     element={
                       <PrivateRoute>
-                        <Account />
+                        <Profile />
                       </PrivateRoute>
                     }
-                  />
+                  >
+                    <Route index element={<ProfilePosts />} />
+                    <Route path="spotlists" element={<ProfileSpotlists />} />
+                  </Route>
+
                   <Route
-                    path="/:handle/settings"
+                    path="/:handle/spotlists/list/:id"
+                    element={<SpotlistContent />}
+                  />
+
+                  <Route
+                    path="/settings"
                     element={
                       <PrivateRoute>
                         <Settings />
                       </PrivateRoute>
                     }
                   />
+
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>
               </Routes>

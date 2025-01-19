@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
+
+import { AuthContext } from "../context/AuthContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -19,7 +21,11 @@ import {
   faBookmark,
 } from "@fortawesome/free-regular-svg-icons";
 
+import { logout } from "../utils/helperFunctions";
+
 export default function Nav() {
+  const auth = useContext(AuthContext);
+
   return (
     <div className="nav">
       <Link to="/home" className="nav-el">
@@ -78,14 +84,14 @@ export default function Nav() {
         <span>Profile Settings</span>
       </Link>
 
-      <Link className="nav-el nav-el-expanded">
+      <div className="nav-el nav-el-expanded" onClick={() => logout(auth)}>
         <div className="nav-el-svg-wrapper">
           <FontAwesomeIcon icon={faArrowRightFromBracket} className="icon" />
         </div>
         <span>Log Out</span>
-      </Link>
+      </div>
 
-      <Link to="/account" className="nav-el">
+      <Link to={`/${auth.userData?.handle || "home"}`} className="nav-el">
         <div className="nav-el-svg-wrapper">
           <FontAwesomeIcon icon={faUser} className="icon" />
         </div>

@@ -1,16 +1,10 @@
 import React, { useState, useContext } from "react";
-import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 export default function Settings() {
   const auth = useContext(AuthContext);
   const user = auth.userData;
-
-  console.log(auth);
 
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -73,9 +67,6 @@ export default function Settings() {
 
   return (
     <div className="settings-container">
-      <Link to="/account" className="settings-header">
-        <FontAwesomeIcon icon={faArrowLeft} /> Account
-      </Link>
       <div className="settings-text">Your Account Settings</div>
 
       <form className="settings-form">

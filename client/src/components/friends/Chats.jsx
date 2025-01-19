@@ -27,7 +27,7 @@ export default function Chats() {
         const res = await axios({
           method: "GET",
           url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/chats/${
-            pathSegment === "messages" ? "approved" : "approved"
+            pathSegment === "messages" ? "approved" : "request"
           }-chats`,
           withCredentials: true,
         });
@@ -119,6 +119,7 @@ export default function Chats() {
   }, [socket.socket]);
 
   const todayDate = formatTime(new Date());
+  console.log(recentChats);
   if (!auth.userData || !recentChats) return <div className="loader"></div>;
   return (
     <div className="messages-and-chat-container">

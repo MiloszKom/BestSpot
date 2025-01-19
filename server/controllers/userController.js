@@ -1,6 +1,8 @@
 const multer = require("multer");
 const sharp = require("sharp");
 const User = require("./../models/userModel");
+const Post = require("./../models/postModel");
+const Spotlist = require("./../models/spotlistModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 
@@ -117,26 +119,76 @@ exports.getUser = catchAsync(async (req, res) => {
   });
 });
 
-exports.createUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not yet defined!",
-  });
-};
+exports.getUserProfile = catchAsync(async (req, res) => {
+  const currentUser = await User.findById(req.user._id);
+  const { handle } = req.params;
 
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not yet defined!",
-  });
-};
+  const viewedUser = await User.findOne({ handle });
+  if (!viewedUser) {
+    return res.status(404).json({ message: "This account doesn't exist" });
+  }
 
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: "error",
-    message: "This route is not yet defined!",
+  const isCurrentUser = currentUser._id.equals(viewedUser._id);
+
+  const isFriend = viewedUser.friends.some((friendId) =>
+    friendId.equals(currentUser._id)
+  );
+
+  const postQuery = {
+    author: viewedUser._id,
+    visibility:
+      isCurrentUser || isFriend ? { $in: ["public", "friends"] } : "public",
+  };
+
+  const posts = await Post.find(postQuery).populate([
+    {
+      path: "author",
+      select: "_id name photo handle",
+    },
+    {
+      path: "spots",
+      select: "_id google_id name photo city country",
+    },
+    {
+      path: "spotlists",
+      select: "_id name cover visibility spots",
+    },
+  ]);
+
+  let inviteStatus;
+
+  if (!isCurrentUser) {
+    console.log(viewedUser.pendingRequests);
+    if (viewedUser.friends.includes(currentUser._id)) {
+      inviteStatus = "accepted";
+    } else if (viewedUser.pendingRequests.includes(currentUser._id)) {
+      inviteStatus = "pending";
+    } else inviteStatus = "not-sent";
+  }
+
+  console.log(inviteStatus);
+
+  const spotlistQuery = {
+    author: viewedUser._id,
+    visibility:
+      isCurrentUser || isFriend
+        ? { $in: ["public", "friends-only"] }
+        : "public",
+  };
+
+  const spotlists = await Spotlist.find(spotlistQuery);
+
+  res.status(200).json({
+    status: "success",
+    message: "User profile, posts, and spotlists",
+    data: {
+      viewedUser,
+      inviteStatus,
+      posts,
+      spotlists,
+    },
   });
-};
+});
 
 // FRIENDS APIS
 

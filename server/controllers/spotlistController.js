@@ -69,6 +69,13 @@ exports.editSpotlist = catchAsync(async (req, res) => {
   const user = await findUser(req.user.id);
   const spotlist = await findSpotlist(spotlistId);
 
+  if (!spotlist.author.equals(user._id)) {
+    return res.status(403).json({
+      status: "error",
+      message: "You are not authorized to edit this spotlist",
+    });
+  }
+
   if (nameIsChanged) checkDuplicateSpotlistName(user, newName);
 
   if (newName) spotlist.name = newName;
@@ -89,6 +96,13 @@ exports.editSpotlist = catchAsync(async (req, res) => {
 exports.deleteSpotlist = catchAsync(async (req, res, next) => {
   const user = await findUser(req.user.id);
   const spotlist = await findSpotlist(req.params.id);
+
+  if (!spotlist.author.equals(user._id)) {
+    return res.status(403).json({
+      status: "error",
+      message: "You are not authorized to delete this spotlist",
+    });
+  }
 
   const spotsToRemove = spotlist.spots;
 
@@ -242,11 +256,16 @@ exports.removeFromSpotlist = catchAsync(async (req, res) => {
   );
   if (!spotlist) throw new AppError("Spotlist not found", 404);
 
+  if (!spotlist.author.equals(user._id)) {
+    return res.status(403).json({
+      status: "error",
+      message: "You are not authorized to delete this spot",
+    });
+  }
+
   const spotPresentInSpotlists = await Spotlist.find({
     spots: { $in: [spotId] },
   }).select("_id");
-
-  console.log(spotPresentInSpotlists.length);
 
   if (!spotlist.spots.some((existingSpot) => existingSpot.equals(spot._id))) {
     return res.status(400).json({
@@ -286,15 +305,42 @@ exports.removeFromSpotlist = catchAsync(async (req, res) => {
 });
 
 exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
-  const spotlist = await Spotlist.findById(req.params.id).populate({
-    path: "spots",
-    select: "_id google_id name rating user_ratings_total photo city country",
-  });
+  const spotlist = await Spotlist.findById(req.params.id)
+    .populate({
+      path: "spots",
+      select: "_id google_id name rating user_ratings_total photo city country",
+    })
+    .populate({
+      path: "author",
+      select: "_id name photo handle friends",
+    });
 
   if (!spotlist) {
     return res.status(404).json({
       status: "fail",
       message: "Spotlist not found",
+    });
+  }
+
+  if (
+    spotlist.visibility === "friends-only" &&
+    spotlist.author._id.toString() !== req.user._id.toString()
+  ) {
+    if (!spotlist.author.friends.includes(req.user._id)) {
+      return res.status(403).json({
+        status: "fail",
+        message: "You are not authorized to view this spotlist",
+      });
+    }
+  }
+
+  if (
+    spotlist.visibility === "private" &&
+    spotlist.author._id.toString() !== req.user._id.toString()
+  ) {
+    return res.status(403).json({
+      status: "fail",
+      message: "You are not authorized to view this spotlist",
     });
   }
 

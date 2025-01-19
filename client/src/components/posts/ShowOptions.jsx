@@ -54,7 +54,7 @@ export default function ShowOptions({
     deleteSpotlist(options, setOptions, setData, showAlert);
     if (options.spotlistInfo.context === "spotlistContent") {
       setTimeout(() => {
-        navigate("/spotlists");
+        if (!options) navigate("/spotlists");
       }, 500);
     }
   };

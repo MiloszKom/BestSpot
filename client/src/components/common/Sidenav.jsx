@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
+
+import { AuthContext } from "../context/AuthContext";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import {
@@ -10,7 +13,11 @@ import {
 
 import { faHeart, faBookmark } from "@fortawesome/free-regular-svg-icons";
 
+import { logout } from "../utils/helperFunctions";
+
 export default function Sidenav({ setShowMenu }) {
+  const auth = useContext(AuthContext);
+
   return (
     <div className="sidebar-nav">
       <Link
@@ -46,16 +53,17 @@ export default function Sidenav({ setShowMenu }) {
         </div>
         <span>Friends</span>
       </Link>
-      <div className="sidebar-el">
-        <div
-          className="sidebar-el-svg-wrapper"
-          onClick={() => setShowMenu(false)}
-        >
+      <Link
+        to="/settings"
+        className="sidebar-el"
+        onClick={() => setShowMenu(false)}
+      >
+        <div className="sidebar-el-svg-wrapper">
           <FontAwesomeIcon icon={faGear} />
         </div>
         <span>Profile Settings</span>
-      </div>
-      <div className="sidebar-el">
+      </Link>
+      <div className="sidebar-el" onClick={() => logout(auth)}>
         <div
           className="sidebar-el-svg-wrapper"
           onClick={() => setShowMenu(false)}
