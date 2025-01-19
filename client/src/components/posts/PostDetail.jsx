@@ -21,17 +21,17 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 
 import { formatPostTimestamp, formatTimeAgo } from "../utils/helperFunctions";
+import { editMessage } from "../utils/showOptionsUtils";
 import {
   togglePostLike,
   postComment,
   toggleCommentLike,
   postReply,
   toggleReplyLike,
-  editMessage,
   highlightHandles,
 } from "../utils/postUtils";
 
-import ShowOptions from "./ShowOptions";
+import ShowOptions from "../common/ShowOptions";
 import PostTagging from "./components/PostTagging";
 
 import PostImageCarousel from "./components/PostImageCarousel";

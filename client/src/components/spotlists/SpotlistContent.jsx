@@ -4,7 +4,7 @@ import axios from "axios";
 
 import { AuthContext } from "../context/AuthContext";
 
-import ShowOptions from "../posts/ShowOptions";
+import ShowOptions from "../common/ShowOptions";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {

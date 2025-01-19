@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 import { formatTimeAgo } from "../utils/helperFunctions";
-import ShowOptions from "../posts/ShowOptions";
+import ShowOptions from "../common/ShowOptions";
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);

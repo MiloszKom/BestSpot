@@ -1,8 +1,8 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { AuthContext } from "../../context/AuthContext";
-import { AlertContext } from "../../context/AlertContext";
+import { AuthContext } from "../context/AuthContext";
+import { AlertContext } from "../context/AlertContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -17,12 +17,12 @@ import {
   faHeart as solidHeart,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { formatTimeAgo } from "../../utils/helperFunctions";
-import { togglePostLike } from "../../utils/postUtils";
-import ShowOptions from ".././ShowOptions";
-import PostImageCarousel from "../components/PostImageCarousel";
-import PostSpots from "../components/PostSpots";
-import PostSpotlists from "../components/PostSpotlists";
+import { formatTimeAgo } from "../utils/helperFunctions";
+import { togglePostLike } from "../utils/postUtils";
+import ShowOptions from "../common/ShowOptions";
+import PostImageCarousel from "./components/PostImageCarousel";
+import PostSpots from "./components/PostSpots";
+import PostSpotlists from "./components/PostSpotlists";
 
 export function Posts({ postElements, options, setOptions }) {
   const [posts, setPosts] = useState(postElements);

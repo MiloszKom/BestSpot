@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-import { SpotlistsElements } from "./components/SpotlistsElements";
+import { Spotlists } from "./components/Spotlists";
 
-export default function Spotlists() {
+export default function SpotlistsPage() {
   const [spotlists, setSpotlists] = useState([]);
 
   const [options, setOptions] = useState(null);
@@ -34,7 +34,7 @@ export default function Spotlists() {
     <div className="spotlists">
       <div className="spotlists-header">Your Spotlists</div>
       <div className="spotlists-wrapper">
-        <SpotlistsElements
+        <Spotlists
           spotlists={spotlists}
           setSpotlists={setSpotlists}
           options={options}

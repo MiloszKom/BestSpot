@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
 
-import { Posts } from "./components/Posts";
+import { Posts } from "./Posts";
 
 export default function HomePage() {
   const { userData } = useContext(AuthContext);

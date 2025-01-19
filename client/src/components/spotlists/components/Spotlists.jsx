@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { AuthContext } from "../../context/AuthContext";
 
-import ShowOptions from "../../posts/ShowOptions";
+import ShowOptions from "../../common/ShowOptions";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
@@ -12,12 +12,7 @@ import { getVisibilityDisplayName } from "./../../utils/helperFunctions";
 
 import EditSpotlist from "./EditSpotlist";
 
-export function SpotlistsElements({
-  spotlists,
-  setSpotlists,
-  options,
-  setOptions,
-}) {
+export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
   const [editingSpotlist, setEditingSpotlist] = useState(false);
   const { userData } = useContext(AuthContext);
   return (

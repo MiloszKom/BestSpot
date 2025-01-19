@@ -2,7 +2,13 @@ import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash, faFlag } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPen,
+  faTrash,
+  faFlag,
+  faEarthAmericas,
+  faUserGroup,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { AlertContext } from "../context/AlertContext";
 
@@ -12,7 +18,7 @@ import {
   deleteSpotlist,
   deleteFromSpotlist,
   deleteNotification,
-} from "../utils/postUtils";
+} from "../utils/showOptionsUtils";
 
 export default function ShowOptions({
   options,
@@ -79,6 +85,36 @@ export default function ShowOptions({
           >
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
+          </div>
+        )}
+
+      {/* POST CREATE OPTIONS  */}
+
+      {options.entity === "postCreate" &&
+        options.aviableOptions.includes("public") && (
+          <div
+            className="option"
+            onClick={() => {
+              setData("Public");
+              setOptions(false);
+            }}
+          >
+            <FontAwesomeIcon icon={faEarthAmericas} />
+            <span>Public</span>
+          </div>
+        )}
+
+      {options.entity === "postCreate" &&
+        options.aviableOptions.includes("friends") && (
+          <div
+            className="option"
+            onClick={() => {
+              setData("Friends");
+              setOptions(false);
+            }}
+          >
+            <FontAwesomeIcon icon={faUserGroup} />
+            <span>Friends</span>
           </div>
         )}
 

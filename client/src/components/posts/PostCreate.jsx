@@ -14,7 +14,6 @@ import {
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { faImage } from "@fortawesome/free-regular-svg-icons";
-import PostPrivacy from "./PostPrivacy";
 import PostTagging from "./components/PostTagging";
 
 import PostImageCarousel from "./components/PostImageCarousel";
@@ -23,8 +22,9 @@ import PostSpots from "./components/PostSpots";
 import PostSpotlists from "./components/PostSpotlists";
 import PostAddSpotlists from "./components/PostAddSpotlists";
 
+import ShowOptions from "../common/ShowOptions";
+
 export default function PostCreate({ setCreatingPost }) {
-  const [settingPrivacy, setSettingPrivacy] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [postVisibility, setPostVisibility] = useState("Public");
   const [isTagging, setIsTagging] = useState(false);
@@ -38,6 +38,8 @@ export default function PostCreate({ setCreatingPost }) {
 
   const [isAddingSpotlists, setIsAddingSpotlists] = useState(false);
   const [selectedSpotlists, setSelectedSpotlists] = useState([]);
+
+  const [options, setOptions] = useState(null);
 
   const { showAlert } = useContext(AlertContext);
   const { userData } = useContext(AuthContext);
@@ -149,7 +151,12 @@ export default function PostCreate({ setCreatingPost }) {
         <div className="post-privacy-control">
           <div
             className="post-create-privacy"
-            onClick={() => setSettingPrivacy(true)}
+            onClick={() =>
+              setOptions({
+                aviableOptions: ["public", "friends"],
+                entity: "postCreate",
+              })
+            }
           >
             <span>{postVisibility}</span>
             {postVisibility === "Public" ? (
@@ -158,10 +165,12 @@ export default function PostCreate({ setCreatingPost }) {
               <FontAwesomeIcon icon={faUserGroup} />
             )}
           </div>
-          {settingPrivacy && (
-            <PostPrivacy
-              setSettingPrivacy={setSettingPrivacy}
-              setPostVisibility={setPostVisibility}
+
+          {options && (
+            <ShowOptions
+              options={options}
+              setOptions={setOptions}
+              setData={setPostVisibility}
             />
           )}
         </div>
@@ -257,11 +266,8 @@ export default function PostCreate({ setCreatingPost }) {
         />
       )}
 
-      {settingPrivacy && (
-        <div
-          className="privacy-overlay"
-          onClick={() => setSettingPrivacy(false)}
-        />
+      {options && (
+        <div className="options-overlay" onClick={() => setOptions(false)} />
       )}
     </div>
   );

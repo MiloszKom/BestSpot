@@ -1,7 +1,7 @@
 import React from "react";
 import { useOutletContext } from "react-router-dom";
 
-import { SpotlistsElements } from "../favourites/components/SpotlistsElements";
+import { Spotlists } from "../spotlists/components/Spotlists";
 
 export function ProfileSpotlists() {
   const { spotlists, setSpotlists, options, setOptions } = useOutletContext();
@@ -9,7 +9,7 @@ export function ProfileSpotlists() {
   return (
     <div className="profile-spotlists-wrapper">
       <div className="spotlists-wrapper">
-        <SpotlistsElements
+        <Spotlists
           spotlists={spotlists}
           setSpotlists={setSpotlists}
           options={options}

@@ -1,7 +1,7 @@
 import React from "react";
 import { useOutletContext } from "react-router-dom";
 
-import { Posts } from "../posts/components/Posts";
+import { Posts } from "../posts/Posts";
 
 export function ProfilePosts() {
   const { posts, options, setOptions } = useOutletContext();

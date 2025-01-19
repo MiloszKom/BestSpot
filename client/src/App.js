@@ -29,23 +29,23 @@ import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import Profile from "./components/profile/Profile";
 import Settings from "./components/pages/Settings";
-import Spotlists from "./components/favourites/Spotlists";
+import SpotlistsPage from "./components/spotlists/SpotlistsPage";
 import SpotDetail from "./components/map/SpotDetail";
-import Chats from "./components/friends/Chats";
+import Chats from "./components/messages/Chats";
 
 import FriendsPage from "./components/friends/FriendsPage";
 import FriendsList from "./components/friends/FriendsList";
 import FriendsRequests from "./components/friends/FriendsRequests";
 
-import ChatRoom from "./components/friends/ChatRoom";
-import ChatSearchBar from "./components/friends/ChatSearchBar";
+import ChatRoom from "./components/messages/ChatRoom";
+import ChatSearchBar from "./components/messages/ChatSearchBar";
 import HomePage from "./components/posts/HomePage";
 import PostCreate from "./components/posts/PostCreate";
 
 import NotFoundPage from "./components/pages/NotFoundPage";
 
 import { io } from "socket.io-client";
-import SpotlistContent from "./components/favourites/SpotlistContent";
+import SpotlistContent from "./components/spotlists/SpotlistContent";
 import PostDetail from "./components/posts/PostDetail";
 import Notifications from "./components/pages/Notifications";
 import { ProfilePosts } from "./components/profile/ProfilePosts";
@@ -181,7 +181,7 @@ function App() {
                   <Route path="search/:id" element={<SpotDetail />} />
 
                   {/* SPOTLISTS  */}
-                  <Route path="spotlists" element={<Spotlists />} />
+                  <Route path="spotlists" element={<SpotlistsPage />} />
                   <Route
                     path="spotlists/list/:id"
                     element={<SpotlistContent />}
