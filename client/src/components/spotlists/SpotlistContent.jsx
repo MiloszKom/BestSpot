@@ -92,8 +92,7 @@ export default function SpotlistContent() {
           <div className="spot-detail-details">
             <span>
               {spotlistData.spots?.length} Spots ·{" "}
-              {getVisibilityDisplayName(spotlistData.visibility)} · 0 Likes · 0
-              Views
+              {getVisibilityDisplayName(spotlistData.visibility)} · 0 Likes
             </span>
           </div>
           {spotlistData.description && (
@@ -142,9 +141,10 @@ export default function SpotlistContent() {
       </div>
       <div className="spotlist-detail-spots">
         {spotlistData.spots?.map((spot) => {
+          console.log(spot);
           return (
             <Link
-              to={`/spot/${spot.google_id}`}
+              to={`/spot/${spot._id}`}
               className="spotlist-detail-spots-el"
               key={spot._id}
             >
@@ -170,7 +170,7 @@ export default function SpotlistContent() {
                         spotlistId: spotlistData._id,
                         spotId: spot._id,
                         aviableOptions: ["delete"],
-                        entity: "spot",
+                        entity: "spotlistSpot",
                       })
                     }
                   >

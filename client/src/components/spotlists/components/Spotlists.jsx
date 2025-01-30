@@ -6,7 +6,7 @@ import { AuthContext } from "../../context/AuthContext";
 import ShowOptions from "../../common/ShowOptions";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisVertical, faHeart } from "@fortawesome/free-solid-svg-icons";
 
 import { getVisibilityDisplayName } from "./../../utils/helperFunctions";
 
@@ -18,9 +18,13 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
   return (
     <>
       {spotlists.map((spotlist) => {
+        const linkUrl = spotlist.author.handle
+          ? `/${spotlist.author.handle}/spotlists/list/${spotlist._id}`
+          : `list/${spotlist._id}`;
         return (
           <Link
-            to={`list/${spotlist._id}`}
+            // aliptis_loled_1/spotlists/list/6794dd21ed753c13e0eb6928
+            to={linkUrl}
             className="spotlists-el"
             key={spotlist._id}
           >
@@ -34,6 +38,9 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
                 })`,
               }}
             >
+              <span className="spotlists-like-count">
+                {spotlist.spots.length} <FontAwesomeIcon icon={faHeart} />
+              </span>
               <span className="spotlists-spot-count">
                 {spotlist.spots.length} spots
               </span>

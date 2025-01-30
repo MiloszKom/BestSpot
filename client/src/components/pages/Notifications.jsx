@@ -37,12 +37,18 @@ export default function Notifications() {
       <div className="notifications-header">Notifications</div>
       <div className="notifications-body">
         {notifications.map((notification) => {
+          console.log(notification);
+          const linkUrl = notification.originDetails.spotId
+            ? `/spot/${notification.originDetails.spotId}`
+            : `/${notification.originDetails.author.handle}/${notification.originDetails.postId}`;
+
           return (
             <Link
-              to={`/${notification.originDetails.author.handle}/${notification.originDetails.postId}`}
+              to={linkUrl}
               state={{
                 highlightedCommentId: notification.originDetails.commentId,
                 highlightedReplyId: notification.originDetails.replyId,
+                highlightedInsightId: notification.originDetails.insightId,
               }}
               className="notification-el"
               key={notification._id}

@@ -13,6 +13,10 @@ router
   .patch(authController.protect, spotlistController.updateSpotlists);
 
 router
+  .route("/discover")
+  .get(authController.protect, spotlistController.getHubSpotlists);
+
+router
   .route("/:id")
   .get(authController.protect, spotlistController.getSpotsInSpotlist)
   .delete(authController.protect, spotlistController.deleteSpotlist)

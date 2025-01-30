@@ -158,15 +158,12 @@ exports.getUserProfile = catchAsync(async (req, res) => {
   let inviteStatus;
 
   if (!isCurrentUser) {
-    console.log(viewedUser.pendingRequests);
     if (viewedUser.friends.includes(currentUser._id)) {
       inviteStatus = "accepted";
     } else if (viewedUser.pendingRequests.includes(currentUser._id)) {
       inviteStatus = "pending";
     } else inviteStatus = "not-sent";
   }
-
-  console.log(inviteStatus);
 
   const spotlistQuery = {
     author: viewedUser._id,

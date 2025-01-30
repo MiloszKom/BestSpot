@@ -18,6 +18,8 @@ import {
   deleteSpotlist,
   deleteFromSpotlist,
   deleteNotification,
+  deleteSpot,
+  deleteInsight,
 } from "../utils/showOptionsUtils";
 
 export default function ShowOptions({
@@ -27,6 +29,7 @@ export default function ShowOptions({
   setIsEditing,
   setComment,
   setEditingSpotlist,
+  setEditingSpot,
 }) {
   const navigate = useNavigate();
 
@@ -54,6 +57,15 @@ export default function ShowOptions({
   const editSpotlist = () => {
     setEditingSpotlist(options.spotlistInfo);
     setOptions(false);
+  };
+
+  const editSpot = () => {
+    setEditingSpot(true);
+    setOptions(false);
+  };
+
+  const deleteSpotAndMove = () => {
+    deleteSpot(options, setOptions, showAlert);
   };
 
   const deleteSpotlistAndMove = () => {
@@ -198,7 +210,7 @@ export default function ShowOptions({
 
       {/* SPOTLIST CONTENT OPTIONS */}
 
-      {options.entity === "spot" &&
+      {options.entity === "spotlistSpot" &&
         options.aviableOptions.includes("delete") && (
           <div
             className="option delete"
@@ -219,6 +231,54 @@ export default function ShowOptions({
             className="option delete"
             onClick={() =>
               deleteNotification(options, setOptions, setData, showAlert)
+            }
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
+
+      {/* SPOT OPTIONS */}
+
+      {options.entity === "spot" &&
+        options.aviableOptions.includes("report") && (
+          <div className="option">
+            <FontAwesomeIcon icon={faFlag} />
+            <span>Report</span>
+          </div>
+        )}
+
+      {options.entity === "spot" && options.aviableOptions.includes("edit") && (
+        <div className="option" onClick={editSpot}>
+          <FontAwesomeIcon icon={faPen} />
+          <span>Edit</span>
+        </div>
+      )}
+
+      {options.entity === "spot" &&
+        options.aviableOptions.includes("delete") && (
+          <div className="option delete" onClick={deleteSpotAndMove}>
+            <FontAwesomeIcon icon={faTrash} />
+            <span>Delete</span>
+          </div>
+        )}
+
+      {/* INSIGHT OPTIONS */}
+
+      {options.entity === "insight" &&
+        options.aviableOptions.includes("report") && (
+          <div className="option">
+            <FontAwesomeIcon icon={faFlag} />
+            <span>Report</span>
+          </div>
+        )}
+
+      {options.entity === "insight" &&
+        options.aviableOptions.includes("delete") && (
+          <div
+            className="option delete"
+            onClick={() =>
+              deleteInsight(options, setOptions, setData, showAlert)
             }
           >
             <FontAwesomeIcon icon={faTrash} />

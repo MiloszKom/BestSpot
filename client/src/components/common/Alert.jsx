@@ -1,9 +1,10 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext, useState, useRef } from "react";
 import { AlertContext } from "../context/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleCheck,
   faCircleXmark,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function Alert() {
@@ -11,20 +12,27 @@ export default function Alert() {
   const { alertMsg, alertType } = alertData;
   const [slide, setSlide] = useState(false);
 
+  const barRef = useRef(null);
+
   useEffect(() => {
-    if (alertMsg) {
-      requestAnimationFrame(() => setSlide(true));
+    if (!alertMsg) return;
 
-      const timeout = setTimeout(() => {
-        setSlide(false);
-        clearAlert();
-      }, 2500);
-
-      return () => clearTimeout(timeout);
+    setSlide(true);
+    if (barRef.current) {
+      barRef.current.style.animation = "none";
+      void barRef.current.offsetWidth;
+      barRef.current.style.animation = "";
     }
-  }, [alertMsg, clearAlert]);
 
-  if (!alertMsg) return null;
+    const timeout = setTimeout(() => {
+      setSlide(false);
+      setTimeout(() => {
+        clearAlert();
+      }, 500);
+    }, 2500);
+
+    return () => clearTimeout(timeout);
+  }, [alertMsg, clearAlert]);
 
   return (
     <div
@@ -32,11 +40,26 @@ export default function Alert() {
         slide ? "show-alert" : "hide-alert"
       }`}
     >
-      <FontAwesomeIcon
-        icon={alertType === "success" ? faCircleCheck : faCircleXmark}
-        className="icon"
+      <div className="alert-content">
+        <FontAwesomeIcon
+          icon={alertType === "success" ? faCircleCheck : faCircleXmark}
+          className="icon"
+          style={{
+            color: alertType === "success" ? "#20bf6b" : "#d5372f",
+          }}
+        />
+        <span>{alertMsg}</span>
+        <button onClick={() => setSlide(false)}>
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+      </div>
+      <div
+        className="alert-bar"
+        ref={barRef}
+        style={{
+          backgroundColor: alertType === "success" ? "#20bf6b" : "#d5372f",
+        }}
       />
-      {alertMsg}
     </div>
   );
 }

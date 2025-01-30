@@ -3,12 +3,8 @@ const mapController = require("../controllers/mapController");
 
 const router = express.Router();
 
-router.post("/searchNerby", mapController.searchNerby);
+router.get("/getLocation/:lat/:lng", mapController.getLocation);
 
-router.post("/getPlaceDetails", mapController.getPlaceDetails);
-
-router.post("/getPlacePhotos", mapController.getPlacePhotos);
-
-router.post("/getCurrentLocation", mapController.getCurrentLocation);
+router.get("/areaSearch", mapController.areaSearch);
 
 module.exports = router;

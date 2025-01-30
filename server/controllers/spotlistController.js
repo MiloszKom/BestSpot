@@ -383,3 +383,30 @@ exports.editNote = catchAsync(async (req, res) => {
     message: "Spot note updated",
   });
 });
+
+exports.getHubSpotlists = catchAsync(async (req, res) => {
+  const { order } = req.query;
+
+  let query = Spotlist.find({ visibility: "public" }).populate(
+    "author",
+    "handle"
+  );
+
+  if (order === "newest") {
+    query = query.sort({ createdAt: -1 });
+  } else if (order === "popular") {
+    query = query.sort({ likesCount: -1 });
+  } else {
+    query = query.sort({ createdAt: -1 });
+  }
+
+  const spotlists = await query;
+
+  res.status(200).json({
+    status: "success",
+    results: spotlists.length,
+    data: {
+      spotlists,
+    },
+  });
+});

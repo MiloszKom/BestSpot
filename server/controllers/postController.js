@@ -5,7 +5,10 @@ const AppError = require("../utils/appError");
 const multer = require("multer");
 const sharp = require("sharp");
 
-const { getPostCommentReply } = require("../utils/helpers");
+const {
+  getPostCommentReply,
+  createNotifications,
+} = require("../utils/helpers");
 
 const multerStorage = multer.memoryStorage();
 
@@ -64,38 +67,6 @@ exports.uploadErrorHandler = (err, req, res, next) => {
   next(err);
 };
 
-const createNotifications = async (
-  notifiedUsers,
-  sender,
-  message,
-  originDetails,
-  title
-) => {
-  const notification = {
-    sender,
-    message,
-    originDetails,
-    title,
-  };
-
-  const updatePromises = notifiedUsers.map((userId) =>
-    User.findByIdAndUpdate(
-      userId,
-      {
-        $push: {
-          notifications: {
-            $each: [notification],
-            $position: 0,
-          },
-        },
-      },
-      { new: true }
-    )
-  );
-
-  await Promise.all(updatePromises);
-};
-
 const extractAndValidateHandles = async (content) => {
   const handlePattern = /@([a-zA-Z0-9_]{3,30})/g;
   const handles = [];
@@ -138,6 +109,8 @@ exports.createPost = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).populate("friends", "_id");
 
   const { visibility, content, spots, spotlists, photos } = req.body;
+
+  console.log(req.body);
 
   if (!user) {
     return next(new AppError("No user found", 404));
@@ -538,8 +511,6 @@ exports.likeComment = catchAsync(async (req, res, next) => {
     (like) => like.isLikeActive
   ).length;
 
-  console.log;
-
   if (existingLike) {
     if (existingLike.isLikeActive) {
       return next(new AppError("You already liked this comment", 400));
@@ -559,7 +530,6 @@ exports.likeComment = catchAsync(async (req, res, next) => {
         originDetails,
         `${user.name} liked your comment`
       );
-      //works
     }
   }
 

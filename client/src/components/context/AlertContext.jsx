@@ -11,8 +11,8 @@ export const AlertContext = createContext({
 
 export function AlertContextProvider({ children }) {
   const [alertData, setAlertData] = useState({
-    alertMsg: null,
-    alertType: null,
+    alertMsg: "",
+    alertType: "",
   });
 
   const showAlert = useCallback((msg, type) => {

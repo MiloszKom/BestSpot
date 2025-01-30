@@ -6,7 +6,6 @@ import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import {
-  faMagnifyingGlass,
   faHouse,
   faGear,
   faArrowRightFromBracket,
@@ -19,6 +18,7 @@ import {
   faBell,
   faHeart,
   faBookmark,
+  faCompass,
 } from "@fortawesome/free-regular-svg-icons";
 
 import { logout } from "../utils/helperFunctions";
@@ -35,9 +35,16 @@ export default function Nav() {
         <span>Home</span>
       </Link>
 
-      <Link to="/search" className="nav-el">
+      {/* <Link to="/search" className="nav-el">
         <div className="nav-el-svg-wrapper">
           <FontAwesomeIcon icon={faMagnifyingGlass} className="icon" />
+        </div>
+        <span>Discover</span>
+      </Link> */}
+
+      <Link to="/discover" className="nav-el">
+        <div className="nav-el-svg-wrapper">
+          <FontAwesomeIcon icon={faCompass} className="icon" />
         </div>
         <span>Discover</span>
       </Link>

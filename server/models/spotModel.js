@@ -1,83 +1,44 @@
 const mongoose = require("mongoose");
 
 const spotSchema = new mongoose.Schema({
-  google_id: {
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  name: {
     type: String,
-    required: true,
-    unique: true,
+    required: [true, "A spot must have a name"],
+  },
+  overview: {
+    type: String,
+  },
+  category: {
+    type: String,
+    required: [true, "A spot must have a category"],
   },
   photo: {
     type: String,
     default: "no-img-found.jpg",
   },
-  name: {
+  likes: [
+    {
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      isLikeActive: { type: Boolean, default: true },
+    },
+  ],
+  thresholdsReached: {
+    type: [Number],
+    default: [],
+  },
+  address: {
     type: String,
-  },
-  rating: {
-    type: Number,
-    defaut: 0.0,
-  },
-  user_ratings_total: {
-    type: Number,
-    default: 0,
-  },
-  vicinity: {
-    type: String,
-  },
-  country: {
-    type: String,
+    required: [true, "A spot must have an address"],
+    unique: true,
   },
   city: {
     type: String,
   },
-  current_opening_hours: {
-    periods: [
-      {
-        close: {
-          date: { type: String },
-          day: { type: Number },
-          time: { type: String },
-        },
-        open: {
-          date: { type: String },
-          day: { type: Number },
-          time: { type: String },
-        },
-      },
-    ],
-    weekday_text: {
-      type: [String],
-    },
-  },
-  website: {
-    type: String,
-  },
-  international_phone_number: {
-    type: String,
-  },
-  reviews: [
-    {
-      author_name: {
-        type: String,
-      },
-      profile_photo_url: {
-        type: String,
-      },
-      rating: {
-        type: Number,
-      },
-      relative_time_description: {
-        type: String,
-      },
-      text: {
-        type: String,
-      },
-      time: {
-        type: Number,
-      },
-    },
-  ],
-  url: {
+  country: {
     type: String,
   },
   geometry: {
@@ -101,6 +62,27 @@ const spotSchema = new mongoose.Schema({
         default: "",
       },
       _id: false,
+    },
+  ],
+  insights: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      content: { type: String, required: true },
+      likes: [
+        {
+          _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+          isLikeActive: { type: Boolean, default: true },
+        },
+      ],
+      thresholdsReached: {
+        type: [Number],
+        default: [],
+      },
+      timestamp: { type: Date, default: Date.now },
     },
   ],
 });

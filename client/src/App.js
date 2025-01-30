@@ -10,8 +10,7 @@ import HomePage from "./components/posts/HomePage";
 import PostDetail from "./components/posts/PostDetail";
 import PostCreate from "./components/posts/PostCreate";
 
-import GoogleMap from "./components/map/GoogleMap";
-import SpotDetail from "./components/map/SpotDetail";
+import SpotDetail from "./components/spot/SpotDetail";
 
 import Notifications from "./components/pages/Notifications";
 
@@ -41,6 +40,11 @@ import PrivateRoute from "./components/auth/PrivateRoute";
 import Layout from "./components/common/Layout";
 
 import NotFoundPage from "./components/pages/NotFoundPage";
+import Discover from "./components/discover/DiscoverPage";
+import AreaSearchFilters from "./components/discover/AreaSearchFilters";
+import Results from "./components/discover/Results";
+import SpotAdd from "./components/discover/SpotAdd";
+import SpotlistsHub from "./components/discover/SpotlistsHub";
 
 function App() {
   return (
@@ -59,9 +63,6 @@ function App() {
                   <Route path="/:handle/:postId" element={<PostDetail />} />
 
                   <Route path="/spot/:id" element={<SpotDetail />} />
-
-                  <Route path="search" element={<GoogleMap />} />
-                  <Route path="search/:id" element={<SpotDetail />} />
 
                   {/* SPOTLISTS  */}
                   <Route path="spotlists" element={<SpotlistsPage />} />
@@ -120,6 +121,24 @@ function App() {
                         <Settings />
                       </PrivateRoute>
                     }
+                  />
+
+                  <Route path="/discover" element={<Discover />} />
+                  <Route
+                    path="/discover/area-search"
+                    element={<AreaSearchFilters />}
+                  />
+
+                  <Route path="/discover/add-spot" element={<SpotAdd />} />
+
+                  <Route
+                    path="/discover/area-search/results"
+                    element={<Results />}
+                  />
+
+                  <Route
+                    path="/discover/spotlists-hub"
+                    element={<SpotlistsHub />}
                   />
 
                   <Route path="*" element={<NotFoundPage />} />

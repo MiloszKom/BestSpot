@@ -75,7 +75,6 @@ export default function AddToSpotlist({
   };
 
   const getVisibilityIcon = (visibility) => {
-    console.log(visibility);
     switch (visibility) {
       case "private":
         return faLock;

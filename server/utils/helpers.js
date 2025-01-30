@@ -1,5 +1,6 @@
 const AppError = require("./appError");
 const Post = require("../models/postModel");
+const User = require("../models/userModel");
 
 async function getPostCommentReply(postId, commentId, replyId) {
   const post = await Post.findById(postId);
@@ -24,4 +25,36 @@ async function getPostCommentReply(postId, commentId, replyId) {
   return { post, comment, reply };
 }
 
-module.exports = { getPostCommentReply };
+const createNotifications = async (
+  notifiedUsers,
+  sender,
+  message,
+  originDetails,
+  title
+) => {
+  const notification = {
+    sender,
+    message,
+    originDetails,
+    title,
+  };
+
+  const updatePromises = notifiedUsers.map((userId) =>
+    User.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          notifications: {
+            $each: [notification],
+            $position: 0,
+          },
+        },
+      },
+      { new: true }
+    )
+  );
+
+  await Promise.all(updatePromises);
+};
+
+module.exports = { getPostCommentReply, createNotifications };

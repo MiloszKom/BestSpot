@@ -250,3 +250,56 @@ export const deleteNotification = async (
     showAlert(err.response.data.message, err.response.data.status);
   }
 };
+
+// Spot Related Options
+
+export const deleteSpot = async (options, setOptions, showAlert) => {
+  try {
+    const res = await axios({
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${options.spotId}`,
+      withCredentials: true,
+    });
+    setOptions(false);
+    showAlert(res.data.message, res.data.status);
+  } catch (err) {
+    console.log(err);
+    showAlert(err.response.data.message, err.response.data.status);
+  }
+};
+
+// Insights Related Options
+
+export const deleteInsight = async (
+  options,
+  setOptions,
+  setData,
+  showAlert
+) => {
+  try {
+    const res = await axios({
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${options.spotId}/insight/${options.insightId}`,
+      withCredentials: true,
+    });
+    setData((prevData) => {
+      return {
+        ...prevData,
+        insights: prevData.insights.filter(
+          (insight) => insight._id !== options.insightId
+        ),
+      };
+    });
+    setOptions(false);
+    showAlert(res.data.message, res.data.status);
+  } catch (err) {
+    console.log(err);
+    showAlert(err.response.data.message, err.response.data.status);
+  }
+};

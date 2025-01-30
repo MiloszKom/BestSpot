@@ -16,7 +16,7 @@ export default function PostSpots({ selectedSpots, setSelectedSpots }) {
       {selectedSpots.map((spot) => {
         return (
           <Link
-            to={`/spot/${spot.google_id}`}
+            to={`/spot/${spot._id}`}
             className="spot-el"
             style={{
               backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
