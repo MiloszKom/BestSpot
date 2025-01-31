@@ -21,13 +21,16 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
         const linkUrl = spotlist.author.handle
           ? `/${spotlist.author.handle}/spotlists/list/${spotlist._id}`
           : `list/${spotlist._id}`;
+
+        const likeCount = spotlist.likes.filter(
+          (like) => like.isLikeActive === true
+        ).length;
+
+        const isSpotlistLiked = spotlist.likes.some(
+          (like) => like._id === userData._id && like.isLikeActive
+        );
         return (
-          <Link
-            // aliptis_loled_1/spotlists/list/6794dd21ed753c13e0eb6928
-            to={linkUrl}
-            className="spotlists-el"
-            key={spotlist._id}
-          >
+          <Link to={linkUrl} className="spotlists-el" key={spotlist._id}>
             <div
               className="spotlists-thumbnail"
               style={{
@@ -38,8 +41,12 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
                 })`,
               }}
             >
-              <span className="spotlists-like-count">
-                {spotlist.spots.length} <FontAwesomeIcon icon={faHeart} />
+              <span
+                className={`spotlists-like-count ${
+                  isSpotlistLiked ? "active" : ""
+                }`}
+              >
+                {likeCount} <FontAwesomeIcon icon={faHeart} />
               </span>
               <span className="spotlists-spot-count">
                 {spotlist.spots.length} spots

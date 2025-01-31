@@ -112,8 +112,6 @@ export default function SpotDetail() {
     (insight) => insight.user._id === userData._id
   );
 
-  console.log(highlightedInsightId);
-
   return (
     <>
       <div className="spot-detail">

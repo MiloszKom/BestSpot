@@ -23,6 +23,11 @@ router
   .patch(authController.protect, spotlistController.editSpotlist);
 
 router
+  .route("/:id/like")
+  .post(authController.protect, spotlistController.likeSpotlist)
+  .delete(authController.protect, spotlistController.unlikeSpotlist);
+
+router
   .route("/:spotlistId/spot/:spotId")
   .delete(authController.protect, spotlistController.removeFromSpotlist);
 

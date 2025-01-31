@@ -99,8 +99,7 @@ export default function EditSpotlist({
 
       <div className="spotlist-create-input">
         <label htmlFor="spotlist-title">Description</label>
-        <input
-          type="text"
+        <textarea
           id="spotlist-title"
           placeholder="Enter title"
           value={description}

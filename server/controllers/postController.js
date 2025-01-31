@@ -8,6 +8,8 @@ const sharp = require("sharp");
 const {
   getPostCommentReply,
   createNotifications,
+  likeEntity,
+  unlikeEntity,
 } = require("../utils/helpers");
 
 const multerStorage = multer.memoryStorage();
@@ -219,53 +221,7 @@ exports.likePost = catchAsync(async (req, res, next) => {
     return next(new AppError("Post not found", 404));
   }
 
-  const originDetails = {
-    author: post.author,
-    postId: post._id,
-  };
-
-  const existingLike = post.likes.find((like) => like._id.equals(user._id));
-  let activeLikesCount = post.likes.filter((like) => like.isLikeActive).length;
-
-  if (existingLike) {
-    if (existingLike.isLikeActive) {
-      return next(new AppError("You already liked this post", 400));
-    }
-    existingLike.isLikeActive = true;
-    activeLikesCount++;
-  } else {
-    post.likes.push({ _id: user._id, isLikeActive: true });
-    activeLikesCount++;
-
-    if (activeLikesCount <= 2 && !post.author.equals(user._id)) {
-      createNotifications(
-        [post.author],
-        user._id,
-        post.content,
-        originDetails,
-        `${user.name} liked your post`
-      );
-    }
-  }
-
-  const thresholds = [3, 5, 10, 20, 50, 100, 200, 500, 1000];
-
-  if (
-    thresholds.includes(activeLikesCount) &&
-    !post.thresholdsReached.includes(activeLikesCount)
-  ) {
-    createNotifications(
-      [post.author],
-      null,
-      post.content,
-      originDetails,
-      `Your post reached ${activeLikesCount} likes`
-    );
-
-    post.thresholdsReached.push(activeLikesCount);
-  }
-
-  await post.save();
+  await likeEntity(user, post, "post");
 
   res.status(200).json({
     status: "success",
@@ -281,14 +237,7 @@ exports.unlikePost = catchAsync(async (req, res, next) => {
     return next(new AppError("Post not found", 404));
   }
 
-  const existingLike = post.likes.find((like) => like._id.equals(user._id));
-
-  if (!existingLike || !existingLike.isLikeActive) {
-    return next(new AppError("You have not liked this post", 400));
-  }
-
-  existingLike.isLikeActive = false;
-  await post.save();
+  await unlikeEntity(user, post, "post");
 
   res.status(200).json({
     status: "success",

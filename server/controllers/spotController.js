@@ -8,7 +8,11 @@ const AppError = require("../utils/appError");
 const fs = require("fs");
 const path = require("path");
 
-const { createNotifications } = require("../utils/helpers");
+const {
+  createNotifications,
+  likeEntity,
+  unlikeEntity,
+} = require("../utils/helpers");
 
 const multerStorage = multer.memoryStorage();
 
@@ -222,53 +226,7 @@ exports.likeSpot = catchAsync(async (req, res, next) => {
     return next(new AppError("Spot not found", 404));
   }
 
-  const originDetails = {
-    author: spot.author,
-    spotId: spot._id,
-  };
-
-  const existingLike = spot.likes.find((like) => like._id.equals(user._id));
-  let activeLikesCount = spot.likes.filter((like) => like.isLikeActive).length;
-
-  if (existingLike) {
-    if (existingLike.isLikeActive) {
-      return next(new AppError("You already liked this spot", 400));
-    }
-    existingLike.isLikeActive = true;
-    activeLikesCount++;
-  } else {
-    spot.likes.push({ _id: user._id, isLikeActive: true });
-    activeLikesCount++;
-
-    if (activeLikesCount <= 2 && !spot.author.equals(user._id)) {
-      createNotifications(
-        [spot.author],
-        user._id,
-        spot.content,
-        originDetails,
-        `${user.name} liked your spot`
-      );
-    }
-  }
-
-  const thresholds = [3, 5, 10, 20, 50, 100, 200, 500, 1000];
-
-  if (
-    thresholds.includes(activeLikesCount) &&
-    !spot.thresholdsReached.includes(activeLikesCount)
-  ) {
-    createNotifications(
-      [spot.author],
-      null,
-      spot.content,
-      originDetails,
-      `Your spot reached ${activeLikesCount} likes`
-    );
-
-    spot.thresholdsReached.push(activeLikesCount);
-  }
-
-  await spot.save();
+  await likeEntity(user, spot, "spot");
 
   res.status(200).json({
     status: "success",
@@ -284,14 +242,7 @@ exports.unlikeSpot = catchAsync(async (req, res, next) => {
     return next(new AppError("Spot not found", 404));
   }
 
-  const existingLike = spot.likes.find((like) => like._id.equals(user._id));
-
-  if (!existingLike || !existingLike.isLikeActive) {
-    return next(new AppError("You have not liked this spot", 400));
-  }
-
-  existingLike.isLikeActive = false;
-  await spot.save();
+  await unlikeEntity(user, spot, "spot");
 
   res.status(200).json({
     status: "success",

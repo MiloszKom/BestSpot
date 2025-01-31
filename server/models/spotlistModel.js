@@ -15,6 +15,16 @@ const spotlistSchema = new mongoose.Schema({
   cover: { type: String, default: "no-img-found.jpg" },
   description: { type: String },
   spots: [{ type: mongoose.Schema.Types.ObjectId, ref: "Spot" }],
+  likes: [
+    {
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      isLikeActive: { type: Boolean, default: true },
+    },
+  ],
+  thresholdsReached: {
+    type: [Number],
+    default: [],
+  },
 });
 
 const Spotlist = mongoose.model("Spotlist", spotlistSchema);

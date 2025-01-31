@@ -3,18 +3,20 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import { AuthContext } from "../context/AuthContext";
+import { AlertContext } from "../context/AlertContext";
 
 import ShowOptions from "../common/ShowOptions";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeftLong,
-  faClone,
   faEllipsisVertical,
   faLocationDot,
+  faHeart as solidHeart,
 } from "@fortawesome/free-solid-svg-icons";
-import { faHeart } from "@fortawesome/free-regular-svg-icons";
+import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
 import { getVisibilityDisplayName } from "./../utils/helperFunctions";
+import { toggleSpotlistLike } from "../utils/spotlistUtils";
 import EditSpotlist from "./components/EditSpotlist";
 
 export default function SpotlistContent() {
@@ -29,6 +31,7 @@ export default function SpotlistContent() {
   const navigate = useNavigate();
 
   const { userData } = useContext(AuthContext);
+  const { showAlert } = useContext(AlertContext);
 
   useEffect(() => {
     const fetchFavourites = async () => {
@@ -63,6 +66,14 @@ export default function SpotlistContent() {
       </div>
     );
 
+  const likeCount = spotlistData.likes.filter(
+    (like) => like.isLikeActive === true
+  ).length;
+
+  const isSpotlistLiked = spotlistData.likes.some(
+    (like) => like._id === userData._id && like.isLikeActive
+  );
+
   return (
     <div className="spotlist-detail-container">
       <div className="spotlist-detail-header">
@@ -92,7 +103,8 @@ export default function SpotlistContent() {
           <div className="spot-detail-details">
             <span>
               {spotlistData.spots?.length} Spots ·{" "}
-              {getVisibilityDisplayName(spotlistData.visibility)} · 0 Likes
+              {getVisibilityDisplayName(spotlistData.visibility)} · {likeCount}{" "}
+              Likes
             </span>
           </div>
           {spotlistData.description && (
@@ -102,11 +114,23 @@ export default function SpotlistContent() {
           )}
         </div>
         <div className="spotlist-detail-options">
-          <button className="spotlist-detail-options-el">
-            <FontAwesomeIcon icon={faHeart} />
-          </button>
-          <button className="spotlist-detail-options-el">
-            <FontAwesomeIcon icon={faClone} />
+          <button
+            className={`spotlist-detail-options-el ${
+              isSpotlistLiked ? "active" : ""
+            }`}
+            onClick={() =>
+              toggleSpotlistLike(
+                spotlistData._id,
+                isSpotlistLiked,
+                userData,
+                setSpotlistData,
+                showAlert
+              )
+            }
+          >
+            <FontAwesomeIcon
+              icon={isSpotlistLiked ? solidHeart : regularHeart}
+            />
           </button>
           {userData?._id === spotlistData.author?._id && (
             <div className="spotlist-detail-menu">
@@ -141,7 +165,6 @@ export default function SpotlistContent() {
       </div>
       <div className="spotlist-detail-spots">
         {spotlistData.spots?.map((spot) => {
-          console.log(spot);
           return (
             <Link
               to={`/spot/${spot._id}`}

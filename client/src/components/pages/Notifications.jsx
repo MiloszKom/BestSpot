@@ -37,8 +37,9 @@ export default function Notifications() {
       <div className="notifications-header">Notifications</div>
       <div className="notifications-body">
         {notifications.map((notification) => {
-          console.log(notification);
-          const linkUrl = notification.originDetails.spotId
+          const linkUrl = notification.originDetails.spotlistId
+            ? `/${notification.originDetails.author.handle}/spotlists/list/${notification.originDetails.spotlistId}`
+            : notification.originDetails.spotId
             ? `/spot/${notification.originDetails.spotId}`
             : `/${notification.originDetails.author.handle}/${notification.originDetails.postId}`;
 

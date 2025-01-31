@@ -4,6 +4,8 @@ const Spot = require("./../models/spotModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 
+const { likeEntity, unlikeEntity } = require("../utils/helpers");
+
 const {
   findUser,
   findSpot,
@@ -245,15 +247,54 @@ exports.updateSpotlists = catchAsync(async (req, res) => {
   });
 });
 
+exports.likeSpotlist = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id).select("_id name");
+  const spotlist = await Spotlist.findById(req.params.id);
+
+  if (!spotlist) {
+    return next(new AppError("Spotlist not found", 404));
+  }
+
+  await likeEntity(user, spotlist, "spotlist");
+
+  res.status(200).json({
+    status: "success",
+    message: "Spotlist liked",
+  });
+});
+
+exports.unlikeSpotlist = catchAsync(async (req, res, next) => {
+  const user = req.user._id;
+  const spotlist = await Spotlist.findById(req.params.id);
+
+  if (!spotlist) {
+    return next(new AppError("Spotlist not found", 404));
+  }
+
+  await unlikeEntity(user, spotlist, "spotlist");
+
+  res.status(200).json({
+    status: "success",
+    message: "Spotlist unliked",
+  });
+});
+
 exports.removeFromSpotlist = catchAsync(async (req, res) => {
   const { spotlistId, spotId } = req.params;
 
   const user = await findUser(req.user.id);
   const spot = await findSpot(spotId);
-  const spotlist = await Spotlist.findById(spotlistId).populate(
-    "spots",
-    "_id google_id name rating user_ratings_total photo city country"
-  );
+  const spotlist = await Spotlist.findById(spotlistId).populate([
+    {
+      path: "spots",
+      select: "_id google_id name rating user_ratings_total photo city country",
+    },
+    {
+      path: "author",
+      select: "_id name photo handle friends",
+    },
+  ]);
+
   if (!spotlist) throw new AppError("Spotlist not found", 404);
 
   if (!spotlist.author.equals(user._id)) {
@@ -305,15 +346,16 @@ exports.removeFromSpotlist = catchAsync(async (req, res) => {
 });
 
 exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
-  const spotlist = await Spotlist.findById(req.params.id)
-    .populate({
+  const spotlist = await Spotlist.findById(req.params.id).populate([
+    {
       path: "spots",
       select: "_id google_id name rating user_ratings_total photo city country",
-    })
-    .populate({
+    },
+    {
       path: "author",
       select: "_id name photo handle friends",
-    });
+    },
+  ]);
 
   if (!spotlist) {
     return res.status(404).json({

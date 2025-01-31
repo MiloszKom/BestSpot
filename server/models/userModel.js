@@ -71,6 +71,7 @@ const userSchema = new mongoose.Schema({
         postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
         commentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
         replyId: { type: mongoose.Schema.Types.ObjectId, ref: "Reply" },
+        spotlistId: { type: mongoose.Schema.Types.ObjectId, ref: "Spotlist" },
         spotId: { type: mongoose.Schema.Types.ObjectId, ref: "Spot" },
         insightId: { type: mongoose.Schema.Types.ObjectId, ref: "Insight" },
       },
