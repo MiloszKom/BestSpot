@@ -55,10 +55,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("enter-chat-room", async (room) => {
-    console.log(
-      `User ${currentUser._id.toString()} joined the chat room ${room}`
-    );
-
     const activeUser = activeUsers.find(
       (user) => user.user === currentUser._id.toString()
     );
@@ -133,6 +129,7 @@ io.on("connection", (socket) => {
     targetChat.messages.unshift(newMessage);
     await targetChat.save();
     socket.to(room).emit("receive-message", newMessage, targetChat.isApproved);
+    socket.emit("update-recent-chats", targetChat);
   });
 
   socket.on("user-is-typing", (room, userId) => {

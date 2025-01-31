@@ -21,7 +21,6 @@ export default function Chats() {
   const pathSegment = location.pathname.split("/")[1];
 
   useEffect(() => {
-    console.log("fetching chats");
     const fetchChats = async () => {
       try {
         const res = await axios({
@@ -41,6 +40,25 @@ export default function Chats() {
 
   useEffect(() => {
     if (!socket.socket) return;
+
+    socket.socket.on("update-recent-chats", (updatedChat) => {
+      setRecentChats((prevChats) => {
+        return prevChats.map((chat) => {
+          if (
+            updatedChat.participants.includes(chat.otherParticipantData._id)
+          ) {
+            return {
+              ...chat,
+              lastMessage: updatedChat.messages[0],
+              unreadMessages: updatedChat.messages.filter(
+                (msg) => !msg.isRead && msg.senderId !== auth.userData._id
+              ).length,
+            };
+          }
+          return chat;
+        });
+      });
+    });
 
     socket.socket.on("receive-message", (message) => {
       setRecentChats((prevChats) => {
@@ -119,7 +137,6 @@ export default function Chats() {
   }, [socket.socket]);
 
   const todayDate = formatTime(new Date());
-  console.log(recentChats);
   if (!auth.userData || !recentChats) return <div className="loader"></div>;
   return (
     <div className="messages-and-chat-container">
@@ -130,7 +147,7 @@ export default function Chats() {
             : "hidden"
         }`}
       >
-        <Link to="search-bar" className="messages-searchbar">
+        <Link to="/messages/search-bar" className="messages-searchbar">
           <FontAwesomeIcon icon={faMagnifyingGlass} />
           <span>Search</span>
         </Link>
@@ -138,7 +155,9 @@ export default function Chats() {
           <NavLink
             to="/messages"
             className={({ isActive }) =>
-              isActive ? "messages-header-el active" : "messages-header-el"
+              isActive
+                ? "messages-header-el active"
+                : "messages-header-el inactive"
             }
           >
             Messages
@@ -146,7 +165,9 @@ export default function Chats() {
           <NavLink
             to="/requests"
             className={({ isActive }) =>
-              isActive ? "messages-header-el active" : "messages-header-el"
+              isActive
+                ? "messages-header-el active"
+                : "messages-header-el inactive"
             }
           >
             Requests

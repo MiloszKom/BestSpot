@@ -52,11 +52,11 @@ export default function ChatSearchBar() {
   const renderSearchResults = (users, title) => {
     if (users.length > 0) {
       return (
-        <div>
+        <>
           <div className="chat-search-results-title">{title}</div>
           {users.map((el) => (
             <Link
-              to={`/profile/${el._id}`}
+              to={`/${el.handle}`}
               className="chat-search-results-el"
               key={el._id}
             >
@@ -66,10 +66,15 @@ export default function ChatSearchBar() {
                   backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${el.photo})`,
                 }}
               ></div>
-              <div className="chat-search-results-el-name">{el.name}</div>
+              <div className="chat-search-results-el-info">
+                <div className="chat-search-results-el-name">{el.name}</div>
+                <div className="chat-search-results-el-handle">
+                  @{el.handle}
+                </div>
+              </div>
             </Link>
           ))}
-        </div>
+        </>
       );
     }
     return null;
@@ -79,7 +84,9 @@ export default function ChatSearchBar() {
     <div className="chat-search-container">
       <div className="chat-search-header">
         <Link to=".." relative="path">
-          <FontAwesomeIcon icon={faArrowLeft} className="icon" />
+          <button>
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
         </Link>
         <input
           type="text"
@@ -87,13 +94,12 @@ export default function ChatSearchBar() {
           value={chatSearch}
           onChange={(e) => setChatSearch(e.target.value)}
         />
-        {chatSearch && (
-          <FontAwesomeIcon
-            icon={faXmark}
-            className="icon"
-            onClick={clearSearch}
-          />
-        )}
+        <button
+          className={chatSearch ? "active" : "inactive"}
+          onClick={clearSearch}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
       </div>
       <div className="chat-search-results">
         {chatSearch.length === 0 ? (
@@ -103,7 +109,7 @@ export default function ChatSearchBar() {
         ) : searchResults.length > 0 ? (
           <>
             {renderSearchResults(friends, "Friends")}
-            {renderSearchResults(others, "More people")}
+            {renderSearchResults(others, "Users")}
           </>
         ) : (
           <p>No results found. Please try again.</p>

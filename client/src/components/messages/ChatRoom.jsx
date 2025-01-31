@@ -48,7 +48,7 @@ export default function ChatRoom() {
         setRoom(res.data.chat._id);
         setChatIsApproved(res.data.chat.isApproved);
 
-        if (!res.status === 200) {
+        if (res.status !== 200) {
           createNewChat();
         }
       } catch (err) {
@@ -130,11 +130,8 @@ export default function ChatRoom() {
 
     return () => {
       leaveChatRoom();
-      // socket.socket.off("receive-message");
       socket.socket.off("reciever-online");
       socket.socket.off("update-read-state");
-      // socket.socket.off("user-is-typing");
-      // socket.socket.off("user-no-longer-typing");
     };
   }, [chattingWithUser, socket]);
 
@@ -287,7 +284,8 @@ export default function ChatRoom() {
             <FontAwesomeIcon icon={faArrowLeft} />
           </div>
         </Link>
-        <div
+        <Link
+          to={`/${chattingWithUser.handle}`}
           className="chat-header-img"
           style={{
             backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${chattingWithUser.photo})`,
@@ -296,9 +294,11 @@ export default function ChatRoom() {
           {chatIsApproved && chattingWithUser.isOnline && (
             <div className="online-bubble"></div>
           )}
-        </div>
+        </Link>
         <div className="chat-header-info">
-          <span className="name">{chattingWithUser.name}</span>
+          <Link to={`/${chattingWithUser.handle}`} className="name">
+            {chattingWithUser.name}
+          </Link>
           {chatIsApproved && (
             <span>
               {isTyping

@@ -5,7 +5,9 @@ const catchAsync = require("../utils/catchAsync");
 
 exports.getChat = catchAsync(async (req, res) => {
   const user1 = req.query.user1;
-  const user2 = await User.findById(req.query.user2);
+  const user2 = await User.findById(req.query.user2).select(
+    "_id name isOnline photo handle"
+  );
 
   const chat = await Chat.findOne({
     participants: { $all: [user1, user2._id] },
