@@ -2,7 +2,13 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 
 // Post Related Options
-export const deletePost = async (options, setOptions, setData, showAlert) => {
+export const deletePost = async (
+  options,
+  setOptions,
+  setData,
+  Unbookmark,
+  showAlert
+) => {
   try {
     const res = await axios({
       method: "DELETE",
@@ -21,6 +27,10 @@ export const deletePost = async (options, setOptions, setData, showAlert) => {
         return prevPosts;
       }
     });
+
+    if (Unbookmark) {
+      Unbookmark(options.postId);
+    }
 
     setOptions(false);
   } catch (err) {

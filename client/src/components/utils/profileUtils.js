@@ -6,7 +6,6 @@ export const sendInvite = async ({
   showAlert,
   userId,
 }) => {
-  console.log(setLoadingStatus);
   setLoadingStatus(true);
   try {
     const res = await axios({

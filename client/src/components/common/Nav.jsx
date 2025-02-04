@@ -28,19 +28,12 @@ export default function Nav() {
 
   return (
     <div className="nav">
-      <Link to="/home" className="nav-el">
+      <Link to="/" className="nav-el">
         <div className="nav-el-svg-wrapper">
           <FontAwesomeIcon icon={faHouse} className="icon" />
         </div>
         <span>Home</span>
       </Link>
-
-      {/* <Link to="/search" className="nav-el">
-        <div className="nav-el-svg-wrapper">
-          <FontAwesomeIcon icon={faMagnifyingGlass} className="icon" />
-        </div>
-        <span>Discover</span>
-      </Link> */}
 
       <Link to="/discover" className="nav-el">
         <div className="nav-el-svg-wrapper">

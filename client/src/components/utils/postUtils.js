@@ -46,6 +46,61 @@ export const togglePostLike = async (
   }
 };
 
+export const togglePostBookmark = async (
+  postId,
+  isBookmarked,
+  userData,
+  setData,
+  context,
+  showAlert
+) => {
+  try {
+    const res = await axios({
+      method: isBookmarked ? "DELETE" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${postId}/bookmark`,
+      withCredentials: true,
+    });
+    console.log(res);
+    setData((prevPosts) => {
+      if (context === "postDetail") {
+        return {
+          ...prevPosts,
+          bookmarks: isBookmarked
+            ? prevPosts.bookmarks.filter(
+                (bookmark) => bookmark._id !== userData._id
+              )
+            : [
+                ...prevPosts.bookmarks,
+                { _id: userData._id, isLikeActive: true },
+              ],
+        };
+      } else if (context === "posts") {
+        return prevPosts.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                bookmarks: isBookmarked
+                  ? post.bookmarks.filter(
+                      (bookmark) => bookmark._id !== userData._id
+                    )
+                  : [
+                      ...post.bookmarks,
+                      { _id: userData._id, isLikeActive: true },
+                    ],
+              }
+            : post
+        );
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    showAlert(err.response.data.message, err.response.data.status);
+  }
+};
+
 export const postComment = async (
   postId,
   comment,

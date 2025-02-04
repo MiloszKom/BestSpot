@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 import { Spotlists } from "./components/Spotlists";
+import LoadingWave from "../common/LoadingWave";
 
 export default function SpotlistsPage() {
   const [spotlists, setSpotlists] = useState([]);
-
   const [options, setOptions] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchSpotlists = async () => {
     try {
@@ -23,6 +25,8 @@ export default function SpotlistsPage() {
       setSpotlists(res.data.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -33,13 +37,23 @@ export default function SpotlistsPage() {
   return (
     <div className="spotlists">
       <div className="spotlists-header">Your Spotlists</div>
-      <div className="spotlists-wrapper">
-        <Spotlists
-          spotlists={spotlists}
-          setSpotlists={setSpotlists}
-          options={options}
-          setOptions={setOptions}
-        />
+      <div className="spotlists-body">
+        {isLoading ? (
+          <LoadingWave />
+        ) : spotlists.length > 0 ? (
+          <div className="spotlists-wrapper">
+            <Spotlists
+              spotlists={spotlists}
+              setSpotlists={setSpotlists}
+              options={options}
+              setOptions={setOptions}
+            />
+          </div>
+        ) : (
+          <div className="empty-spotlists-message">
+            No spotlists yet. Start saving your favorite spots!
+          </div>
+        )}
       </div>
 
       {options && (

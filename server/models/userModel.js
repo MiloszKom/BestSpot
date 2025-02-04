@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema({
   },
   spotlists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Spotlist" }],
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

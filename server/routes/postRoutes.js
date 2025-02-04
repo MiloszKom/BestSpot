@@ -5,7 +5,12 @@ const authController = require("../controllers/authController");
 
 const router = express.Router();
 
-router.get("/", postController.getPosts);
+router.get("/", authController.protect, postController.getPosts);
+router.get(
+  "/bookmarks",
+  authController.protect,
+  postController.getUserBookmarks
+);
 router.post(
   "/",
   authController.protect,
@@ -22,6 +27,11 @@ router
   .route("/:id/like")
   .post(authController.protect, postController.likePost)
   .delete(authController.protect, postController.unlikePost);
+
+router
+  .route("/:id/bookmark")
+  .post(authController.protect, postController.bookmarkPost)
+  .delete(authController.protect, postController.unbookmarkPost);
 
 router.post(
   "/:postId/comment",

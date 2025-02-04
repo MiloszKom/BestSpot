@@ -11,19 +11,21 @@ import {
   faEllipsisVertical,
   faChevronDown,
   faHeart as solidHeart,
+  faBookmark as solidBookmark,
   faXmark,
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faHeart as regularHeart,
   faComment,
-  faBookmark,
+  faBookmark as regularBookmark,
 } from "@fortawesome/free-regular-svg-icons";
 
 import { formatPostTimestamp, formatTimeAgo } from "../utils/helperFunctions";
 import { editMessage } from "../utils/showOptionsUtils";
 import {
   togglePostLike,
+  togglePostBookmark,
   postComment,
   toggleCommentLike,
   postReply,
@@ -146,13 +148,21 @@ export default function PostDetail() {
   const postOptions =
     post.author._id === userData._id ? ["delete"] : ["report"];
 
-  const likeCount = post.likes.filter((like) => like.isLikeActive === true);
+  const likeCount = post.likes.filter(
+    (like) => like.isLikeActive === true
+  ).length;
 
   const isPostLiked = post.likes.some(
     (like) => like._id === userData._id && like.isLikeActive
   );
 
-  console.log(visibleReplies);
+  const bookmarkCount = post.bookmarks.filter(
+    (bookmark) => bookmark.isLikeActive === true
+  ).length;
+
+  const isPostBookmarked = post.bookmarks.some(
+    (bookmark) => bookmark._id === userData._id && bookmark.isLikeActive
+  );
 
   return (
     <div className="post-detail-container">
@@ -171,7 +181,7 @@ export default function PostDetail() {
               backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${post.author.photo})`,
             }}
           ></Link>
-          <div>
+          <div className="post-detail-author-info">
             <Link to={`/${post.author.handle}`} className="username">
               {post.author.name}
             </Link>
@@ -241,16 +251,10 @@ export default function PostDetail() {
               )
             }
           >
-            {isPostLiked ? (
-              <div className="svg-wrapper liked">
-                <FontAwesomeIcon icon={solidHeart} />
-              </div>
-            ) : (
-              <div className="svg-wrapper">
-                <FontAwesomeIcon icon={regularHeart} />
-              </div>
-            )}
-            <span>{likeCount.length}</span>
+            <div className={`svg-wrapper ${isPostLiked ? "liked" : ""}`}>
+              <FontAwesomeIcon icon={isPostLiked ? solidHeart : regularHeart} />
+            </div>
+            <span>{likeCount}</span>
           </div>
           <div className="option">
             <div className="svg-wrapper">
@@ -258,18 +262,34 @@ export default function PostDetail() {
             </div>
             <span>{post.totalComments}</span>
           </div>
-          <div className="option">
-            <div className="svg-wrapper">
-              <FontAwesomeIcon icon={faBookmark} />
+          <div
+            className="option"
+            onClick={() =>
+              togglePostBookmark(
+                post._id,
+                isPostBookmarked,
+                userData,
+                setPost,
+                "postDetail",
+                showAlert
+              )
+            }
+          >
+            <div
+              className={`svg-wrapper ${isPostBookmarked ? "bookmarked" : ""}`}
+            >
+              <FontAwesomeIcon
+                icon={isPostBookmarked ? solidBookmark : regularBookmark}
+              />
             </div>
-            <span>0</span>
+            <span>{bookmarkCount}</span>
           </div>
         </div>
 
         {post.comments.map((comment) => {
           const commentLikeCount = comment.likes.filter(
             (like) => like.isLikeActive === true
-          );
+          ).length;
 
           const isCommentLiked = comment.likes.some(
             (like) => like._id === userData._id && like.isLikeActive
@@ -361,7 +381,7 @@ export default function PostDetail() {
                       <FontAwesomeIcon icon={regularHeart} />
                     </div>
                   )}
-                  <span>{commentLikeCount.length}</span>
+                  <span>{commentLikeCount}</span>
                 </div>
                 <div
                   className="comment-option-reply"
@@ -393,9 +413,9 @@ export default function PostDetail() {
               {isRepliesVisible && (
                 <div className="post-detail-comment-replies">
                   {comment.replies.map((reply) => {
-                    const likeCount = reply.likes.filter(
+                    const replyLikeCount = reply.likes.filter(
                       (like) => like.isLikeActive === true
-                    );
+                    ).length;
                     const isReplyLiked = reply.likes.some(
                       (like) => like._id === userData._id && like.isLikeActive
                     );
@@ -492,7 +512,7 @@ export default function PostDetail() {
                                 <FontAwesomeIcon icon={regularHeart} />
                               </div>
                             )}
-                            <span>{likeCount.length}</span>
+                            <span>{replyLikeCount}</span>
                           </div>
                           <div
                             className="comment-option-reply"

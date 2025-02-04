@@ -42,6 +42,12 @@ const postSchema = new mongoose.Schema(
       type: [Number],
       default: [],
     },
+    bookmarks: [
+      {
+        _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        isLikeActive: { type: Boolean, default: true },
+      },
+    ],
     comments: [
       {
         user: {

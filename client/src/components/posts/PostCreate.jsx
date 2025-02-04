@@ -77,7 +77,7 @@ export default function PostCreate({ setCreatingPost }) {
     const totalPhotos = selectedPhotos.length + files.length;
 
     if (totalPhotos > 5) {
-      showAlert("You can upload up to 5 images only.", "error");
+      showAlert("You can upload up to only 5 images.", "error");
       return;
     }
 
@@ -124,7 +124,7 @@ export default function PostCreate({ setCreatingPost }) {
         withCredentials: true,
       });
 
-      navigate("/home");
+      navigate("/");
       showAlert(res.data.message, res.data.status);
     } catch (err) {
       console.log(err);
@@ -135,7 +135,7 @@ export default function PostCreate({ setCreatingPost }) {
   return (
     <div className="post-create">
       <div className="post-create-header">
-        <Link to="/home" className="svg-wrapper">
+        <Link to="/" className="svg-wrapper">
           <FontAwesomeIcon icon={faArrowLeft} />
         </Link>
         <span>Create a post</span>
@@ -217,10 +217,17 @@ export default function PostCreate({ setCreatingPost }) {
           id="photos"
           name="photos"
           onChange={handleFileChange}
+          disabled={selectedSpotlists.length > 0 || selectedSpots.length > 0}
           multiple
         />
         <label
-          className={`option ${selectedPhotos.length > 4 ? "disabled" : ""}`}
+          className={`option ${
+            selectedPhotos.length > 4 ||
+            selectedSpotlists.length > 0 ||
+            selectedSpots.length > 0
+              ? "disabled"
+              : ""
+          }`}
           htmlFor="photos"
         >
           <FontAwesomeIcon icon={faImage} />
@@ -229,14 +236,24 @@ export default function PostCreate({ setCreatingPost }) {
           </span>
         </label>
         <div
-          className={`option ${selectedSpots.length > 0 ? "disabled" : ""}`}
+          className={`option ${
+            selectedSpots.length > 0 || selectedPhotos.length > 0
+              ? "disabled"
+              : ""
+          }`}
           onClick={() => setIsAddingSpotlists(true)}
         >
           <FontAwesomeIcon icon={faList} />
-          <span>Spotlists</span>
+          <span>
+            {selectedSpotlists.length > 0 ? "Add More Spotlists" : "Spotlists"}
+          </span>
         </div>
         <div
-          className={`option ${selectedSpotlists.length > 0 ? "disabled" : ""}`}
+          className={`option ${
+            selectedSpotlists.length > 0 || selectedPhotos.length > 0
+              ? "disabled"
+              : ""
+          }`}
           onClick={() => setIsAddingSpots(true)}
         >
           <FontAwesomeIcon icon={faLocationDot} />
@@ -250,21 +267,25 @@ export default function PostCreate({ setCreatingPost }) {
         Create Post
       </button>
 
-      {isAddingSpots && (
-        <PostAddSpots
-          setIsAddingSpots={setIsAddingSpots}
-          setSelectedSpots={setSelectedSpots}
-          selectedSpots={selectedSpots}
-        />
-      )}
+      {isAddingSpotlists &&
+        selectedPhotos.length === 0 &&
+        selectedSpots.length === 0 && (
+          <PostAddSpotlists
+            setIsAddingSpotlists={setIsAddingSpotlists}
+            setSelectedSpotlists={setSelectedSpotlists}
+            selectedSpotlists={selectedSpotlists}
+          />
+        )}
 
-      {isAddingSpotlists && (
-        <PostAddSpotlists
-          setIsAddingSpotlists={setIsAddingSpotlists}
-          setSelectedSpotlists={setSelectedSpotlists}
-          selectedSpotlists={selectedSpotlists}
-        />
-      )}
+      {isAddingSpots &&
+        selectedPhotos.length === 0 &&
+        selectedSpotlists.length === 0 && (
+          <PostAddSpots
+            setIsAddingSpots={setIsAddingSpots}
+            setSelectedSpots={setSelectedSpots}
+            selectedSpots={selectedSpots}
+          />
+        )}
 
       {options && (
         <div className="options-overlay" onClick={() => setOptions(false)} />

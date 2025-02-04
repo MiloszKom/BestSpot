@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import { AuthContextProvider } from "./components/context/AuthContext";
 import { ResultsContextProvider } from "./components/context/ResultsContext";
 import { SocketContextProvider } from "./components/context/SocketContext";
@@ -45,6 +46,7 @@ import AreaSearchFilters from "./components/discover/AreaSearchFilters";
 import Results from "./components/discover/Results";
 import SpotAdd from "./components/discover/SpotAdd";
 import SpotlistsHub from "./components/discover/SpotlistsHub";
+import Bookmarks from "./components/pages/Bookmarks";
 
 function App() {
   return (
@@ -55,8 +57,8 @@ function App() {
             <BrowserRouter>
               <Alert />
               <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route path="/home" element={<HomePage />}>
+                <Route element={<Layout />}>
+                  <Route path="/" element={<HomePage />}>
                     <Route path="create-post" element={<PostCreate />} />
                   </Route>
 
@@ -112,6 +114,15 @@ function App() {
                   <Route
                     path="/:handle/spotlists/list/:id"
                     element={<SpotlistContent />}
+                  />
+
+                  <Route
+                    path="/bookmarks"
+                    element={
+                      <PrivateRoute>
+                        <Bookmarks />
+                      </PrivateRoute>
+                    }
                   />
 
                   <Route

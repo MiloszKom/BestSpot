@@ -7,8 +7,6 @@ export function ProfilePosts() {
   const { posts, options, setOptions } = useOutletContext();
 
   return (
-    <div className="posts-container">
-      <Posts postElements={posts} options={options} setOptions={setOptions} />
-    </div>
+    <Posts postElements={posts} options={options} setOptions={setOptions} />
   );
 }

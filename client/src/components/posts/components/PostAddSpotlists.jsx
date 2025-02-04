@@ -69,23 +69,17 @@ export default function PostAddSpotlists({
   return (
     <div className="post-add-spotlists-container">
       <div className="post-create-header">
-        <FontAwesomeIcon
-          icon={faArrowLeft}
+        <div
+          className="svg-wrapper"
           onClick={() => {
             setIsAddingSpotlists(false);
           }}
-        />
-        <span>Add spotlists</span>
-        <button
-          className={pickedSpotlists.length > 0 ? "" : "disabled"}
-          onClick={confirmSpots}
         >
-          Confirm
-        </button>
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </div>
+        <span>Add spotlists</span>
+        <div className="counter">Spotlists {pickedSpotlists.length}/3</div>
       </div>
-
-      <h2>Choose Spotlists</h2>
-
       <div className="post-add-spotlists-body">
         {spotlists.map((spotlist) => {
           const isSpotlistSelected = pickedSpotlists.some(
@@ -96,7 +90,7 @@ export default function PostAddSpotlists({
           return (
             <label
               className={`post-spotlist-el ${
-                pickedSpotlists.length === 3 && !isSpotlistSelected
+                pickedSpotlists.length >= 3 && !isSpotlistSelected
                   ? "disabled"
                   : ""
               }`}
@@ -117,23 +111,29 @@ export default function PostAddSpotlists({
                 <div className="post-spotlist-visibility">
                   {getVisibilityDisplayName(spotlist.visibility)}
                 </div>
-                <div className="post-spotlist-description">No Description</div>
+                <div className="post-spotlist-description">
+                  {spotlist.description}
+                </div>
               </div>
               <div className="post-spotlist-check">
                 <input
                   type="checkbox"
                   checked={pickedSpotlists.some((s) => s._id === spotlist._id)}
                   onChange={() => handleSpotlistSelection(spotlist)}
+                  disabled={!isSpotlistSelected && pickedSpotlists.length >= 3}
                 />
               </div>
             </label>
           );
         })}
       </div>
-
-      <div className="spot-counter">
-        <FontAwesomeIcon icon={faList} />
-        {pickedSpotlists.length}/3 Spotlists selected
+      <div className="post-add-spotlists-footer">
+        <button
+          className={pickedSpotlists.length > 0 ? `active` : ""}
+          onClick={confirmSpots}
+        >
+          Confirm
+        </button>
       </div>
     </div>
   );

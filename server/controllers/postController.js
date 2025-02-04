@@ -86,24 +86,118 @@ const extractAndValidateHandles = async (content) => {
 };
 
 exports.getPosts = catchAsync(async (req, res, next) => {
-  const posts = await Post.find().populate([
+  let matchCondition = {};
+
+  if (req.query.filter === "friends") {
+    const user = await User.findById(req.user._id).select("friends");
+    const friendIds = user.friends;
+
+    matchCondition = {
+      author: { $in: friendIds },
+    };
+  }
+
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  const posts = await Post.aggregate([
     {
-      path: "author",
-      select: "_id name photo handle",
+      $match: matchCondition,
     },
     {
-      path: "spots",
-      select: "_id google_id name photo city country",
+      $addFields: {
+        score: {
+          $subtract: [
+            {
+              $multiply: [
+                {
+                  $size: {
+                    $filter: {
+                      input: "$likes",
+                      as: "like",
+                      cond: { $eq: ["$$like.isLikeActive", true] },
+                    },
+                  },
+                },
+                2,
+              ],
+            },
+            {
+              $divide: [
+                { $subtract: [new Date(), "$createdAt"] },
+                1000 * 60 * 60,
+              ],
+            },
+          ],
+        },
+      },
     },
+    { $sort: { score: -1 } },
+
     {
-      path: "spotlists",
-      select: "_id name cover visibility spots",
+      $lookup: {
+        from: "users",
+        localField: "author",
+        foreignField: "_id",
+        as: "author",
+      },
     },
+    { $unwind: "$author" },
+
+    {
+      $lookup: {
+        from: "spots",
+        localField: "spots",
+        foreignField: "_id",
+        as: "spots",
+      },
+    },
+
+    {
+      $lookup: {
+        from: "spotlists",
+        localField: "spotlists",
+        foreignField: "_id",
+        as: "spotlists",
+      },
+    },
+
+    {
+      $project: {
+        _id: 1,
+        createdAt: 1,
+        content: 1,
+        likes: 1,
+        bookmarks: 1,
+        comments: 1,
+        "author._id": 1,
+        "author.name": 1,
+        "author.photo": 1,
+        "author.handle": 1,
+        "spots._id": 1,
+        "spots.google_id": 1,
+        "spots.name": 1,
+        "spots.photo": 1,
+        "spots.city": 1,
+        "spots.country": 1,
+        "spotlists._id": 1,
+        "spotlists.name": 1,
+        "spotlists.cover": 1,
+        "spotlists.visibility": 1,
+        "spotlists.spots": 1,
+      },
+    },
+
+    { $skip: skip },
+    { $limit: limit },
   ]);
 
   res.status(200).json({
     status: "success",
     data: posts,
+    page,
+    limit,
   });
 });
 
@@ -118,10 +212,13 @@ exports.createPost = catchAsync(async (req, res, next) => {
     return next(new AppError("No user found", 404));
   }
 
-  if (spots?.length > 0 && spotlists?.length > 0) {
+  const fields = [spots, spotlists, photos];
+  const nonEmptyFields = fields.filter((field) => field && field.length > 0);
+
+  if (nonEmptyFields.length > 1) {
     return next(
       new AppError(
-        "You can include either spots or spotlists, but not both.",
+        "You can include only one of spots, spotlists, or photos",
         400
       )
     );
@@ -205,6 +302,11 @@ exports.deletePost = catchAsync(async (req, res, next) => {
   user.posts.pull(post._id);
   await user.save({ validateBeforeSave: false });
 
+  await User.updateMany(
+    { bookmarks: post._id },
+    { $pull: { bookmarks: post._id } }
+  );
+
   await Post.deleteOne({ _id: req.params.id });
 
   res.status(200).json({
@@ -242,6 +344,98 @@ exports.unlikePost = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "Post unliked successfully",
+  });
+});
+
+exports.getUserBookmarks = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  const user = await User.findById(req.user._id).populate({
+    path: "bookmarks",
+    options: { skip, limit },
+    populate: [
+      { path: "author", select: "_id name photo handle" },
+      { path: "spotlists", select: "_id name cover visibility spots author" },
+      { path: "spots", select: "_id google_id name photo city country" },
+    ],
+  });
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const bookmarkedPosts = user.bookmarks;
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      bookmarks: bookmarkedPosts,
+    },
+  });
+});
+
+exports.bookmarkPost = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id).select("_id name");
+  const post = await Post.findById(req.params.id);
+
+  if (!post) {
+    return next(new AppError("Post not found", 404));
+  }
+
+  const existingBookmark = post.bookmarks.find((bookmarks) =>
+    bookmarks._id.equals(user._id)
+  );
+
+  if (existingBookmark) {
+    if (existingBookmark.isLikeActive) {
+      return next(new AppError(`You already bookmarked this post`, 400));
+    }
+    existingBookmark.isLikeActive = true;
+  } else {
+    post.bookmarks.push({ _id: user._id, isLikeActive: true });
+  }
+
+  await User.findByIdAndUpdate(user._id, {
+    $addToSet: { bookmarks: post._id },
+  });
+
+  post.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "Added to your bookmarks",
+  });
+});
+
+exports.unbookmarkPost = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id).select("_id name");
+  const post = await Post.findById(req.params.id);
+
+  if (!post) {
+    return next(new AppError("Post not found", 404));
+  }
+
+  const existingBookmark = post.bookmarks.find((bookmark) =>
+    bookmark._id.equals(user._id)
+  );
+
+  if (!existingBookmark || !existingBookmark.isLikeActive) {
+    return next(new AppError(`You have not saved this bookmark`, 400));
+  }
+
+  existingBookmark.isLikeActive = false;
+
+  await User.findByIdAndUpdate(user._id, {
+    $pull: { bookmarks: post._id },
+  });
+
+  post.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "Removed from your bookmarks",
   });
 });
 

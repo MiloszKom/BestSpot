@@ -7,6 +7,7 @@ import {
   faChevronRight,
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
+import { getVisibilityDisplayName } from "../../utils/helperFunctions";
 
 export default function PostAddSpots({
   setIsAddingSpots,
@@ -90,57 +91,54 @@ export default function PostAddSpots({
   return (
     <div className="post-add-spots-container">
       <div className="post-create-header">
-        <FontAwesomeIcon
-          icon={faArrowLeft}
+        <div
+          className="svg-wrapper"
           onClick={() => {
             setIsAddingSpots(false);
           }}
-        />
-        <span>Add spots</span>
-        <button
-          className={pickedSpots.length > 0 ? "" : "disabled"}
-          onClick={confirmSpots}
         >
-          Confirm
-        </button>
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </div>
+        <span>{isSpotlistPicked ? "Add spots" : "Choose spotlist"}</span>
+        <div className="counter">Spots {pickedSpots.length}/5</div>
       </div>
-      <h2>Choose {isSpotlistPicked ? "Spots" : "Spotlist"}</h2>
-
       <div className="post-add-spots-body">
         <div
           className="post-create-add-spots"
           style={{ transform: `translateX(-${isSpotlistPicked ? 100 : 0}%)` }}
         >
-          <div className="add-spots-1">
+          <div className="pick-spotlist">
             {spotlists.map((spotlist) => {
               return (
                 <div
                   className="spotlist-el"
                   onClick={() => viewSpotlist(spotlist._id)}
-                  key={spotlist._id}
                 >
                   <div
-                    className="spotlist-img"
+                    className="photo"
                     style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlist.cover}`,
+                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlist.cover})`,
                     }}
-                  />
-                  <div className="spotlist-info">
-                    <span className="name">{spotlist.name}</span>
-                    <span className="description">No Description</span>
+                  >
+                    <span className="spotlists-spot-count">
+                      {spotlist.spots.length} spots
+                    </span>
                   </div>
-                  <div className="show-list">
+                  <div className="info">
+                    <div className="name no-wrap">{spotlist.name}</div>
+                    <div className="visibility no-wrap">
+                      {getVisibilityDisplayName(spotlist.visibility)}
+                    </div>
+                    <div className="description">{spotlist.description}</div>
+                  </div>
+                  <button className="pick-btn">
                     <FontAwesomeIcon icon={faChevronRight} />
-                  </div>
+                  </button>
                 </div>
               );
             })}
           </div>
-          <div className="add-spots-2">
-            <div className="return" onClick={() => setIsSpotlistPicked(false)}>
-              <FontAwesomeIcon icon={faArrowLeft} />
-              <span>Go back to spotlists</span>
-            </div>
+          <div className="pick-spot">
             {spots.map((spot) => {
               const isSpotSelected = pickedSpots.some(
                 (s) => s._id === spot._id
@@ -155,28 +153,46 @@ export default function PostAddSpots({
                   }`}
                   key={spot._id}
                 >
-                  <input
-                    type="checkbox"
-                    checked={pickedSpots.some((s) => s._id === spot._id)}
-                    onChange={() => handleSpotSelection(spot)}
-                  />
                   <div
-                    className="spot-el-img"
+                    className="photo"
                     style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo}`,
+                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
                     }}
                   />
-                  <div className="spot-el-info">{spot.name}</div>
+                  <div className="info">
+                    <div className="name no-wrap">{spot.name}</div>
+                    <div className="address no-wrap">{`${spot.city}, ${spot.county}`}</div>
+                  </div>
+                  <div className="post-spotlist-check">
+                    <input
+                      type="checkbox"
+                      checked={pickedSpots.some((s) => s._id === spot._id)}
+                      onChange={() => handleSpotSelection(spot)}
+                      disabled={
+                        !pickedSpots.some((s) => s._id === spot._id) &&
+                        pickedSpots.length >= 5
+                      }
+                    />
+                  </div>
                 </label>
               );
             })}
           </div>
         </div>
       </div>
-
-      <div className="spot-counter">
-        <FontAwesomeIcon icon={faLocationDot} />
-        {pickedSpots.length}/5 Spots selected
+      <div className="post-add-spots-footer">
+        <button
+          className={isSpotlistPicked ? `active` : ""}
+          onClick={() => setIsSpotlistPicked(false)}
+        >
+          Return
+        </button>
+        <button
+          className={pickedSpots.length > 0 ? `active` : ""}
+          onClick={confirmSpots}
+        >
+          Confirm
+        </button>
       </div>
     </div>
   );

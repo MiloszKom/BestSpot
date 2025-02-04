@@ -34,7 +34,7 @@ export default function Login() {
       if (res.data.status === "success") {
         showAlert(res.data.message, res.data.status);
         window.setTimeout(() => {
-          navigate("/home");
+          navigate("/");
         }, 2000);
       }
 

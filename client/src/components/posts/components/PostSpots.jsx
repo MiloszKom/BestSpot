@@ -22,6 +22,9 @@ export default function PostSpots({ selectedSpots, setSelectedSpots }) {
               backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
             }}
             key={spot._id}
+            onClick={(e) => {
+              if (setSelectedSpots) e.preventDefault();
+            }}
           >
             <div className="spot-el-info">
               <div className="spot-el-info-upper">
@@ -32,7 +35,9 @@ export default function PostSpots({ selectedSpots, setSelectedSpots }) {
                 {setSelectedSpots && (
                   <div
                     className="spot-el-delete"
-                    onClick={() => removeSpot(spot._id)}
+                    onClick={(e) => {
+                      removeSpot(spot._id);
+                    }}
                   >
                     <FontAwesomeIcon icon={faTrashCan} />
                   </div>

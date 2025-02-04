@@ -30,6 +30,7 @@ export default function ShowOptions({
   setComment,
   setEditingSpotlist,
   setEditingSpot,
+  Unbookmark,
 }) {
   const navigate = useNavigate();
 
@@ -93,7 +94,9 @@ export default function ShowOptions({
         options.aviableOptions.includes("delete") && (
           <div
             className="option delete"
-            onClick={() => deletePost(options, setOptions, setData, showAlert)}
+            onClick={() =>
+              deletePost(options, setOptions, setData, Unbookmark, showAlert)
+            }
           >
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
@@ -6,36 +6,58 @@ import { AlertContext } from "../context/AlertContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { useInView } from "react-intersection-observer";
+
 import {
   faHeart as regularHeart,
   faComment,
-  faBookmark,
+  faBookmark as regularBookmark,
 } from "@fortawesome/free-regular-svg-icons";
 
 import {
   faEllipsisVertical,
   faHeart as solidHeart,
+  faBookmark as solidBookmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { formatTimeAgo } from "../utils/helperFunctions";
-import { togglePostLike } from "../utils/postUtils";
+import {
+  togglePostLike,
+  togglePostBookmark,
+  highlightHandles,
+} from "../utils/postUtils";
 import ShowOptions from "../common/ShowOptions";
 import PostImageCarousel from "./components/PostImageCarousel";
 import PostSpots from "./components/PostSpots";
 import PostSpotlists from "./components/PostSpotlists";
+import LoadingWave from "../common/LoadingWave";
 
-export function Posts({ postElements, options, setOptions }) {
+export function Posts({
+  postElements,
+  options,
+  setOptions,
+  Unbookmark,
+  hasNextPage,
+  fetchNextPage,
+  feedCompleteMessage,
+}) {
   const [posts, setPosts] = useState(postElements);
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate();
   const { showAlert } = useContext(AlertContext);
 
-  const savePost = () => {
-    console.log("post saveds");
-  };
+  const { ref, inView } = useInView();
+
+  useEffect(() => {
+    if (inView) fetchNextPage();
+  }, [fetchNextPage, inView]);
+
+  useEffect(() => {
+    setPosts(postElements);
+  }, [postElements]);
 
   return (
-    <>
+    <div className="posts-wrapper">
       {posts.map((post) => {
         const likeCount = post.likes.filter(
           (like) => like.isLikeActive === true
@@ -43,6 +65,10 @@ export function Posts({ postElements, options, setOptions }) {
 
         const isLiked = post.likes.some(
           (like) => like._id === userData._id && like.isLikeActive
+        );
+
+        const isPostBookmarked = post.bookmarks.some(
+          (bookmark) => bookmark._id === userData._id && bookmark.isLikeActive
         );
 
         const postOptions =
@@ -102,6 +128,7 @@ export function Posts({ postElements, options, setOptions }) {
                       options={options}
                       setOptions={setOptions}
                       setData={setPosts}
+                      Unbookmark={Unbookmark}
                     />
                   )}
                 </div>
@@ -116,7 +143,9 @@ export function Posts({ postElements, options, setOptions }) {
                   </div>
                 )}
                 {post.content && (
-                  <div className="post-content-text">{post.content}</div>
+                  <div className="post-content-text">
+                    {highlightHandles(post.content)}
+                  </div>
                 )}
                 {post.spots.length > 0 && (
                   <div className="post-content-spots">
@@ -144,15 +173,11 @@ export function Posts({ postElements, options, setOptions }) {
                     );
                   }}
                 >
-                  {isLiked ? (
-                    <button className="svg-wrapper liked">
-                      <FontAwesomeIcon icon={solidHeart} />
-                    </button>
-                  ) : (
-                    <button className="svg-wrapper">
-                      <FontAwesomeIcon icon={regularHeart} />
-                    </button>
-                  )}
+                  <div className={`svg-wrapper ${isLiked ? "liked" : ""}`}>
+                    <FontAwesomeIcon
+                      icon={isLiked ? solidHeart : regularHeart}
+                    />
+                  </div>
                   <span>{likeCount.length}</span>
                 </div>
                 <div className="footer-el">
@@ -165,11 +190,27 @@ export function Posts({ postElements, options, setOptions }) {
                   className="footer-el bookmark"
                   onClick={(e) => {
                     e.preventDefault();
-                    savePost();
+                    togglePostBookmark(
+                      post._id,
+                      isPostBookmarked,
+                      userData,
+                      setPosts,
+                      "posts",
+                      showAlert
+                    );
+                    if (isPostBookmarked && Unbookmark) {
+                      Unbookmark(post._id);
+                    }
                   }}
                 >
-                  <button className="svg-wrapper">
-                    <FontAwesomeIcon icon={faBookmark} />
+                  <button
+                    className={`svg-wrapper ${
+                      isPostBookmarked ? "bookmarked" : ""
+                    }`}
+                  >
+                    <FontAwesomeIcon
+                      icon={isPostBookmarked ? solidBookmark : regularBookmark}
+                    />
                   </button>
                 </div>
               </div>
@@ -177,6 +218,9 @@ export function Posts({ postElements, options, setOptions }) {
           </Link>
         );
       })}
-    </>
+      <div className="post-fetch-info" ref={ref}>
+        {hasNextPage ? <LoadingWave /> : feedCompleteMessage?.message}
+      </div>
+    </div>
   );
 }
