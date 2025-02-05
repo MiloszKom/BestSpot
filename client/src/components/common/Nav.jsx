@@ -93,7 +93,18 @@ export default function Nav() {
 
       <Link to={`/${auth.userData?.handle || "home"}`} className="nav-el">
         <div className="nav-el-svg-wrapper">
-          <FontAwesomeIcon icon={faUser} className="icon" />
+          {auth.userData?.photo ? (
+            <div
+              className="nav-photo"
+              style={{
+                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${auth.userData?.photo})`,
+              }}
+            />
+          ) : (
+            <div className="nav-el-svg-wrapper">
+              <FontAwesomeIcon icon={faUser} className="icon" />
+            </div>
+          )}
         </div>
         <span>Profile</span>
       </Link>

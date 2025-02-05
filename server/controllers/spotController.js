@@ -141,6 +141,10 @@ exports.createSpot = catchAsync(async (req, res, next) => {
 
   const newSpot = await Spot.create(spotData);
 
+  await User.findByIdAndUpdate(user._id, {
+    $addToSet: { spots: newSpot._id },
+  });
+
   res.status(201).json({
     status: "success",
     message: "Spot created successfully",
@@ -194,6 +198,10 @@ exports.deleteSpot = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id);
   const spot = await Spot.findById(req.params.id);
 
+  if (!spot) {
+    return next(new AppError("Spot not found", 404));
+  }
+
   if (!spot.author.equals(user._id)) {
     return next(new AppError("Not authorized to delete this spot", 404));
   }
@@ -211,6 +219,10 @@ exports.deleteSpot = catchAsync(async (req, res, next) => {
 
     await spotlist.save();
   }
+
+  await User.findByIdAndUpdate(user._id, {
+    $pull: { spots: spot._id },
+  });
 
   res.status(200).json({
     status: "success",

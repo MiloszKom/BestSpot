@@ -161,7 +161,7 @@ export default function PostAddSpots({
                   />
                   <div className="info">
                     <div className="name no-wrap">{spot.name}</div>
-                    <div className="address no-wrap">{`${spot.city}, ${spot.county}`}</div>
+                    <div className="address no-wrap">{`${spot.city}, ${spot.country}`}</div>
                   </div>
                   <div className="post-spotlist-check">
                     <input

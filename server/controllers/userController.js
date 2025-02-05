@@ -119,20 +119,51 @@ exports.getUser = catchAsync(async (req, res) => {
   });
 });
 
-exports.getUserProfile = catchAsync(async (req, res) => {
+// Profile APIs
+
+exports.getUserProfile = catchAsync(async (req, res, next) => {
   const currentUser = await User.findById(req.user._id);
   const { handle } = req.params;
 
-  const viewedUser = await User.findOne({ handle });
+  const viewedUser = await User.findOne({ handle }).select(
+    "_id name photo handle friends pendingRequests"
+  );
   if (!viewedUser) {
-    return res.status(404).json({ message: "This account doesn't exist" });
+    return next(new AppError("This account doens't exist", 404));
   }
 
   const isCurrentUser = currentUser._id.equals(viewedUser._id);
+  const isFriend = viewedUser.friends.includes(currentUser._id);
 
-  const isFriend = viewedUser.friends.some((friendId) =>
-    friendId.equals(currentUser._id)
-  );
+  let inviteStatus = "not-sent";
+  if (!isCurrentUser) {
+    if (isFriend) inviteStatus = "accepted";
+    else if (viewedUser.pendingRequests.includes(currentUser._id))
+      inviteStatus = "pending";
+  }
+
+  res.status(200).json({
+    status: "success",
+    message: "User profile info",
+    data: { viewedUser, inviteStatus },
+  });
+});
+
+exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
+  const currentUser = await User.findById(req.user._id);
+  const { handle } = req.params;
+  const viewedUser = await User.findOne({ handle }).select("_id friends");
+
+  if (!viewedUser) {
+    return next(new AppError("This account doesn't exist", 404));
+  }
+
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  const isCurrentUser = currentUser._id.equals(viewedUser._id);
+  const isFriend = viewedUser.friends.includes(currentUser._id);
 
   const postQuery = {
     author: viewedUser._id,
@@ -140,30 +171,42 @@ exports.getUserProfile = catchAsync(async (req, res) => {
       isCurrentUser || isFriend ? { $in: ["public", "friends"] } : "public",
   };
 
-  const posts = await Post.find(postQuery).populate([
-    {
-      path: "author",
-      select: "_id name photo handle",
-    },
-    {
-      path: "spots",
-      select: "_id google_id name photo city country",
-    },
-    {
-      path: "spotlists",
-      select: "_id name cover visibility spots",
-    },
-  ]);
+  const posts = await Post.find(postQuery)
+    .populate([
+      {
+        path: "author",
+        select: "_id name photo handle",
+      },
+      {
+        path: "spots",
+        select: "_id google_id name photo city country",
+      },
+      {
+        path: "spotlists",
+        select: "_id name cover visibility spots",
+      },
+    ])
+    .skip(skip)
+    .limit(limit);
 
-  let inviteStatus;
+  res.status(200).json({
+    status: "success",
+    message: "User profile posts",
+    data: posts,
+  });
+});
 
-  if (!isCurrentUser) {
-    if (viewedUser.friends.includes(currentUser._id)) {
-      inviteStatus = "accepted";
-    } else if (viewedUser.pendingRequests.includes(currentUser._id)) {
-      inviteStatus = "pending";
-    } else inviteStatus = "not-sent";
+exports.getUserProfileSpotlists = catchAsync(async (req, res, next) => {
+  const currentUser = await User.findById(req.user._id);
+  const { handle } = req.params;
+  const viewedUser = await User.findOne({ handle }).select("_id friends");
+
+  if (!viewedUser) {
+    return next(new AppError("This account doesn't exist", 404));
   }
+
+  const isCurrentUser = currentUser._id.equals(viewedUser._id);
+  const isFriend = viewedUser.friends.includes(currentUser._id);
 
   const spotlistQuery = {
     author: viewedUser._id,
@@ -177,13 +220,27 @@ exports.getUserProfile = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    message: "User profile, posts, and spotlists",
-    data: {
-      viewedUser,
-      inviteStatus,
-      posts,
-      spotlists,
-    },
+    message: "User profile spotlists",
+    data: spotlists,
+  });
+});
+
+exports.getUserProfileSpots = catchAsync(async (req, res, next) => {
+  const { handle } = req.params;
+  const viewedUser = await User.findOne({ handle })
+    .select("_id spots")
+    .populate("spots");
+
+  if (!viewedUser) {
+    return next(new AppError("This account doesn't exist", 404));
+  }
+
+  const viewedUserSpots = viewedUser.spots;
+
+  res.status(200).json({
+    status: "success",
+    message: "User profile spots",
+    data: viewedUserSpots,
   });
 });
 

@@ -47,6 +47,7 @@ import Results from "./components/discover/Results";
 import SpotAdd from "./components/discover/SpotAdd";
 import SpotlistsHub from "./components/discover/SpotlistsHub";
 import Bookmarks from "./components/pages/Bookmarks";
+import ProfileSpots from "./components/profile/ProfileSpots";
 
 function App() {
   return (
@@ -109,6 +110,7 @@ function App() {
                   >
                     <Route index element={<ProfilePosts />} />
                     <Route path="spotlists" element={<ProfileSpotlists />} />
+                    <Route path="spots" element={<ProfileSpots />} />
                   </Route>
 
                   <Route

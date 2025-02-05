@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
+  spots: [{ type: mongoose.Schema.Types.ObjectId, ref: "Spot" }],
   spotlists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Spotlist" }],
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],

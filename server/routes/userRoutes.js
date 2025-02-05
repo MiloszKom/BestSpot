@@ -62,6 +62,18 @@ router
   .route("/:handle")
   .get(authController.protect, userController.getUserProfile);
 
+router
+  .route("/:handle/posts")
+  .get(authController.protect, userController.getUserProfilePosts);
+
+router
+  .route("/:handle/spotlists")
+  .get(authController.protect, userController.getUserProfileSpotlists);
+
+router
+  .route("/:handle/spots")
+  .get(authController.protect, userController.getUserProfileSpots);
+
 router.post(
   "/sendFriendRequest/:id",
   authController.protect,
