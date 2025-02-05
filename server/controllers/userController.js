@@ -1,49 +1,8 @@
-const multer = require("multer");
-const sharp = require("sharp");
 const User = require("./../models/userModel");
 const Post = require("./../models/postModel");
 const Spotlist = require("./../models/spotlistModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
-
-const multerStorage = multer.memoryStorage();
-
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
-
-exports.uploadUserPhoto = upload.single("photo");
-
-exports.resizeUserPhoto = (req, res, next) => {
-  if (!req.file) return next();
-
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-
-  sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`uploads/images/${req.file.filename}`);
-
-  next();
-};
-
-const filterObj = (obj, ...allowedFields) => {
-  const newObj = {};
-  Object.keys(obj).forEach((el) => {
-    if (allowedFields.includes(el)) newObj[el] = obj[el];
-  });
-  return newObj;
-};
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -58,36 +17,24 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  if (req.body.password || req.body.passwordConfirm) {
-    return next(
-      new AppError(
-        "This route is not for password updates. Please use /updateMyPassword.",
-        400
-      )
-    );
-  }
+  const { name, email } = req.body;
+  const updateData = {};
 
-  const filteredBody = filterObj(req.body, "name", "email");
+  if (name) updateData.name = name;
+  if (email) updateData.email = email;
+  if (req.file) updateData.photo = req.file.filename;
 
-  if (req.file) filteredBody.photo = req.file.filename;
+  const user = await User.findByIdAndUpdate(req.user.id, updateData, {
+    new: true,
+    runValidators: true,
+  });
 
-  const user = await User.findById(req.user.id);
-
-  if (!user) {
-    return next(new AppError("User not found.", 404));
-  }
-
-  user.name = filteredBody.name || user.name;
-  user.email = filteredBody.email || user.email;
-  if (req.file) user.photo = req.file.filename;
-
-  await user.save();
+  if (!user) return next(new AppError("User not found.", 404));
 
   res.status(200).json({
     status: "success",
-    data: {
-      user: user,
-    },
+    message: "Your settings have been updated successfully.",
+    data: { user },
   });
 });
 

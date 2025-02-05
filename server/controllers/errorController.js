@@ -6,16 +6,33 @@ const handleCastErrorDB = (err) => {
 };
 
 const handleDuplicateFieldsDB = (err) => {
-  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-  const message = `Duplicate field value: ${value}. Pleaase use another value!`;
+  if (!err.errorResponse.errmsg) {
+    return new AppError(
+      "Duplicate field value. Please use another value!",
+      400
+    );
+  }
+  const match = err.errorResponse.errmsg.match(/\{ (\w+): "([^"]+)" \}/);
+  const field = match ? match[1] : "unknown";
+  const value = match ? match[2] : "unknown";
+
+  const message = `This ${field} is already taken: ${value}. Please use another value!`;
   return new AppError(message, 400);
 };
 
 const handleValidationErrorDB = (err) => {
-  const errors = Object.values(err.errors).map((el) => el.message);
-
-  const message = `invalid input data. ${errors.join(". ")}`;
-  return new AppError(message, 400);
+  for (const el of Object.values(err.errors)) {
+    if (el.path === "password") {
+      return new AppError("Password must be at least 8 characters long.", 400);
+    }
+    if (el.path === "passwordConfirm") {
+      return new AppError("Passwords do not match.", 400);
+    }
+    return new AppError(
+      `${el.path.charAt(0).toUpperCase() + el.path.slice(1)}: ${el.message}`,
+      400
+    );
+  }
 };
 
 const handleJWTError = () =>
@@ -57,9 +74,9 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
-    let error = { ...err };
+    let error = err;
     if (err.name === "CastError") error = handleCastErrorDB(error);
-    if (err.name === 11000) error = handleDuplicateFieldsDB(error);
+    if (err.code === 11000) error = handleDuplicateFieldsDB(error);
     if (err.name === "ValidationError") error = handleValidationErrorDB(error);
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleJWTExpired();

@@ -1,5 +1,3 @@
-const multer = require("multer");
-const sharp = require("sharp");
 const Spot = require("../models/spotModel");
 const User = require("../models/userModel");
 const Spotlist = require("./../models/spotlistModel");
@@ -13,42 +11,6 @@ const {
   likeEntity,
   unlikeEntity,
 } = require("../utils/helpers");
-
-const multerStorage = multer.memoryStorage();
-
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
-
-exports.uploadSpotImage = upload.single("photo");
-
-exports.adjustUserPhoto = async (req, res, next) => {
-  if (!req.file) return next();
-
-  const filename = `user-${req.user._id}-${Date.now()}.jpeg`;
-
-  try {
-    await sharp(req.file.buffer)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(`uploads/images/${filename}`);
-
-    req.body.photo = filename;
-  } catch (error) {
-    return next(new AppError("Error processing image", 500));
-  }
-
-  next();
-};
 
 exports.getAllUserSpot = catchAsync(async (req, res) => {
   const favs = await Spot.find({ "favouritedBy.userId": req.user.id });
@@ -122,7 +84,7 @@ exports.createSpot = catchAsync(async (req, res, next) => {
   const { name, overview, category, city, country, photo, address, lat, lng } =
     req.body;
 
-  const adjustedAdress = address.split(",").slice(0, -1).join(",");
+  const adjustedAdress = address?.split(",").slice(0, -1).join(",");
 
   const spotData = {
     author: req.user._id,

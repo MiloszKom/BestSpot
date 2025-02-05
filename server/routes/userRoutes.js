@@ -2,6 +2,8 @@ const express = require("express");
 const userController = require("./../controllers/userController");
 const authController = require("./../controllers/authController");
 
+const { uploadUserPhoto, resizeUserPhoto } = require("../utils/multerConfig");
+
 const router = express.Router();
 
 router.post("/signup", authController.signup);
@@ -22,8 +24,8 @@ router.patch(
 router.patch(
   "/updateMe",
   authController.protect,
-  userController.uploadUserPhoto,
-  userController.resizeUserPhoto,
+  uploadUserPhoto,
+  resizeUserPhoto,
   userController.updateMe
 );
 router.delete("/deleteMe", authController.protect, userController.deleteMe);

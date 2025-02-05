@@ -1440,68 +1440,87 @@ img {
   width: 100%;
   height: 100%;
   max-width: 600px;
-  padding: 2rem;
   color: #fff;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  scrollbar-width: none;
+  border-right: 1px solid #0088ff;
 }
 
 .settings-header {
+  display: flex;
+  gap: 0.5rem;
   font-size: 1.5rem;
+  padding: 1rem;
+  border-bottom: 1px solid #404040;
 }
 
-.settings-text {
-  margin-top: 1rem;
-  font-size: 1.75rem;
+.settings-body {
+  padding: 1rem;
 }
 
 .settings-form {
-  margin-top: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0.75rem;
 }
 
-.form__photo-upload {
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-  font-size: 1.6rem;
-}
-
-.form__user-photo {
-  height: 5rem;
-  width: 5rem;
-  border-radius: 50%;
-  border: 1px solid #0088ff;
-  margin-right: 1rem;
-  overflow: hidden;
-}
-
-.form__photo-upload input {
-  display: none;
-}
-
-.form__photo-upload label {
-  font-size: 1rem;
-  text-decoration: underline;
-  cursor: pointer;
+.settings-form:last-child {
+  margin-top: 1rem;
 }
 
 .settings-form .btn {
-  margin-bottom: 1rem;
-  width: 200px;
-  height: 50px;
+  padding: 0.6rem 1.5rem;
   background-color: #0088ff;
   border: none;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   border-radius: 5rem;
   color: #fff;
-  align-self: flex-end;
+  align-self: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-form .btn.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.form-photo {
+  position: relative;
+  height: 100px;
+  width: 100px;
+  border-radius: 100%;
+  align-self: center;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid #0088ff;
   cursor: pointer;
 }
 
+.form-photo:hover {
+  opacity: 0.9;
+}
+
+.form-photo-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #404040;
+  border: 1px solid #212121;
+  border-radius: 100%;
+}
+
+.form-group .input-file {
+  display: none;
+}
 /* ALERTS */
 
 .alert {
@@ -4737,15 +4756,4 @@ img {
   100% {
     height: 10px;
   }
-}
-
-/* PLAYGROUND  */
-
-.playground-container {
-  width: 100%;
-  height: 100%;
-  max-width: 600px;
-  border-right: 1px solid #0088ff;
-  padding: 1rem;
-  color: #fff;
 }

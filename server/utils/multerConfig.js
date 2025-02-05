@@ -17,12 +17,12 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-const uploadUserPhoto = upload.single("photo");
+const uploadSpotPhoto = upload.single("photo");
 
 const adjustPhoto = async (req, res, next) => {
   if (!req.file) return next();
 
-  const filename = `user-${req.user._id}-${Date.now()}.jpeg`;
+  const filename = `spot-${req.user._id}-${Date.now()}.jpeg`;
 
   await sharp(req.file.buffer)
     .toFormat("jpeg")
@@ -34,4 +34,27 @@ const adjustPhoto = async (req, res, next) => {
   next();
 };
 
-module.exports = { uploadUserPhoto, adjustPhoto }; // Corrected export syntax
+// User
+
+const uploadUserPhoto = upload.single("photo");
+
+const resizeUserPhoto = (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}.jpeg`;
+
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`uploads/images/${req.file.filename}`);
+
+  next();
+};
+
+module.exports = {
+  uploadSpotPhoto,
+  adjustPhoto,
+  uploadUserPhoto,
+  resizeUserPhoto,
+};

@@ -45,6 +45,7 @@ io.on("connection", (socket) => {
     currentUser.isOnline = true;
     await currentUser.save({ validateBeforeSave: false });
 
+    console.log(chatRooms);
     chatRooms.forEach((chat) => socket.join(chat));
 
     activeUsers.push({

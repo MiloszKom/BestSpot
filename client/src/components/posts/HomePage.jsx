@@ -35,6 +35,8 @@ export default function HomePage() {
     useInfiniteQuery({
       queryKey: ["posts", postType],
       queryFn: fetchPosts,
+      retry: false,
+      refetchOnWindowFocus: false,
       getNextPageParam: (lastPage, allPages) => {
         if (lastPage.data.length === 10) {
           return allPages.length + 1;

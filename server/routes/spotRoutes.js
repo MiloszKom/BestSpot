@@ -3,15 +3,15 @@ const router = express.Router();
 const spotController = require("./../controllers/spotController");
 const authController = require("../controllers/authController");
 
-const { uploadUserPhoto, adjustPhoto } = require("../utils/multerConfig");
+const { uploadSpotPhoto, adjustPhoto } = require("../utils/multerConfig");
 
 router
   .route("/")
   .get(authController.protect, spotController.getAllUserSpot)
   .post(
     authController.protect,
-    spotController.uploadSpotImage,
-    spotController.adjustUserPhoto,
+    uploadSpotPhoto,
+    adjustPhoto,
     spotController.createSpot
   );
 
@@ -20,7 +20,7 @@ router
   .get(authController.protect, spotController.getSpot)
   .patch(
     authController.protect,
-    uploadUserPhoto,
+    uploadSpotPhoto,
     adjustPhoto,
     spotController.editSpot
   )

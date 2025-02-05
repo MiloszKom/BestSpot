@@ -28,7 +28,6 @@ export default function Login() {
         },
         withCredentials: true,
       });
-
       auth.login(res.data);
 
       if (res.data.status === "success") {
@@ -39,8 +38,10 @@ export default function Login() {
       }
 
       console.log(res);
-    } catch (err) {}
-    console.log(auth);
+    } catch (err) {
+      showAlert(err.response.data.message, err.response.data.status);
+      console.log(err);
+    }
   };
 
   return (

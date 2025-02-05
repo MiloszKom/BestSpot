@@ -32,8 +32,10 @@ export const AuthContextProvider = ({ children }) => {
   }, []);
 
   const login = useCallback((data) => {
+    console.log(data);
     setIsLoggedIn(true);
     setUserData(data.data.user);
+    setToken(data.data.token);
   }, []);
 
   const logout = useCallback(() => {

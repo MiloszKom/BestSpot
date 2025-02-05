@@ -6,7 +6,6 @@ import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import {
-  faGear,
   faArrowRightFromBracket,
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
@@ -52,16 +51,6 @@ export default function Sidenav({ setShowMenu }) {
           <FontAwesomeIcon icon={faUserGroup} />
         </div>
         <span>Friends</span>
-      </Link>
-      <Link
-        to="/settings"
-        className="sidebar-el"
-        onClick={() => setShowMenu(false)}
-      >
-        <div className="sidebar-el-svg-wrapper">
-          <FontAwesomeIcon icon={faGear} />
-        </div>
-        <span>Profile Settings</span>
       </Link>
       <div className="sidebar-el" onClick={() => logout(auth)}>
         <div

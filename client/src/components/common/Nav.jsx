@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import {
   faHouse,
-  faGear,
   faArrowRightFromBracket,
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
@@ -75,13 +74,6 @@ export default function Nav() {
           <FontAwesomeIcon icon={faUserGroup} className="icon" />
         </div>
         <span>Friends</span>
-      </Link>
-
-      <Link to="/settings" className="nav-el nav-el-expanded">
-        <div className="nav-el-svg-wrapper">
-          <FontAwesomeIcon icon={faGear} className="icon" />
-        </div>
-        <span>Profile Settings</span>
       </Link>
 
       <div className="nav-el nav-el-expanded" onClick={() => logout(auth)}>
