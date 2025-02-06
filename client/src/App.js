@@ -82,10 +82,7 @@ function App() {
                     <Route path="chat-room/:id" element={<ChatRoom />} />
                   </Route>
 
-                  <Route
-                    path="messages/search-bar"
-                    element={<ChatSearchBar />}
-                  />
+                  <Route path="/search-bar" element={<ChatSearchBar />} />
 
                   {/* Friends Section */}
 
@@ -142,8 +139,6 @@ function App() {
                     element={<AreaSearchFilters />}
                   />
 
-                  <Route path="/discover/add-spot" element={<SpotAdd />} />
-
                   <Route
                     path="/discover/area-search/results"
                     element={<Results />}
@@ -153,6 +148,8 @@ function App() {
                     path="/discover/spotlists-hub"
                     element={<SpotlistsHub />}
                   />
+
+                  <Route path="/create" element={<SpotAdd />} />
 
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>

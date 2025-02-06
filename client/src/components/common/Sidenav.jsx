@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import {
   faArrowRightFromBracket,
+  faCirclePlus,
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -51,6 +52,16 @@ export default function Sidenav({ setShowMenu }) {
           <FontAwesomeIcon icon={faUserGroup} />
         </div>
         <span>Friends</span>
+      </Link>
+      <Link
+        to="/create"
+        className="sidebar-el create"
+        onClick={() => setShowMenu(false)}
+      >
+        <div className="sidebar-el-svg-wrapper">
+          <FontAwesomeIcon icon={faCirclePlus} />
+        </div>
+        <span>Create</span>
       </Link>
       <div className="sidebar-el" onClick={() => logout(auth)}>
         <div

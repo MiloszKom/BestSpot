@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Link,
   NavLink,
@@ -28,13 +28,13 @@ import useScrollPosition from "../utils/useScrollPosition";
 export default function Profile() {
   const [options, setOptions] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
-  const [inviteStatus, setInviteStatus] = useState(null);
 
   const containerRef = useRef();
   useScrollPosition(containerRef);
 
   const params = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { userData } = useContext(AuthContext);
   const { showAlert } = useContext(AlertContext);
@@ -69,6 +69,51 @@ export default function Profile() {
   }
 
   const user = profileData.data.viewedUser;
+  const inviteStatus = profileData.data.inviteStatus;
+
+  const handleSendInvite = async () => {
+    await sendInvite({
+      setLoadingStatus,
+      showAlert,
+      userId: user._id,
+    });
+    queryClient.setQueryData(["profile", params.handle], (oldData) => ({
+      ...oldData,
+      data: {
+        ...oldData.data,
+        inviteStatus: "pending",
+      },
+    }));
+  };
+
+  const handleCancelInvite = async () => {
+    await cancelInvite({
+      setLoadingStatus,
+      showAlert,
+      userId: user._id,
+    });
+    queryClient.setQueryData(["profile", params.handle], (oldData) => ({
+      ...oldData,
+      data: {
+        ...oldData.data,
+        inviteStatus: "not-sent",
+      },
+    }));
+  };
+
+  const handleUnfriend = async () => {
+    await unfriend({
+      setLoadingStatus,
+      userId: user._id,
+    });
+    queryClient.setQueryData(["profile", params.handle], (oldData) => ({
+      ...oldData,
+      data: {
+        ...oldData.data,
+        inviteStatus: "not-sent",
+      },
+    }));
+  };
 
   return (
     <div className="profile-container" ref={containerRef}>
@@ -114,14 +159,7 @@ export default function Profile() {
                   {inviteStatus === "not-sent" && (
                     <div
                       className="action-el friend"
-                      onClick={() =>
-                        sendInvite({
-                          setLoadingStatus,
-                          setInviteStatus,
-                          showAlert,
-                          userId: user._id,
-                        })
-                      }
+                      onClick={handleSendInvite}
                     >
                       <FontAwesomeIcon icon={faUserPlus} />
                       <span>Add friends</span>
@@ -130,30 +168,14 @@ export default function Profile() {
                   {inviteStatus === "pending" && (
                     <div
                       className="action-el friend"
-                      onClick={() =>
-                        cancelInvite({
-                          setLoadingStatus,
-                          setInviteStatus,
-                          showAlert,
-                          userId: user._id,
-                        })
-                      }
+                      onClick={handleCancelInvite}
                     >
                       <FontAwesomeIcon icon={faBan} />
                       <span>Cancel invite</span>
                     </div>
                   )}
                   {inviteStatus === "accepted" && (
-                    <div
-                      className="action-el friend"
-                      onClick={() =>
-                        unfriend({
-                          setLoadingStatus,
-                          setInviteStatus,
-                          userId: user._id,
-                        })
-                      }
-                    >
+                    <div className="action-el friend" onClick={handleUnfriend}>
                       <FontAwesomeIcon icon={faUserMinus} />
                       <span>Unfriend</span>
                     </div>

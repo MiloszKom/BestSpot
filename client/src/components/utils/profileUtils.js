@@ -1,11 +1,6 @@
 import axios from "axios";
 
-export const sendInvite = async ({
-  setLoadingStatus,
-  setInviteStatus,
-  showAlert,
-  userId,
-}) => {
+export const sendInvite = async ({ setLoadingStatus, showAlert, userId }) => {
   setLoadingStatus(true);
   try {
     const res = await axios({
@@ -16,7 +11,6 @@ export const sendInvite = async ({
       url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/sendFriendRequest/${userId}`,
       withCredentials: true,
     });
-    setInviteStatus("pending");
     showAlert(res.data.message, res.data.status);
     setLoadingStatus(false);
   } catch (err) {
@@ -26,12 +20,7 @@ export const sendInvite = async ({
   }
 };
 
-export const cancelInvite = async ({
-  setLoadingStatus,
-  setInviteStatus,
-  showAlert,
-  userId,
-}) => {
+export const cancelInvite = async ({ setLoadingStatus, showAlert, userId }) => {
   setLoadingStatus(true);
   try {
     await axios({
@@ -42,7 +31,6 @@ export const cancelInvite = async ({
       url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/cancelFriendRequest/${userId}`,
       withCredentials: true,
     });
-    setInviteStatus("not-sent");
   } catch (err) {
     showAlert(err.message, "error");
     console.log(err);
@@ -50,11 +38,7 @@ export const cancelInvite = async ({
   setLoadingStatus(false);
 };
 
-export const unfriend = async ({
-  setLoadingStatus,
-  setInviteStatus,
-  userId,
-}) => {
+export const unfriend = async ({ setLoadingStatus, userId }) => {
   setLoadingStatus(true);
   try {
     const res = await axios({
@@ -65,8 +49,6 @@ export const unfriend = async ({
       url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/deleteFriend/${userId}`,
       withCredentials: true,
     });
-    console.log(res);
-    setInviteStatus("not-sent");
   } catch (err) {
     console.log(err);
   }

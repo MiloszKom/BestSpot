@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
@@ -11,6 +11,8 @@ export default function ChatSearchBar() {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const auth = useContext(AuthContext);
+
+  const navigate = useNavigate();
 
   const clearSearch = () => {
     setChatSearch("");
@@ -83,11 +85,11 @@ export default function ChatSearchBar() {
   return (
     <div className="chat-search-container">
       <div className="chat-search-header">
-        <Link to=".." relative="path">
+        <div onClick={() => navigate(-1)} relative="path">
           <button>
             <FontAwesomeIcon icon={faArrowLeft} />
           </button>
-        </Link>
+        </div>
         <input
           type="text"
           placeholder="Search"

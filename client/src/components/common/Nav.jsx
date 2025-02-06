@@ -9,6 +9,7 @@ import {
   faHouse,
   faArrowRightFromBracket,
   faUserGroup,
+  faCirclePlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -41,11 +42,11 @@ export default function Nav() {
         <span>Discover</span>
       </Link>
 
-      <Link to="/notifications" className="nav-el">
+      <Link to="/spotlists" className="nav-el">
         <div className="nav-el-svg-wrapper">
-          <FontAwesomeIcon icon={faBell} className="icon" />
+          <FontAwesomeIcon icon={faHeart} className="icon" />
         </div>
-        <span>Notifications</span>
+        <span>Spotlists</span>
       </Link>
 
       <Link to="/messages" className="nav-el">
@@ -55,11 +56,11 @@ export default function Nav() {
         <span>Messasges</span>
       </Link>
 
-      <Link to="/spotlists" className="nav-el nav-el-expanded">
-        <div className="nav-el-svg-wrapper">
-          <FontAwesomeIcon icon={faHeart} className="icon" />
+      <Link to="/notifications" className="nav-el nav-el-expanded">
+        <div className="nav-el-svg-wrapper nav-el-expanded">
+          <FontAwesomeIcon icon={faBell} className="icon" />
         </div>
-        <span>Spotlists</span>
+        <span>Notifications</span>
       </Link>
 
       <Link to="/bookmarks" className="nav-el nav-el-expanded">
@@ -75,13 +76,6 @@ export default function Nav() {
         </div>
         <span>Friends</span>
       </Link>
-
-      <div className="nav-el nav-el-expanded" onClick={() => logout(auth)}>
-        <div className="nav-el-svg-wrapper">
-          <FontAwesomeIcon icon={faArrowRightFromBracket} className="icon" />
-        </div>
-        <span>Log Out</span>
-      </div>
 
       <Link to={`/${auth.userData?.handle || "home"}`} className="nav-el">
         <div className="nav-el-svg-wrapper">
@@ -100,6 +94,20 @@ export default function Nav() {
         </div>
         <span>Profile</span>
       </Link>
+
+      <Link to="/create" className="nav-el nav-el-expanded create">
+        <div className="nav-el-svg-wrapper create">
+          <FontAwesomeIcon icon={faCirclePlus} className="icon" />
+        </div>
+        <span>Create</span>
+      </Link>
+
+      <div className="nav-el nav-el-expanded" onClick={() => logout(auth)}>
+        <div className="nav-el-svg-wrapper">
+          <FontAwesomeIcon icon={faArrowRightFromBracket} className="icon" />
+        </div>
+        <span>Log Out</span>
+      </div>
     </div>
   );
 }

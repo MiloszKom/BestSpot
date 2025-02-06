@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
 
+import LoadingWave from "../common/LoadingWave";
+
 import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
 
@@ -13,6 +15,7 @@ import axios from "axios";
 
 export default function Chats() {
   const [recentChats, setRecentChats] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const auth = useContext(AuthContext);
   const socket = useContext(SocketContext);
@@ -22,6 +25,7 @@ export default function Chats() {
 
   useEffect(() => {
     const fetchChats = async () => {
+      setIsLoading(true);
       try {
         const res = await axios({
           method: "GET",
@@ -33,6 +37,8 @@ export default function Chats() {
         setRecentChats(res.data.data);
       } catch (err) {
         console.log(err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchChats();
@@ -147,105 +153,113 @@ export default function Chats() {
             : "hidden"
         }`}
       >
-        <Link to="/messages/search-bar" className="messages-searchbar">
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
-          <span>Search</span>
-        </Link>
-        <div className="messages-header">
+        <div className="messages-header">Messages</div>
+        <div className="social-nav">
           <NavLink
             to="/messages"
+            end
             className={({ isActive }) =>
-              isActive
-                ? "messages-header-el active"
-                : "messages-header-el inactive"
+              isActive ? "social-nav-el active" : "social-nav-el"
             }
           >
-            Messages
+            Inbox
           </NavLink>
           <NavLink
             to="/requests"
             className={({ isActive }) =>
-              isActive
-                ? "messages-header-el active"
-                : "messages-header-el inactive"
+              isActive ? "social-nav-el active" : "social-nav-el"
             }
           >
             Requests
           </NavLink>
+          <NavLink to="/search-bar" className="social-nav-el search">
+            <FontAwesomeIcon icon={faMagnifyingGlass} />
+          </NavLink>
         </div>
-        <div className="messages-chats">
-          {recentChats
-            .slice()
-            .sort(
-              (a, b) =>
-                new Date(b.lastMessage?.timestamp) -
-                new Date(a.lastMessage?.timestamp)
-            )
-            .map((chat) => {
-              if (!chat.lastMessage) return null;
-              const lastMessage =
-                chat.lastMessage.senderId === auth.userData._id &&
-                !chat.isBeingTyped
-                  ? "Me: " + chat.lastMessage.message
-                  : chat.lastMessage.message;
 
-              const messageDate = formatTime(
-                new Date(chat.lastMessage.timestamp)
-              );
+        {isLoading ? (
+          <LoadingWave />
+        ) : recentChats.length > 0 ? (
+          <div className="messages-chats">
+            {recentChats
+              .slice()
+              .sort(
+                (a, b) =>
+                  new Date(b.lastMessage?.timestamp) -
+                  new Date(a.lastMessage?.timestamp)
+              )
+              .map((chat) => {
+                if (!chat.lastMessage) return null;
+                const lastMessage =
+                  chat.lastMessage.senderId === auth.userData._id &&
+                  !chat.isBeingTyped
+                    ? "Me: " + chat.lastMessage.message
+                    : chat.lastMessage.message;
 
-              const messageTime =
-                messageDate === todayDate
-                  ? new Date(chat.lastMessage?.timestamp).toLocaleTimeString(
-                      [],
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )
-                  : messageDate;
+                const messageDate = formatTime(
+                  new Date(chat.lastMessage.timestamp)
+                );
 
-              return (
-                <Link
-                  to={`chat-room/${chat.otherParticipantData._id}`}
-                  className={`messages-chats-el ${
-                    !chat.lastMessage.isRead &&
-                    chat.lastMessage.senderId !== auth.userData._id
-                      ? "new-messages"
-                      : ""
-                  }`}
-                  key={chat.otherParticipantData._id}
-                >
-                  <div
-                    className="messages-chats-el-img"
-                    style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${chat.otherParticipantData.photo})`,
-                    }}
+                const messageTime =
+                  messageDate === todayDate
+                    ? new Date(chat.lastMessage?.timestamp).toLocaleTimeString(
+                        [],
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
+                    : messageDate;
+
+                return (
+                  <Link
+                    to={`chat-room/${chat.otherParticipantData._id}`}
+                    className={`messages-chats-el ${
+                      !chat.lastMessage.isRead &&
+                      chat.lastMessage.senderId !== auth.userData._id
+                        ? "new-messages"
+                        : ""
+                    }`}
+                    key={chat.otherParticipantData._id}
                   >
-                    {chat.isApproved &&
-                      (chat.otherParticipantData.isOnline ? (
-                        <div className="online-bubble"></div>
-                      ) : (
-                        <div className="offline-bubble"></div>
-                      ))}
-                  </div>
-                  <div className="messages-chats-el-info">
-                    <div className="info-name">
-                      {chat.otherParticipantData.name}
+                    <div
+                      className="messages-chats-el-img"
+                      style={{
+                        backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${chat.otherParticipantData.photo})`,
+                      }}
+                    >
+                      {chat.isApproved &&
+                        (chat.otherParticipantData.isOnline ? (
+                          <div className="online-bubble"></div>
+                        ) : (
+                          <div className="offline-bubble"></div>
+                        ))}
                     </div>
-                    {chat.unreadMessages > 0 && (
-                      <div className="info-undread-messages">
-                        {chat.unreadMessages > 9 ? "9+" : chat.unreadMessages}
+                    <div className="messages-chats-el-info">
+                      <div className="info-name">
+                        {chat.otherParticipantData.name}
                       </div>
-                    )}
-                    <div className="info-message">{lastMessage}</div>
-                    <div className="info-time">
-                      {!chat.isBeingTyped && messageTime}
+                      {chat.unreadMessages > 0 && (
+                        <div className="info-undread-messages">
+                          {chat.unreadMessages > 9 ? "9+" : chat.unreadMessages}
+                        </div>
+                      )}
+                      <div className="info-message">{lastMessage}</div>
+                      <div className="info-time">
+                        {!chat.isBeingTyped && messageTime}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
-        </div>
+                  </Link>
+                );
+              })}
+          </div>
+        ) : (
+          <div className="messages-container-empty">
+            {pathSegment === "messages"
+              ? "No messages yet. Start a conversation to see them here!"
+              : "No one has reached out yet. Message requests will show up here."}
+          </div>
+        )}
       </div>
       <div
         className={`chat-section ${
