@@ -86,118 +86,59 @@ const extractAndValidateHandles = async (content) => {
 };
 
 exports.getPosts = catchAsync(async (req, res, next) => {
-  let matchCondition = {};
-
-  if (req.query.filter === "friends") {
-    const user = await User.findById(req.user._id).select("friends");
-    const friendIds = user.friends;
-
-    matchCondition = {
-      author: { $in: friendIds },
-    };
-  }
-
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
+  const userId = req.user?._id;
 
-  const posts = await Post.aggregate([
-    {
-      $match: matchCondition,
-    },
-    {
-      $addFields: {
-        score: {
-          $subtract: [
-            {
-              $multiply: [
-                {
-                  $size: {
-                    $filter: {
-                      input: "$likes",
-                      as: "like",
-                      cond: { $eq: ["$$like.isLikeActive", true] },
-                    },
-                  },
-                },
-                2,
-              ],
-            },
-            {
-              $divide: [
-                { $subtract: [new Date(), "$createdAt"] },
-                1000 * 60 * 60,
-              ],
-            },
-          ],
-        },
-      },
-    },
-    { $sort: { score: -1 } },
+  let filter = {};
 
-    {
-      $lookup: {
-        from: "users",
-        localField: "author",
-        foreignField: "_id",
-        as: "author",
-      },
-    },
-    { $unwind: "$author" },
+  if (req.query.filter === "friends") {
+    const user = await User.findById(userId).select("friends");
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "fail", message: "User not found" });
+    }
 
-    {
-      $lookup: {
-        from: "spots",
-        localField: "spots",
-        foreignField: "_id",
-        as: "spots",
-      },
-    },
+    filter = { author: { $in: user.friends } };
+  }
 
-    {
-      $lookup: {
-        from: "spotlists",
-        localField: "spotlists",
-        foreignField: "_id",
-        as: "spotlists",
-      },
-    },
+  const posts = await Post.find(filter)
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
+    .populate([
+      { path: "author", select: "_id name photo handle" },
+      { path: "spotlists", select: "_id name cover visibility spots author" },
+      { path: "spots", select: "_id name photo city country" },
+    ]);
 
-    {
-      $project: {
-        _id: 1,
-        createdAt: 1,
-        content: 1,
-        likes: 1,
-        bookmarks: 1,
-        comments: 1,
-        "author._id": 1,
-        "author.name": 1,
-        "author.photo": 1,
-        "author.handle": 1,
-        "spots._id": 1,
-        "spots.google_id": 1,
-        "spots.name": 1,
-        "spots.photo": 1,
-        "spots.city": 1,
-        "spots.country": 1,
-        "spotlists._id": 1,
-        "spotlists.name": 1,
-        "spotlists.cover": 1,
-        "spotlists.visibility": 1,
-        "spotlists.spots": 1,
-      },
-    },
+  const formattedPosts = posts.map((post) => {
+    const likeCount = post.likes.filter((like) => like.isLikeActive).length;
+    const isLiked = post.likes.some(
+      (like) => like._id.toString() === userId?.toString() && like.isLikeActive
+    );
+    const bookmarkCount = post.bookmarks.filter(
+      (bookmark) => bookmark.isLikeActive
+    ).length;
+    const isBookmarked = post.bookmarks.some(
+      (bookmark) =>
+        bookmark._id.toString() === userId?.toString() && bookmark.isLikeActive
+    );
 
-    { $skip: skip },
-    { $limit: limit },
-  ]);
+    return {
+      ...post.toObject(),
+      likeCount,
+      isLiked,
+      bookmarkCount,
+      isBookmarked,
+    };
+  });
 
   res.status(200).json({
     status: "success",
-    data: posts,
-    page,
-    limit,
+    data: formattedPosts,
   });
 });
 
@@ -205,8 +146,6 @@ exports.createPost = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).populate("friends", "_id");
 
   const { visibility, content, spots, spotlists, photos } = req.body;
-
-  console.log(req.body);
 
   if (!user) {
     return next(new AppError("No user found", 404));
@@ -247,7 +186,7 @@ exports.createPost = catchAsync(async (req, res, next) => {
     photos: photos ? photos : null,
   });
 
-  user.posts.push(newPost._id);
+  user.posts.unshift(newPost._id);
   await user.save({ validateBeforeSave: false });
 
   const originDetails = {
@@ -275,10 +214,23 @@ exports.createPost = catchAsync(async (req, res, next) => {
     );
   }
 
+  const populatedPost = await Post.findById(newPost._id).populate([
+    { path: "author", select: "_id name photo handle" },
+    { path: "spotlists", select: "_id name cover visibility spots author" },
+    { path: "spots", select: "_id name photo city country" },
+  ]);
+
+  const responsePost = populatedPost.toObject();
+
+  responsePost.likeCount = 0;
+  responsePost.bookmarkCount = 0;
+  responsePost.isLiked = false;
+  responsePost.isBookmarked = false;
+
   res.status(201).json({
     status: "success",
     message: "Post has been created",
-    data: newPost,
+    data: responsePost,
   });
 });
 
@@ -358,7 +310,7 @@ exports.getUserBookmarks = catchAsync(async (req, res, next) => {
     populate: [
       { path: "author", select: "_id name photo handle" },
       { path: "spotlists", select: "_id name cover visibility spots author" },
-      { path: "spots", select: "_id google_id name photo city country" },
+      { path: "spots", select: "_id name photo city country" },
     ],
   });
 
@@ -366,13 +318,31 @@ exports.getUserBookmarks = catchAsync(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
-  const bookmarkedPosts = user.bookmarks;
+  const formattedBookmarks = user.bookmarks.map((post) => {
+    const likeCount = post.likes.filter((like) => like.isLikeActive).length;
+    const isLiked = post.likes.some(
+      (like) => like._id.toString() === user._id.toString() && like.isLikeActive
+    );
+    const bookmarkCount = post.bookmarks.filter(
+      (bookmark) => bookmark.isLikeActive
+    ).length;
+    const isBookmarked = post.bookmarks.some(
+      (bookmark) =>
+        bookmark._id.toString() === user._id.toString() && bookmark.isLikeActive
+    );
+
+    return {
+      ...post.toObject(),
+      likeCount,
+      isLiked,
+      bookmarkCount,
+      isBookmarked,
+    };
+  });
 
   res.status(200).json({
     status: "success",
-    data: {
-      bookmarks: bookmarkedPosts,
-    },
+    data: formattedBookmarks,
   });
 });
 
@@ -398,7 +368,7 @@ exports.bookmarkPost = catchAsync(async (req, res, next) => {
   }
 
   await User.findByIdAndUpdate(user._id, {
-    $addToSet: { bookmarks: post._id },
+    $push: { bookmarks: { $each: [post._id], $position: 0 } },
   });
 
   post.save();
@@ -444,7 +414,7 @@ exports.getPost = catchAsync(async (req, res, next) => {
 
   const post = await Post.findById(req.params.id)
     .populate("author", "_id name photo handle")
-    .populate("spots", "_id google_id name photo city country ")
+    .populate("spots", "_id name photo city country ")
     .populate("spotlists", "_id name cover visibility spots")
     .populate("comments.user", "name handle photo")
     .populate("comments.replies.user", "name handle photo")
@@ -468,12 +438,28 @@ exports.getPost = catchAsync(async (req, res, next) => {
     return total + 1 + comment.replies.length;
   }, 0);
 
+  const likeCount = post.likes.filter((like) => like.isLikeActive).length;
+  const isLiked = post.likes.some(
+    (like) => like._id.toString() === userId?.toString() && like.isLikeActive
+  );
+  const bookmarkCount = post.bookmarks.filter(
+    (bookmark) => bookmark.isLikeActive
+  ).length;
+  const isBookmarked = post.bookmarks.some(
+    (bookmark) =>
+      bookmark._id.toString() === userId?.toString() && bookmark.isLikeActive
+  );
+
   res.status(200).json({
     status: "success",
     message: "Post data retrieved successfully",
     data: {
       ...post,
       totalComments,
+      likeCount,
+      isLiked,
+      bookmarkCount,
+      isBookmarked,
     },
   });
 });
@@ -665,7 +651,6 @@ exports.likeComment = catchAsync(async (req, res, next) => {
     activeLikesCount++;
 
     if (activeLikesCount <= 2 && !comment.user.equals(user._id)) {
-      console.log("Sending the normal notification");
       await createNotifications(
         [comment.user],
         user._id,
@@ -682,7 +667,6 @@ exports.likeComment = catchAsync(async (req, res, next) => {
     thresholds.includes(activeLikesCount) &&
     !comment.thresholdsReached.includes(activeLikesCount)
   ) {
-    console.log("Sending the threshold notification");
     createNotifications(
       [comment.user],
       null,

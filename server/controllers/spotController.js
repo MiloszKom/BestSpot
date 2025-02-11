@@ -33,7 +33,8 @@ exports.getSpot = catchAsync(async (req, res, next) => {
         path: "user",
         select: "_id handle photo name",
       },
-    });
+    })
+    .lean();
 
   const user = await User.findById(req.user._id).populate("spotlists");
 
@@ -51,15 +52,21 @@ exports.getSpot = catchAsync(async (req, res, next) => {
     return b.likes.length - a.likes.length;
   });
 
+  const likeCount = spot.likes.filter((like) => like.isLikeActive).length;
+
+  const isLiked = spot.likes.some((like) => {
+    return like._id.equals(user._id) && like.isLikeActive;
+  });
+
   const spotlistData = user.spotlists.find((spotlist) =>
     spotlist.spots.some(
       (spotItem) => spotItem._id.toString() === spot._id.toString()
     )
   );
 
-  const isFavourite = spotlistData ? true : false;
+  const isSaved = spotlistData ? true : false;
 
-  const userNote =
+  const spotNote =
     spot.favouritedBy.find(
       (fav) => fav.userId.toString() === user._id.toString()
     )?.note || null;
@@ -67,10 +74,11 @@ exports.getSpot = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {
-      spot,
-      isFavourite,
-      spotlistId: spotlistData?._id,
-      userNote,
+      ...spot,
+      likeCount,
+      spotNote,
+      isLiked,
+      isSaved,
     },
   });
 });
@@ -189,6 +197,34 @@ exports.deleteSpot = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "Spot deleted",
+  });
+});
+
+exports.editNote = catchAsync(async (req, res, next) => {
+  const spot = await Spot.findById(req.params.id);
+  const user = await User.findById(req.user._id);
+
+  const { note } = req.body;
+
+  if (!spot) {
+    return next(new AppError("Spot not found", 404));
+  }
+
+  const userFavourite = spot.favouritedBy.find(
+    (savedBy) => savedBy.userId.toString() === user._id.toString()
+  );
+
+  if (!userFavourite) {
+    return next(new AppError("You have to save this spot to add a note", 400));
+  }
+
+  userFavourite.note = note;
+
+  await spot.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "Spot note updated",
   });
 });
 

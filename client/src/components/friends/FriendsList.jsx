@@ -1,32 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
-
 import LoadingWave from "../common/LoadingWave";
+import { useQuery } from "@tanstack/react-query";
+import { getFriends } from "../api/friendsApis";
 
 export default function FriendsList() {
-  const [friends, setFriends] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: ["friends"],
+    queryFn: getFriends,
+  });
 
-  useEffect(() => {
-    const fetchFriends = async () => {
-      setIsLoading(true);
-      try {
-        const res = await axios({
-          method: "GET",
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/friends`,
-          withCredentials: true,
-        });
-        setFriends(res.data.data);
-        console.log(res);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchFriends();
-  }, []);
+  const friends = data?.data;
 
   if (isLoading) return <LoadingWave />;
 

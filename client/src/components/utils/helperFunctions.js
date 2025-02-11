@@ -1,7 +1,13 @@
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStarHalfStroke } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLock,
+  faEarthAmericas,
+  faUsers,
+  faStarHalfStroke,
+  faStar as filledStar,
+} from "@fortawesome/free-solid-svg-icons";
 import { faStar as emptyStar } from "@fortawesome/free-regular-svg-icons";
-import { faStar as filledStar } from "@fortawesome/free-solid-svg-icons";
 
 import axios from "axios";
 
@@ -251,7 +257,120 @@ export function getZoomLevel(radius) {
   } else if (radius >= 8000 && radius <= 10000) {
     return 11.5;
   } else {
-    // Default zoom level for radii outside the specified range
     return 10;
   }
 }
+
+export function highlightHandles(str) {
+  const wordsWithSpaces = str.split(/(\s+)/);
+
+  const highlightedWords = wordsWithSpaces.map((part, index) => {
+    if (part.startsWith("@")) {
+      return (
+        <Link
+          to={`/${part.substring(1)}`}
+          key={index}
+          className="handle-highlight"
+        >
+          {part}
+        </Link>
+      );
+    }
+    return part;
+  });
+
+  return <>{highlightedWords}</>;
+}
+
+export const getVisibilityIcon = (visibility) => {
+  switch (visibility) {
+    case "private":
+      return faLock;
+    case "public":
+      return faEarthAmericas;
+    case "friends-only":
+      return faUsers;
+    default:
+      return null;
+  }
+};
+
+// Post mutation helper functions
+
+export const updatePostLike = (oldData, postId, isLiked) => {
+  if (!oldData || !oldData.pages) return oldData;
+
+  return {
+    ...oldData,
+    pages: oldData.pages.map((page) => ({
+      ...page,
+      data: page.data.map((post) =>
+        post._id === postId
+          ? {
+              ...post,
+              isLiked: !isLiked,
+              likeCount: post.likeCount + (isLiked ? -1 : 1),
+            }
+          : post
+      ),
+    })),
+  };
+};
+
+export const updatePostBookmark = (
+  oldData,
+  postId,
+  isBookmarked,
+  queryKey,
+  newPost
+) => {
+  if (!oldData || !oldData.pages) return oldData;
+
+  return {
+    ...oldData,
+    pages: oldData.pages.map((page) => ({
+      ...page,
+      data:
+        queryKey === "bookmarks"
+          ? isBookmarked
+            ? page.data.filter((post) => post._id !== postId)
+            : [{ ...newPost, isBookmarked: true }, ...page.data]
+          : page.data.map((post) =>
+              post._id === postId
+                ? {
+                    ...post,
+                    isBookmarked: !isBookmarked,
+                    bookmarkCount: post.bookmarkCount + (isBookmarked ? -1 : 1),
+                  }
+                : post
+            ),
+    })),
+  };
+};
+
+export const updatePostRemove = (oldData, postId) => {
+  if (!oldData || !oldData.pages) return oldData;
+  return {
+    ...oldData,
+    pages: oldData.pages.map((page) => ({
+      ...page,
+      data: page.data.filter((post) => post._id !== postId),
+    })),
+  };
+};
+
+export const updatePostAdd = (oldData, newPost, queryKey) => {
+  if (!oldData || !oldData.pages) return oldData;
+  return {
+    ...oldData,
+    pages: oldData.pages.map((page, index) => {
+      if (index === 0) {
+        return {
+          ...page,
+          data: [newPost, ...page.data],
+        };
+      }
+      return page;
+    }),
+  };
+};

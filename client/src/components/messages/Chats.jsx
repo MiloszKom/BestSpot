@@ -157,7 +157,6 @@ export default function Chats() {
         <div className="social-nav">
           <NavLink
             to="/messages"
-            end
             className={({ isActive }) =>
               isActive ? "social-nav-el active" : "social-nav-el"
             }

@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 
 import { AuthContext } from "../context/AuthContext";
-import { AlertContext } from "../context/AlertContext";
 
 import ShowOptions from "../common/ShowOptions";
 
@@ -16,63 +14,58 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
 import { getVisibilityDisplayName } from "./../utils/helperFunctions";
-import { toggleSpotlistLike } from "../utils/spotlistUtils";
 import EditSpotlist from "./components/EditSpotlist";
+import { useQuery } from "@tanstack/react-query";
+import { getSpotsInSpotlist } from "../api/spotlistsApis";
+import { useSpotlistsMutations } from "../hooks/useSpotlistsMutations";
 
 export default function SpotlistContent() {
-  const [spotlistData, setSpotlistData] = useState(null);
   const [editingSpotlist, setEditingSpotlist] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const [options, setOptions] = useState(null);
-
   const params = useParams();
   const navigate = useNavigate();
 
   const { userData } = useContext(AuthContext);
-  const { showAlert } = useContext(AlertContext);
 
-  useEffect(() => {
-    const fetchFavourites = async () => {
-      setIsLoading(true);
-      try {
-        const res = await axios({
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${params.id}`,
-          withCredentials: true,
-        });
+  const {
+    deleteSpotFromSpotlistMutation,
+    deleteSpotlistMutation,
+    toggleSpotlistLikeMutation,
+  } = useSpotlistsMutations();
 
-        setSpotlistData(res.data.data);
-        setIsLoading(false);
-      } catch (err) {
-        console.log(err);
-        setErrorMessage(err.response.data.message);
-        setIsLoading(false);
-      }
-    };
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["spotlistContent", params.id],
+    queryFn: () => getSpotsInSpotlist(params.id),
+  });
 
-    fetchFavourites();
-  }, []);
+  const spotlistData = data?.data;
 
-  if (!spotlistData && isLoading) return <div className="loader" />;
-  if (!spotlistData && !isLoading)
+  if (isLoading) return <div className="loader" />;
+
+  const deleteSpotFromSpotlist = () => {
+    deleteSpotFromSpotlistMutation.mutate({
+      spotlistId: options.spotlistId,
+      spotId: options.spotId,
+    });
+    setOptions(false);
+  };
+
+  const deleteSpotlist = () => {
+    deleteSpotlistMutation.mutate({
+      spotlistId: options.spotlistInfo.id,
+      shouldNavigate: true,
+    });
+    setOptions(false);
+  };
+
+  if (isError)
     return (
       <div className="spotlist-detail-error">
-        {errorMessage} <button onClick={() => navigate(-1)}> Return </button>
+        {error.response.data.message}{" "}
+        <button onClick={() => navigate(-1)}> Return </button>
       </div>
     );
-
-  const likeCount = spotlistData.likes.filter(
-    (like) => like.isLikeActive === true
-  ).length;
-
-  const isSpotlistLiked = spotlistData.likes.some(
-    (like) => like._id === userData._id && like.isLikeActive
-  );
 
   return (
     <div className="spotlist-detail-container">
@@ -103,8 +96,8 @@ export default function SpotlistContent() {
           <div className="spot-detail-details">
             <span>
               {spotlistData.spots?.length} Spots ·{" "}
-              {getVisibilityDisplayName(spotlistData.visibility)} · {likeCount}{" "}
-              Likes
+              {getVisibilityDisplayName(spotlistData.visibility)} ·{" "}
+              {spotlistData.likeCount} Likes
             </span>
           </div>
           {spotlistData.description && (
@@ -116,20 +109,17 @@ export default function SpotlistContent() {
         <div className="spotlist-detail-options">
           <button
             className={`spotlist-detail-options-el ${
-              isSpotlistLiked ? "active" : ""
+              spotlistData.isSpotlistLiked ? "active" : ""
             }`}
             onClick={() =>
-              toggleSpotlistLike(
-                spotlistData._id,
-                isSpotlistLiked,
-                userData,
-                setSpotlistData,
-                showAlert
-              )
+              toggleSpotlistLikeMutation.mutate({
+                isLiked: spotlistData.isSpotlistLiked,
+                spotlistId: spotlistData._id,
+              })
             }
           >
             <FontAwesomeIcon
-              icon={isSpotlistLiked ? solidHeart : regularHeart}
+              icon={spotlistData.isSpotlistLiked ? solidHeart : regularHeart}
             />
           </button>
           {userData?._id === spotlistData.author?._id && (
@@ -142,7 +132,7 @@ export default function SpotlistContent() {
                       name: spotlistData.name,
                       visibility: spotlistData.visibility,
                       description: spotlistData.description,
-                      context: "spotlistContent",
+                      key: "spotlistContent",
                     },
                     aviableOptions: ["edit", "delete"],
                     entity: "spotlist",
@@ -155,7 +145,7 @@ export default function SpotlistContent() {
                 <ShowOptions
                   options={options}
                   setOptions={setOptions}
-                  setData={setSpotlistData}
+                  deleteSpotlist={deleteSpotlist}
                   setEditingSpotlist={setEditingSpotlist}
                 />
               )}
@@ -202,8 +192,7 @@ export default function SpotlistContent() {
                   {options?.spotId === spot._id && (
                     <ShowOptions
                       options={options}
-                      setOptions={setOptions}
-                      setData={setSpotlistData}
+                      deleteSpotFromSpotlist={deleteSpotFromSpotlist}
                     />
                   )}
                 </div>
@@ -219,7 +208,6 @@ export default function SpotlistContent() {
       {editingSpotlist && (
         <>
           <EditSpotlist
-            setData={setSpotlistData}
             editingSpotlist={editingSpotlist}
             setEditingSpotlist={setEditingSpotlist}
           />

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import axios from "axios";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
@@ -8,34 +8,17 @@ import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { formatTimeAgo } from "../utils/helperFunctions";
 import ShowOptions from "../common/ShowOptions";
 import LoadingWave from "../common/LoadingWave";
+import { getNotifications } from "../api/notificationsApis";
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState([]);
   const [options, setOptions] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: ["notification"],
+    queryFn: getNotifications,
+  });
 
-  useEffect(() => {
-    const fetchNotification = async () => {
-      try {
-        const res = await axios({
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/notifications`,
-          withCredentials: true,
-        });
-        console.log(res);
-        setNotifications(res.data.data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchNotification();
-  }, []);
+  const notifications = data?.data;
 
   return (
     <div className="notifications-container">
@@ -97,11 +80,7 @@ export default function Notifications() {
                     </div>
 
                     {options.notificationId === notification._id && (
-                      <ShowOptions
-                        options={options}
-                        setOptions={setOptions}
-                        setData={setNotifications}
-                      />
+                      <ShowOptions options={options} setOptions={setOptions} />
                     )}
                   </div>
                 </Link>

@@ -133,13 +133,38 @@ exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
         select: "_id name cover visibility spots",
       },
     ])
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
+
+  const formattedPosts = posts.map((post) => {
+    const likeCount = post.likes.filter((like) => like.isLikeActive).length;
+    const isLiked = post.likes.some(
+      (like) =>
+        like._id.toString() === currentUser._id.toString() && like.isLikeActive
+    );
+    const bookmarkCount = post.bookmarks.filter(
+      (bookmark) => bookmark.isLikeActive
+    ).length;
+    const isBookmarked = post.bookmarks.some(
+      (bookmark) =>
+        bookmark._id.toString() === currentUser._id.toString() &&
+        bookmark.isLikeActive
+    );
+
+    return {
+      ...post.toObject(),
+      likeCount,
+      isLiked,
+      bookmarkCount,
+      isBookmarked,
+    };
+  });
 
   res.status(200).json({
     status: "success",
     message: "User profile posts",
-    data: posts,
+    data: formattedPosts,
   });
 });
 

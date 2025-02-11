@@ -1,31 +1,21 @@
 import React, { useState, useRef } from "react";
-import axios from "axios";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Posts } from "../posts/Posts";
 import LoadingWave from "../common/LoadingWave";
-import useScrollPosition from "../utils/useScrollPosition";
+import useScrollPosition from "../hooks/useScrollPosition";
+import { getBookmarks } from "../api/postsApis";
 
 export default function Bookmarks() {
   const [options, setOptions] = useState(false);
-  const queryClient = useQueryClient();
-
   const containerRef = useRef();
-  useScrollPosition(containerRef);
-
-  const fetchBookmarks = async ({ pageParam = 1 }) => {
-    const response = await axios.get(
-      `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/bookmarks?page=${pageParam}&limit=10`,
-      { withCredentials: true }
-    );
-    return response.data;
-  };
+  useScrollPosition(containerRef, "scrolledHeightBookmarks");
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     useInfiniteQuery({
       queryKey: ["bookmarks"],
-      queryFn: fetchBookmarks,
+      queryFn: getBookmarks,
       getNextPageParam: (lastPage, allPages) => {
-        if (lastPage.data.bookmarks.length === 10) {
+        if (lastPage.data.length === 10) {
           return allPages.length + 1;
         }
         return undefined;
@@ -36,27 +26,7 @@ export default function Bookmarks() {
     message: "That's all your saved posts! Nothing more to load.",
   };
 
-  const bookmarks =
-    data?.pages.flatMap((bookmark) => bookmark.data.bookmarks) || [];
-
-  const handleUnbookmark = (postId) => {
-    queryClient.setQueryData(["bookmarks"], (oldData) => {
-      if (!oldData) return oldData;
-
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page) => ({
-          ...page,
-          data: {
-            ...page.data,
-            bookmarks: page.data.bookmarks.filter(
-              (post) => post._id !== postId
-            ),
-          },
-        })),
-      };
-    });
-  };
+  const bookmarks = data?.pages.flatMap((page) => page.data) || [];
 
   return (
     <div className="bookmarks-container" ref={containerRef}>
@@ -76,7 +46,6 @@ export default function Bookmarks() {
             hasNextPage={hasNextPage}
             fetchNextPage={fetchNextPage}
             feedCompleteMessage={feedCompleteMessage}
-            Unbookmark={handleUnbookmark}
           />
         ) : (
           <div className="empty-bookmarks-message">

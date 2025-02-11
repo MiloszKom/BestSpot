@@ -76,7 +76,7 @@ const likeEntity = async (user, entityObject, entityName) => {
 
   if (existingLike) {
     if (existingLike.isLikeActive) {
-      return next(new AppError(`You already liked this ${entityName}`, 400));
+      throw new AppError(`You already liked this ${entityName}`, 400);
     }
     existingLike.isLikeActive = true;
     activeLikesCount++;
@@ -121,7 +121,7 @@ const unlikeEntity = async (user, entityObject, entityName) => {
   );
 
   if (!existingLike || !existingLike.isLikeActive) {
-    return next(new AppError(`You have not liked this ${entityName}`, 400));
+    throw new AppError(`You have not liked this ${entityName}`, 400);
   }
 
   existingLike.isLikeActive = false;

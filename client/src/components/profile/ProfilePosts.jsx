@@ -2,28 +2,22 @@ import React from "react";
 import { useOutletContext } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Posts } from "../posts/Posts";
-import axios from "axios";
+import { getProfilePosts } from "../api/profileApis";
 import LoadingWave from "../common/LoadingWave";
 
 export function ProfilePosts() {
   const { user, userData, options, setOptions } = useOutletContext();
-
-  const fetchProfilePosts = async ({ pageParam = 1 }) => {
-    const response = await axios.get(
-      `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/${user.handle}/posts?page=${pageParam}&limit=10`,
-      { withCredentials: true }
-    );
-    return response.data;
-  };
+  const lastViewedProfile = sessionStorage.getItem("lastViewedProfile") || null;
 
   const {
     data: postsData,
     isLoading: isPostsLoading,
     hasNextPage,
     fetchNextPage,
+    isFetching,
   } = useInfiniteQuery({
-    queryKey: ["profilePosts", user.handle],
-    queryFn: fetchProfilePosts,
+    queryKey: [`profilePosts`, user.handle],
+    queryFn: ({ pageParam = 1 }) => getProfilePosts(user.handle, pageParam),
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.data.length === 10) {
         return allPages.length + 1;
@@ -37,7 +31,12 @@ export function ProfilePosts() {
     message: `End of ${user.name}'s posts`,
   };
 
+  if (lastViewedProfile !== user.handle) {
+    if (isFetching) return <LoadingWave />;
+  }
+
   const posts = postsData?.pages.flatMap((post) => post.data) || [];
+  sessionStorage.setItem("lastViewedProfile", user.handle);
 
   if (isPostsLoading) return <LoadingWave />;
 

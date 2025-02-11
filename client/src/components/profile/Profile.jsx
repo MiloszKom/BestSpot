@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Link,
   NavLink,
@@ -7,10 +7,8 @@ import {
   useParams,
   Outlet,
 } from "react-router-dom";
-import axios from "axios";
 
 import { AuthContext } from "../context/AuthContext";
-import { AlertContext } from "../context/AlertContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -22,39 +20,34 @@ import {
   faUserMinus,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { sendInvite, cancelInvite, unfriend } from "../utils/profileUtils";
-import useScrollPosition from "../utils/useScrollPosition";
+import { FriendActionButton } from "./components/FriendActionButton";
+
+import useScrollPosition from "../hooks/useScrollPosition";
+import { getProfile } from "../api/profileApis";
+import { useProfileMutations } from "../hooks/useProfileMutations";
 
 export default function Profile() {
   const [options, setOptions] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState(false);
-
-  const containerRef = useRef();
-  useScrollPosition(containerRef);
 
   const params = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { userData } = useContext(AuthContext);
-  const { showAlert } = useContext(AlertContext);
 
-  const fetchProfile = async () => {
-    const response = await axios.get(
-      `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/${params.handle}`,
-      { withCredentials: true }
-    );
-    return response.data;
-  };
+  const containerRef = useRef();
+  useScrollPosition(containerRef, `scrolledHeight${params.handle}`);
+  const { sendInviteMutation, cancelInviteMutation, unfriendMutation } =
+    useProfileMutations();
 
   const {
     data: profileData,
     isLoading: isProfileLoading,
     isError: isProfileError,
     error: profileError,
+    isFetching,
   } = useQuery({
     queryKey: ["profile", params.handle],
-    queryFn: fetchProfile,
+    queryFn: () => getProfile(params.handle),
   });
 
   if (isProfileLoading) return <div className="loader" />;
@@ -67,53 +60,8 @@ export default function Profile() {
       </div>
     );
   }
-
   const user = profileData.data.viewedUser;
   const inviteStatus = profileData.data.inviteStatus;
-
-  const handleSendInvite = async () => {
-    await sendInvite({
-      setLoadingStatus,
-      showAlert,
-      userId: user._id,
-    });
-    queryClient.setQueryData(["profile", params.handle], (oldData) => ({
-      ...oldData,
-      data: {
-        ...oldData.data,
-        inviteStatus: "pending",
-      },
-    }));
-  };
-
-  const handleCancelInvite = async () => {
-    await cancelInvite({
-      setLoadingStatus,
-      showAlert,
-      userId: user._id,
-    });
-    queryClient.setQueryData(["profile", params.handle], (oldData) => ({
-      ...oldData,
-      data: {
-        ...oldData.data,
-        inviteStatus: "not-sent",
-      },
-    }));
-  };
-
-  const handleUnfriend = async () => {
-    await unfriend({
-      setLoadingStatus,
-      userId: user._id,
-    });
-    queryClient.setQueryData(["profile", params.handle], (oldData) => ({
-      ...oldData,
-      data: {
-        ...oldData.data,
-        inviteStatus: "not-sent",
-      },
-    }));
-  };
 
   return (
     <div className="profile-container" ref={containerRef}>
@@ -150,37 +98,32 @@ export default function Profile() {
                 <span>Send message</span>
               </Link>
 
-              {loadingStatus ? (
-                <div className="action-el friend">
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                <>
-                  {inviteStatus === "not-sent" && (
-                    <div
-                      className="action-el friend"
-                      onClick={handleSendInvite}
-                    >
-                      <FontAwesomeIcon icon={faUserPlus} />
-                      <span>Add friends</span>
-                    </div>
-                  )}
-                  {inviteStatus === "pending" && (
-                    <div
-                      className="action-el friend"
-                      onClick={handleCancelInvite}
-                    >
-                      <FontAwesomeIcon icon={faBan} />
-                      <span>Cancel invite</span>
-                    </div>
-                  )}
-                  {inviteStatus === "accepted" && (
-                    <div className="action-el friend" onClick={handleUnfriend}>
-                      <FontAwesomeIcon icon={faUserMinus} />
-                      <span>Unfriend</span>
-                    </div>
-                  )}
-                </>
+              {inviteStatus === "not-sent" && (
+                <FriendActionButton
+                  icon={faUserPlus}
+                  label="Add friends"
+                  mutation={sendInviteMutation}
+                  userId={user._id}
+                  isFetching={isFetching}
+                />
+              )}
+              {inviteStatus === "pending" && (
+                <FriendActionButton
+                  icon={faBan}
+                  label="Cancel invite"
+                  mutation={cancelInviteMutation}
+                  userId={user._id}
+                  isFetching={isFetching}
+                />
+              )}
+              {inviteStatus === "accepted" && (
+                <FriendActionButton
+                  icon={faUserMinus}
+                  label="Unfriend"
+                  mutation={unfriendMutation}
+                  userId={user._id}
+                  isFetching={isFetching}
+                />
               )}
             </>
           )}

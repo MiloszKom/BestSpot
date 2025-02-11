@@ -1,5 +1,9 @@
 * {
   box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 a {
@@ -887,7 +891,7 @@ img {
   gap: 1rem;
   margin: 1rem 0rem;
   height: 100%;
-  padding-left: 2rem;
+  padding: 0 2rem;
   overflow: hidden;
   overflow-y: auto;
 }
@@ -901,7 +905,6 @@ img {
   justify-content: space-between;
   width: 100%;
   height: fit-content;
-  padding-right: 2rem;
 }
 
 .spotlist-add-checkbox {
@@ -966,10 +969,16 @@ img {
 .spotlist-add-to-btn {
   margin-top: 0.5rem;
   background-color: #0056b3;
+  transition: all 0.2s;
 }
 
 .spotlist-add-to-btn:hover {
   background-color: #007bff;
+}
+
+.spotlist-add-to-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .spotlist-shade {
@@ -981,6 +990,14 @@ img {
   background-color: #000;
   opacity: 0.5;
   z-index: 10;
+}
+
+.spotlist-add-empty {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  align-items: center;
 }
 
 /* CREATE NEW SPOTLIST */
@@ -1096,7 +1113,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #14161a;
+  background-color: #212121;
 }
 
 .loader::after {
@@ -1189,6 +1206,7 @@ img {
 
 .login-container {
   width: 100%;
+  max-width: 600px;
   height: 100%;
   margin: 0 auto;
   padding: 2rem;
@@ -3186,6 +3204,10 @@ img {
   font-weight: 300;
 }
 
+.post-detail-author .post-options {
+  margin-left: auto;
+}
+
 .post-detail-date {
   opacity: 0.6;
   font-weight: 300;
@@ -3403,6 +3425,11 @@ img {
   padding: 0.75rem 1.5rem;
   transition: all 0.2s;
   cursor: pointer;
+}
+
+.post-comment-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .handle-highlight {

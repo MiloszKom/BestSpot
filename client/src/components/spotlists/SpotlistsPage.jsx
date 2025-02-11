@@ -1,24 +1,16 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+import { getUserSpotlists } from "../api/spotlistsApis";
 
 import { Spotlists } from "./components/Spotlists";
 import LoadingWave from "../common/LoadingWave";
-import { useQuery } from "@tanstack/react-query";
 
 export default function SpotlistsPage() {
   const [options, setOptions] = useState(null);
 
-  const fetchSpotlists = async () => {
-    const response = await axios.get(
-      `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists`,
-      { withCredentials: true }
-    );
-    return response.data;
-  };
-
   const { data, isLoading } = useQuery({
     queryKey: ["userSpotlists"],
-    queryFn: fetchSpotlists,
+    queryFn: getUserSpotlists,
   });
 
   const spotlists = data?.data;

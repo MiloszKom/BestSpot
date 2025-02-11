@@ -1,8 +1,7 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
-import { AlertContext } from "../context/AlertContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -21,30 +20,26 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { formatTimeAgo } from "../utils/helperFunctions";
-import {
-  togglePostLike,
-  togglePostBookmark,
-  highlightHandles,
-} from "../utils/postUtils";
+import { highlightHandles } from "../utils/helperFunctions";
 import ShowOptions from "../common/ShowOptions";
 import PostImageCarousel from "./components/PostImageCarousel";
 import PostSpots from "./components/PostSpots";
 import PostSpotlists from "./components/PostSpotlists";
 import LoadingWave from "../common/LoadingWave";
 
+import { usePostsMutations } from "../hooks/usePostsMutations";
+
 export function Posts({
   postElements,
   options,
   setOptions,
-  Unbookmark,
   hasNextPage,
   fetchNextPage,
   feedCompleteMessage,
 }) {
-  const [posts, setPosts] = useState(postElements);
+  const posts = postElements;
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { showAlert } = useContext(AlertContext);
 
   const { ref, inView } = useInView();
 
@@ -52,25 +47,32 @@ export function Posts({
     if (inView) fetchNextPage();
   }, [fetchNextPage, inView]);
 
-  useEffect(() => {
-    setPosts(postElements);
-  }, [postElements]);
+  const {
+    deletePostMutation,
+    togglePostLikeMutation,
+    togglePostBookmarkMutation,
+  } = usePostsMutations();
+
+  const deletePost = () => {
+    deletePostMutation.mutate(options.postId);
+    setOptions(false);
+  };
+
+  const togglePostLike = (postId, isLiked) => {
+    togglePostLikeMutation.mutate({ postId, isLiked });
+  };
+
+  const togglePostBookmark = (postId, isBookmarked, post) => {
+    togglePostBookmarkMutation.mutate({
+      postId,
+      isBookmarked,
+      post,
+    });
+  };
 
   return (
     <div className="posts-wrapper">
       {posts.map((post) => {
-        const likeCount = post.likes.filter(
-          (like) => like.isLikeActive === true
-        );
-
-        const isLiked = post.likes.some(
-          (like) => like._id === userData._id && like.isLikeActive
-        );
-
-        const isPostBookmarked = post.bookmarks.some(
-          (bookmark) => bookmark._id === userData._id && bookmark.isLikeActive
-        );
-
         const postOptions =
           post.author._id === userData._id ? ["delete"] : ["report"];
 
@@ -124,12 +126,7 @@ export function Posts({
                     <FontAwesomeIcon icon={faEllipsisVertical} />
                   </button>
                   {options.postId === post._id && (
-                    <ShowOptions
-                      options={options}
-                      setOptions={setOptions}
-                      setData={setPosts}
-                      Unbookmark={Unbookmark}
-                    />
+                    <ShowOptions options={options} deletePost={deletePost} />
                   )}
                 </div>
               </div>
@@ -163,22 +160,15 @@ export function Posts({
                   className="footer-el"
                   onClick={(e) => {
                     e.preventDefault();
-                    togglePostLike(
-                      post._id,
-                      isLiked,
-                      userData,
-                      setPosts,
-                      showAlert,
-                      "posts"
-                    );
+                    togglePostLike(post._id, post.isLiked);
                   }}
                 >
-                  <div className={`svg-wrapper ${isLiked ? "liked" : ""}`}>
+                  <div className={`svg-wrapper ${post.isLiked ? "liked" : ""}`}>
                     <FontAwesomeIcon
-                      icon={isLiked ? solidHeart : regularHeart}
+                      icon={post.isLiked ? solidHeart : regularHeart}
                     />
                   </div>
-                  <span>{likeCount.length}</span>
+                  <span>{post.likeCount}</span>
                 </div>
                 <div className="footer-el">
                   <button className="svg-wrapper">
@@ -190,26 +180,16 @@ export function Posts({
                   className="footer-el bookmark"
                   onClick={(e) => {
                     e.preventDefault();
-                    togglePostBookmark(
-                      post._id,
-                      isPostBookmarked,
-                      userData,
-                      setPosts,
-                      "posts",
-                      showAlert
-                    );
-                    if (isPostBookmarked && Unbookmark) {
-                      Unbookmark(post._id);
-                    }
+                    togglePostBookmark(post._id, post.isBookmarked, post);
                   }}
                 >
                   <button
                     className={`svg-wrapper ${
-                      isPostBookmarked ? "bookmarked" : ""
+                      post.isBookmarked ? "bookmarked" : ""
                     }`}
                   >
                     <FontAwesomeIcon
-                      icon={isPostBookmarked ? solidBookmark : regularBookmark}
+                      icon={post.isBookmarked ? solidBookmark : regularBookmark}
                     />
                   </button>
                 </div>

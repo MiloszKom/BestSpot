@@ -1,37 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import axios from "axios";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LoadingWave from "../common/LoadingWave";
+import { useQuery } from "@tanstack/react-query";
+import { getProfileSpots } from "../api/profileApis";
 
 export default function ProfileSpots() {
-  const [spots, setSpots] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { user, userData } = useOutletContext();
 
-  useEffect(() => {
-    const fetchSpots = async () => {
-      try {
-        const res = await axios({
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/${user.handle}/spots`,
-          withCredentials: true,
-        });
-        console.log(res);
-        setSpots(res.data.data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data, isLoading } = useQuery({
+    queryKey: ["userSpots", user.handle],
+    queryFn: () => getProfileSpots(user.handle),
+  });
 
-    if (user) fetchSpots();
-  }, [user]);
+  const spots = data?.data;
 
   if (isLoading) return <LoadingWave />;
 
@@ -40,7 +23,11 @@ export default function ProfileSpots() {
       {spots.length > 0 ? (
         spots.map((spot) => {
           return (
-            <Link to={`/spot/${spot._id}`} className="spotlist-detail-spots-el">
+            <Link
+              to={`/spot/${spot._id}`}
+              className="spotlist-detail-spots-el"
+              key={spot._id}
+            >
               <div
                 className="image"
                 style={{

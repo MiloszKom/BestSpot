@@ -27,6 +27,10 @@ router
   .delete(authController.protect, spotController.deleteSpot);
 
 router
+  .route("/:id/note")
+  .patch(authController.protect, spotController.editNote);
+
+router
   .route("/:id/like")
   .post(authController.protect, spotController.likeSpot)
   .delete(authController.protect, spotController.unlikeSpot);

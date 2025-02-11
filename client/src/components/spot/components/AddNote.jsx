@@ -1,43 +1,20 @@
-import React, { useEffect, useState, useContext } from "react";
-import { AlertContext } from "../../context/AlertContext";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
-import axios from "axios";
+import { useSpotMutations } from "../../hooks/useSpotMutations";
 
-export default function AddNote({
-  setAddingNote,
-  placeNote,
-  setPlaceNote,
-  spotlistId,
-  spotId,
-}) {
-  const { showAlert } = useContext(AlertContext);
+export default function AddNote({ setAddingNote, spotNote, spotId }) {
+  const [note, setNote] = useState(spotNote);
 
-  const [note, setNote] = useState(placeNote);
+  const { editNoteMutation } = useSpotMutations();
 
   const saveNote = async () => {
-    try {
-      const res = await axios({
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: {
-          note: note,
-        },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}/spot/${spotId}/note`,
-        withCredentials: true,
-      });
-
-      console.log(res);
-      showAlert(res.data.message, res.data.status);
-      setPlaceNote(note);
-      setAddingNote(false);
-    } catch (err) {
-      showAlert(err.response.data.message, err.response.data.status);
-      console.log(err);
-    }
+    editNoteMutation.mutate({
+      note,
+      spotId,
+    });
+    setAddingNote(false);
   };
 
   return (
@@ -58,7 +35,7 @@ export default function AddNote({
         />
       </div>
       <button
-        className={`add-note-btn ${placeNote === note ? "disabled" : ""}`}
+        className={`add-note-btn ${spotNote === note ? "disabled" : ""}`}
         onClick={saveNote}
       >
         Save

@@ -31,8 +31,4 @@ router
   .route("/:spotlistId/spot/:spotId")
   .delete(authController.protect, spotlistController.removeFromSpotlist);
 
-router
-  .route("/:spotlistId/spot/:spotId/note")
-  .patch(authController.protect, spotlistController.editNote);
-
 module.exports = router;

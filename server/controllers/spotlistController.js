@@ -220,8 +220,6 @@ exports.updateSpotlists = catchAsync(async (req, res) => {
     }
   }
 
-  const isSavedInAnySpotlist = spotPresentInSpotlistsModified.length > 0;
-
   if (
     spotPresentInSpotlists.length === 0 &&
     spotPresentInSpotlistsModified.length > 0
@@ -242,8 +240,7 @@ exports.updateSpotlists = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    message: "Spotlists have been updated",
-    isSavedInAnySpotlist,
+    message: "Spotlists updated successfully",
   });
 });
 
@@ -346,16 +343,19 @@ exports.removeFromSpotlist = catchAsync(async (req, res) => {
 });
 
 exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
-  const spotlist = await Spotlist.findById(req.params.id).populate([
-    {
-      path: "spots",
-      select: "_id google_id name rating user_ratings_total photo city country",
-    },
-    {
-      path: "author",
-      select: "_id name photo handle friends",
-    },
-  ]);
+  const spotlist = await Spotlist.findById(req.params.id)
+    .populate([
+      {
+        path: "spots",
+        select:
+          "_id google_id name rating user_ratings_total photo city country",
+      },
+      {
+        path: "author",
+        select: "_id name photo handle friends",
+      },
+    ])
+    .lean();
 
   if (!spotlist) {
     return res.status(404).json({
@@ -386,43 +386,20 @@ exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
     });
   }
 
-  res.status(200).json({
-    status: "success",
-    message: "Spots retrieved from spotlist successfully",
-    data: spotlist,
-  });
-});
-
-exports.editNote = catchAsync(async (req, res) => {
-  const { spotlistId, spotId } = req.params;
-  const { note } = req.body;
-
-  const user = await findUser(req.user.id);
-
-  const spotlist = await findSpotlist(spotlistId);
-
-  const spotInList = spotlist.spots.find((spotObj) => spotObj.equals(spotId));
-
-  if (!spotInList) {
-    return res.status(404).json({
-      status: "error",
-      message: "Spot is not in the specified spotlist",
-    });
-  }
-
-  await Spot.findByIdAndUpdate(
-    spotId,
-    {
-      $set: { "favouritedBy.$[elem].note": note },
-    },
-    {
-      arrayFilters: [{ "elem.userId": user._id }],
-    }
+  const likeCount = spotlist.likes.filter((like) => like.isLikeActive).length;
+  const isSpotlistLiked = spotlist.likes.some(
+    (like) =>
+      like._id.toString() === req.user._id?.toString() && like.isLikeActive
   );
 
   res.status(200).json({
     status: "success",
-    message: "Spot note updated",
+    message: "Spots retrieved from spotlist successfully",
+    data: {
+      ...spotlist,
+      likeCount,
+      isSpotlistLiked,
+    },
   });
 });
 

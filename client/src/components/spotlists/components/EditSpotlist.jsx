@@ -3,7 +3,7 @@ import { AlertContext } from "../../context/AlertContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
+import { useSpotlistsMutations } from "../../hooks/useSpotlistsMutations";
 
 export default function EditSpotlist({
   setData,
@@ -14,54 +14,23 @@ export default function EditSpotlist({
   const [visibility, setVisibility] = useState(editingSpotlist.visibility);
   const [description, setDescription] = useState(editingSpotlist.description);
 
-  const { showAlert } = useContext(AlertContext);
+  const { editSpotlistMutation } = useSpotlistsMutations();
 
   const closeEditingSpotlist = () => {
     setEditingSpotlist(false);
   };
 
   const saveChanges = async () => {
-    try {
-      const res = await axios({
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${editingSpotlist.id}`,
-        data: {
-          nameIsChanged: editingSpotlist.name !== name,
-          newName: name,
-          newVisibility: visibility,
-          newDescription: description,
-        },
-        withCredentials: true,
-      });
-
-      const editedSpotlist = res.data.data.spotlist;
-
-      if (editingSpotlist.context === "spotlists") {
-        setData((prevSpotlists) =>
-          prevSpotlists.map((spotlist) =>
-            spotlist._id === editingSpotlist.id ? editedSpotlist : spotlist
-          )
-        );
-      }
-
-      if (editingSpotlist.context === "spotlistContent") {
-        setData((prevData) => ({
-          ...prevData,
-          name: editedSpotlist.name,
-          visibility: editedSpotlist.visibility,
-          description: editedSpotlist.description,
-        }));
-      }
-
-      setEditingSpotlist(false);
-      showAlert(res.data.message, res.data.status);
-    } catch (err) {
-      showAlert(err.response.data.message, err.response.data.status);
-      console.log(err);
-    }
+    console.log(editingSpotlist);
+    editSpotlistMutation.mutate({
+      spotlistId: editingSpotlist.id,
+      nameIsChanged: editingSpotlist.name !== name,
+      newName: name,
+      newVisibility: visibility,
+      newDescription: description,
+      key: editingSpotlist.key,
+    });
+    setEditingSpotlist(false);
   };
 
   return (

@@ -1,11 +1,11 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import axios from "axios";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { Posts } from "./Posts";
 import LoadingWave from "../common/LoadingWave";
-import useScrollPosition from "../utils/useScrollPosition";
+import useScrollPosition from "../hooks/useScrollPosition";
+import { getAllPosts, getFriendsPosts } from "../api/postsApis";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -15,28 +15,22 @@ export default function HomePage() {
   const [postType, setPostType] = useState(
     sessionStorage.getItem("postType") || "all"
   );
+  const queryClient = useQueryClient();
 
   const containerRef = useRef();
-  useScrollPosition(containerRef);
+  useScrollPosition(containerRef, "scrolledHeightHome");
 
   useEffect(() => {
     sessionStorage.setItem("postType", postType);
-  }, [postType]);
-
-  const fetchPosts = async ({ pageParam = 1 }) => {
-    const response = await axios.get(
-      `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts?filter=${postType}&page=${pageParam}&limit=10`,
-      { withCredentials: true }
-    );
-    return response.data;
-  };
+    setTimeout(() => {
+      queryClient.invalidateQueries(["posts"]);
+    }, 1);
+  }, [postType, queryClient]);
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     useInfiniteQuery({
-      queryKey: ["posts", postType],
-      queryFn: fetchPosts,
-      retry: false,
-      refetchOnWindowFocus: false,
+      queryKey: ["posts"],
+      queryFn: postType === "all" ? getAllPosts : getFriendsPosts,
       getNextPageParam: (lastPage, allPages) => {
         if (lastPage.data.length === 10) {
           return allPages.length + 1;

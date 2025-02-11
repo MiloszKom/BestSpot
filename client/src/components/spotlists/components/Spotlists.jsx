@@ -11,10 +11,22 @@ import { faEllipsisVertical, faHeart } from "@fortawesome/free-solid-svg-icons";
 import { getVisibilityDisplayName } from "./../../utils/helperFunctions";
 
 import EditSpotlist from "./EditSpotlist";
+import { useSpotlistsMutations } from "../../hooks/useSpotlistsMutations";
 
 export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
   const [editingSpotlist, setEditingSpotlist] = useState(false);
   const { userData } = useContext(AuthContext);
+
+  const { deleteSpotlistMutation } = useSpotlistsMutations();
+
+  const deleteSpotlist = () => {
+    deleteSpotlistMutation.mutate({
+      spotlistId: options.spotlistInfo.id,
+      shouldNavigate: false,
+    });
+    setOptions(false);
+  };
+
   return (
     <>
       {spotlists.map((spotlist) => {
@@ -74,7 +86,7 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
                         name: spotlist.name,
                         visibility: spotlist.visibility,
                         description: spotlist.description,
-                        context: "spotlists",
+                        key: "userSpotlists",
                       },
                       aviableOptions: ["edit", "delete"],
                       entity: "spotlist",
@@ -87,7 +99,7 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
                   <ShowOptions
                     options={options}
                     setOptions={setOptions}
-                    setData={setSpotlists}
+                    deleteSpotlist={deleteSpotlist}
                     setEditingSpotlist={setEditingSpotlist}
                   />
                 )}

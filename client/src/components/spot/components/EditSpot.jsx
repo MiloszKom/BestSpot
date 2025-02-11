@@ -2,20 +2,18 @@ import React, { useRef, useState, useContext } from "react";
 import { AlertContext } from "../../context/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
 
-export default function EditSpot({
-  placeDetails,
-  setPlaceDetails,
-  setEditingSpot,
-}) {
-  const [name, setName] = useState(placeDetails.name);
-  const [overview, setOverview] = useState(placeDetails.overview);
+import { useSpotMutations } from "../../hooks/useSpotMutations";
+
+export default function EditSpot({ spot, setEditingSpot }) {
+  const [name, setName] = useState(spot.name);
+  const [overview, setOverview] = useState(spot.overview);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
 
   const fileInputRef = useRef(null);
   const { showAlert } = useContext(AlertContext);
+  const { editSpotMutation } = useSpotMutations();
 
   const handleImageClick = () => {
     if (fileInputRef.current) {
@@ -53,26 +51,12 @@ export default function EditSpot({
       formData.append("photo", selectedPhoto);
     }
 
-    console.log(selectedPhoto);
+    editSpotMutation.mutate({
+      spotId: spot._id,
+      data: formData,
+    });
 
-    try {
-      const res = await axios({
-        method: "PATCH",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        data: formData,
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${placeDetails._id}`,
-        withCredentials: true,
-      });
-      console.log(res);
-      setPlaceDetails(res.data.data.spot);
-      setEditingSpot(false);
-      showAlert(res.data.message, res.data.status);
-    } catch (err) {
-      showAlert(err.response.data.message, err.response.data.status);
-      console.log(err);
-    }
+    setEditingSpot(false);
   };
 
   return (
@@ -111,7 +95,7 @@ export default function EditSpot({
           style={{
             backgroundImage: photoPreview
               ? `url(${photoPreview})`
-              : `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${placeDetails.photo})`,
+              : `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
           }}
           onClick={handleImageClick}
         />
@@ -128,9 +112,7 @@ export default function EditSpot({
       <button
         onClick={saveChanges}
         className={`spotlist-create-btn ${
-          name === placeDetails.name &&
-          overview === placeDetails.overview &&
-          !selectedPhoto
+          name === spot.name && overview === spot.overview && !selectedPhoto
             ? "disabled"
             : ""
         }`}

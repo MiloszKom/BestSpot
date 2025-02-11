@@ -16,7 +16,7 @@ import SpotDetail from "./components/spot/SpotDetail";
 import Notifications from "./components/pages/Notifications";
 
 import ChatRoom from "./components/messages/ChatRoom";
-import ChatSearchBar from "./components/messages/ChatSearchBar";
+import UserSearch from "./components/common/UserSearch";
 
 import SpotlistsPage from "./components/spotlists/SpotlistsPage";
 
@@ -82,7 +82,7 @@ function App() {
                     <Route path="chat-room/:id" element={<ChatRoom />} />
                   </Route>
 
-                  <Route path="/search-bar" element={<ChatSearchBar />} />
+                  <Route path="/search-bar" element={<UserSearch />} />
 
                   {/* Friends Section */}
 

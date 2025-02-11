@@ -1,39 +1,26 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
+
+import { useQuery } from "@tanstack/react-query";
+import { searchUsersByHandle } from "../../api/userApis";
+import LoadingWave from "../../common/LoadingWave";
 
 export default function PostTagging({ taggedWord, handleTagCompletion }) {
-  const [users, setUsers] = useState([]);
-  const [apiLoading, setApiLoading] = useState(false);
+  const { data, isLoading } = useQuery({
+    queryKey: ["taggingResults", taggedWord],
+    queryFn: () => searchUsersByHandle(taggedWord),
+    enabled: taggedWord.length > 0,
+  });
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setApiLoading(true);
-      try {
-        const res = await axios({
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/searchHandles?q=${taggedWord}`,
-          withCredentials: true,
-        });
-        setUsers(res.data.users);
-      } catch (error) {
-        console.error("Error fetching search results", error);
-      }
-      setApiLoading(false);
-    };
-
-    if (taggedWord.length > 0) fetchUsers();
-    else setUsers([]);
-  }, [taggedWord]);
+  const users = data?.users;
 
   return (
     <div className="post-tagging-container">
       {taggedWord.length === 0 ? (
         <div className="post-tagging-message">Start typing to tag someone</div>
-      ) : apiLoading ? (
-        <div className="post-tagging-message">Loading...</div>
+      ) : isLoading ? (
+        <div className="post-tagging-message">
+          <LoadingWave />
+        </div>
       ) : users.length === 0 ? (
         <div className="post-tagging-message">No matching users found</div>
       ) : (

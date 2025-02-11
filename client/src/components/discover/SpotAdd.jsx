@@ -135,10 +135,6 @@ export default function SpotAdd() {
         formData.append("photo", "no-img-found.jpg");
       }
 
-      for (const [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-
       const res = await axios({
         method: "POST",
         headers: {

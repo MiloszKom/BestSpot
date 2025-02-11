@@ -1,48 +1,25 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function ChatSearchBar() {
+import { useQuery } from "@tanstack/react-query";
+import { searchUsers } from "../api/userApis";
+import LoadingWave from "./LoadingWave";
+
+export default function UserSearch() {
   const [chatSearch, setChatSearch] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const auth = useContext(AuthContext);
 
   const navigate = useNavigate();
 
-  const clearSearch = () => {
-    setChatSearch("");
-  };
-
-  useEffect(() => {
-    if (chatSearch.length > 0) {
-      const fetchSearchResults = async () => {
-        setIsLoading(true);
-        try {
-          const res = await axios({
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/searchUsers?q=${chatSearch}`,
-            withCredentials: true,
-          });
-          console.log(res);
-          setSearchResults(res.data);
-        } catch (error) {
-          console.error("Error fetching search results", error);
-        }
-        setIsLoading(false);
-      };
-      fetchSearchResults();
-    } else {
-      setSearchResults([]);
-    }
-  }, [chatSearch]);
+  const { data: searchResults = [], isLoading } = useQuery({
+    queryKey: ["searchResults", chatSearch],
+    queryFn: () => searchUsers(chatSearch),
+    enabled: chatSearch.length > 0,
+  });
 
   const friends = searchResults.filter((el) =>
     el.friends.includes(auth.userData._id)
@@ -98,7 +75,7 @@ export default function ChatSearchBar() {
         />
         <button
           className={chatSearch ? "active" : "inactive"}
-          onClick={clearSearch}
+          onClick={() => setChatSearch("")}
         >
           <FontAwesomeIcon icon={faXmark} />
         </button>
@@ -107,7 +84,7 @@ export default function ChatSearchBar() {
         {chatSearch.length === 0 ? (
           <p>Search somebody</p>
         ) : isLoading ? (
-          <p>Loading...</p>
+          <LoadingWave />
         ) : searchResults.length > 0 ? (
           <>
             {renderSearchResults(friends, "Friends")}

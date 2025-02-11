@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { AlertContext } from "../context/AlertContext";
-import axios from "axios";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -22,16 +20,7 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 
 import { formatPostTimestamp, formatTimeAgo } from "../utils/helperFunctions";
-import { editMessage } from "../utils/showOptionsUtils";
-import {
-  togglePostLike,
-  togglePostBookmark,
-  postComment,
-  toggleCommentLike,
-  postReply,
-  toggleReplyLike,
-  highlightHandles,
-} from "../utils/postUtils";
+import { highlightHandles } from "../utils/helperFunctions";
 
 import ShowOptions from "../common/ShowOptions";
 import PostTagging from "./components/PostTagging";
@@ -40,9 +29,12 @@ import PostImageCarousel from "./components/PostImageCarousel";
 import PostSpots from "./components/PostSpots";
 import PostSpotlists from "./components/PostSpotlists";
 
+import { usePostsMutations } from "../hooks/usePostsMutations";
+import { useQuery } from "@tanstack/react-query";
+import { getPost } from "../api/postsApis";
+
 export default function PostDetail() {
   const { userData } = useContext(AuthContext);
-  const { showAlert } = useContext(AlertContext);
   const navigate = useNavigate();
   const params = useParams();
   const location = useLocation();
@@ -50,7 +42,6 @@ export default function PostDetail() {
   const highlightedCommentId = location.state?.highlightedCommentId;
   const highlightedReplyId = location.state?.highlightedReplyId;
 
-  const [post, setPost] = useState(null);
   const [comment, setComment] = useState("");
 
   const [isReplying, setIsReplying] = useState(null);
@@ -90,52 +81,6 @@ export default function PostDetail() {
     setIsTagging(false);
   };
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const res = await axios({
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${params.postId}?sortBy=likes`,
-          withCredentials: true,
-        });
-        setPost(res.data.data);
-
-        if (highlightedCommentId) {
-          const highlightedComment = res.data.data.comments.find(
-            (comment) => comment._id === highlightedCommentId
-          );
-
-          if (highlightedComment) {
-            const reorderedComments = [
-              highlightedComment,
-              ...res.data.data.comments.filter(
-                (comment) => comment._id !== highlightedCommentId
-              ),
-            ];
-            setPost((prevPost) => ({
-              ...prevPost,
-              comments: reorderedComments,
-            }));
-
-            if (highlightedReplyId) {
-              setVisibleReplies((prev) => ({
-                ...prev,
-                [highlightedComment._id]: true,
-              }));
-            }
-          }
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    fetchPost();
-  }, [userData]);
-
   const toggleReplies = (commentId) => {
     setVisibleReplies((prev) => ({
       ...prev,
@@ -143,26 +88,103 @@ export default function PostDetail() {
     }));
   };
 
-  if (!post || !userData) return <div className="loader"></div>;
+  const { data, isLoading } = useQuery({
+    queryKey: ["post", params.postId],
+    queryFn: () => getPost(params.postId),
+  });
+
+  const post = data?.data;
+  sessionStorage.setItem("currentlyViewedPost", params.postId);
+
+  const {
+    deletePostMutation,
+    togglePostLikeMutation,
+    togglePostBookmarkMutation,
+    addPostCommentMutation,
+    editPostCommentMutation,
+    deletePostCommentMutation,
+    toggleCommentLikeMutation,
+    addPostReplyMutation,
+    deletePostReplyMutation,
+  } = usePostsMutations();
+  const postType = "detail";
+
+  const deletePost = () => {
+    deletePostMutation.mutate(options.postId);
+    setOptions(false);
+    navigate(-1);
+  };
+
+  const togglePostLike = (postId, isLiked) => {
+    togglePostLikeMutation.mutate({ postId, isLiked, postType });
+  };
+
+  const togglePostBookmark = (postId, isBookmarked) => {
+    togglePostBookmarkMutation.mutate({
+      postId,
+      isBookmarked,
+      postType,
+    });
+  };
+
+  const addPostComment = () => {
+    addPostCommentMutation.mutate({
+      comment,
+      postId: post._id,
+    });
+    setComment("");
+  };
+
+  const editPostComment = () => {
+    editPostCommentMutation.mutate({
+      comment,
+      postId: post._id,
+      commentId: isEditing.commentId,
+      replyId: isEditing.replyId,
+    });
+    setIsEditing(false);
+    setComment("");
+  };
+
+  const deletePostComment = () => {
+    deletePostCommentMutation.mutate({
+      postId: post._id,
+      commentId: options.commentId,
+    });
+  };
+
+  const toggleCommentLike = (isLiked, commentId, replyId) => {
+    toggleCommentLikeMutation.mutate({
+      isLiked,
+      postId: post._id,
+      commentId,
+      replyId,
+      userData,
+    });
+  };
+
+  const addPostReply = () => {
+    addPostReplyMutation.mutate({
+      comment,
+      postId: post._id,
+      commentId: isReplying,
+    });
+    setComment("");
+    setIsReplying(null);
+  };
+
+  const deletePostReply = () => {
+    deletePostReplyMutation.mutate({
+      postId: post._id,
+      commentId: options.commentId,
+      replyId: options.replyId,
+    });
+  };
+
+  if (isLoading) return <div className="loader" />;
 
   const postOptions =
     post.author._id === userData._id ? ["delete"] : ["report"];
-
-  const likeCount = post.likes.filter(
-    (like) => like.isLikeActive === true
-  ).length;
-
-  const isPostLiked = post.likes.some(
-    (like) => like._id === userData._id && like.isLikeActive
-  );
-
-  const bookmarkCount = post.bookmarks.filter(
-    (bookmark) => bookmark.isLikeActive === true
-  ).length;
-
-  const isPostBookmarked = post.bookmarks.some(
-    (bookmark) => bookmark._id === userData._id && bookmark.isLikeActive
-  );
 
   return (
     <div className="post-detail-container">
@@ -201,11 +223,7 @@ export default function PostDetail() {
               <FontAwesomeIcon icon={faEllipsisVertical} />
             </button>
             {options.postId === post._id && !options.commentId && (
-              <ShowOptions
-                options={options}
-                setOptions={setOptions}
-                setData={setPost}
-              />
+              <ShowOptions options={options} deletePost={deletePost} />
             )}
           </div>
         </div>
@@ -240,21 +258,14 @@ export default function PostDetail() {
         <div className="post-detail-options">
           <div
             className="option"
-            onClick={() =>
-              togglePostLike(
-                post._id,
-                isPostLiked,
-                userData,
-                setPost,
-                showAlert,
-                "postDetail"
-              )
-            }
+            onClick={() => togglePostLike(post._id, post.isLiked)}
           >
-            <div className={`svg-wrapper ${isPostLiked ? "liked" : ""}`}>
-              <FontAwesomeIcon icon={isPostLiked ? solidHeart : regularHeart} />
+            <div className={`svg-wrapper ${post.isLiked ? "liked" : ""}`}>
+              <FontAwesomeIcon
+                icon={post.isLiked ? solidHeart : regularHeart}
+              />
             </div>
-            <span>{likeCount}</span>
+            <span>{post.likeCount}</span>
           </div>
           <div className="option">
             <div className="svg-wrapper">
@@ -264,25 +275,16 @@ export default function PostDetail() {
           </div>
           <div
             className="option"
-            onClick={() =>
-              togglePostBookmark(
-                post._id,
-                isPostBookmarked,
-                userData,
-                setPost,
-                "postDetail",
-                showAlert
-              )
-            }
+            onClick={() => togglePostBookmark(post._id, post.isBookmarked)}
           >
             <div
-              className={`svg-wrapper ${isPostBookmarked ? "bookmarked" : ""}`}
+              className={`svg-wrapper ${post.isBookmarked ? "bookmarked" : ""}`}
             >
               <FontAwesomeIcon
-                icon={isPostBookmarked ? solidBookmark : regularBookmark}
+                icon={post.isBookmarked ? solidBookmark : regularBookmark}
               />
             </div>
-            <span>{bookmarkCount}</span>
+            <span>{post.bookmarkCount}</span>
           </div>
         </div>
 
@@ -349,9 +351,9 @@ export default function PostDetail() {
                   <ShowOptions
                     options={options}
                     setOptions={setOptions}
-                    setData={setPost}
                     setIsEditing={setIsEditing}
                     setComment={setComment}
+                    deletePostComment={deletePostComment}
                   />
                 )}
               </div>
@@ -361,16 +363,7 @@ export default function PostDetail() {
               <div className="comment-options">
                 <div
                   className="comment-option-like"
-                  onClick={() =>
-                    toggleCommentLike(
-                      params.postId,
-                      comment._id,
-                      isCommentLiked,
-                      userData,
-                      setPost,
-                      showAlert
-                    )
-                  }
+                  onClick={() => toggleCommentLike(isCommentLiked, comment._id)}
                 >
                   {isCommentLiked ? (
                     <div className="svg-wrapper liked">
@@ -480,9 +473,9 @@ export default function PostDetail() {
                             <ShowOptions
                               options={options}
                               setOptions={setOptions}
-                              setData={setPost}
                               setIsEditing={setIsEditing}
                               setComment={setComment}
+                              deletePostReply={deletePostReply}
                             />
                           )}
                         </div>
@@ -493,13 +486,10 @@ export default function PostDetail() {
                           <div
                             className="comment-option-like"
                             onClick={() =>
-                              toggleReplyLike(
+                              toggleCommentLike(
                                 isReplyLiked,
-                                params.postId,
                                 comment._id,
-                                reply._id,
-                                setPost,
-                                userData
+                                reply._id
                               )
                             }
                           >
@@ -586,35 +576,12 @@ export default function PostDetail() {
                 ? "disabled"
                 : ""
             }`}
-            onClick={() =>
+            onClick={
               isEditing
-                ? editMessage(
-                    comment,
-                    params.postId,
-                    isEditing,
-                    setPost,
-                    setIsEditing,
-                    setComment,
-                    showAlert
-                  )
+                ? editPostComment
                 : isReplying
-                ? postReply(
-                    params.postId,
-                    comment,
-                    isReplying,
-                    setComment,
-                    setIsReplying,
-                    setReplyingToHandle,
-                    setPost
-                  )
-                : postComment(
-                    params.postId,
-                    comment,
-                    setPost,
-                    userData,
-                    setComment,
-                    showAlert
-                  )
+                ? addPostReply
+                : addPostComment
             }
           >
             {isEditing ? "Edit" : isReplying ? "Reply" : "Post"}

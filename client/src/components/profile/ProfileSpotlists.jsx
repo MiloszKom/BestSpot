@@ -1,36 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useOutletContext } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getProfileSpotlists } from "../api/profileApis";
 
 import { Spotlists } from "../spotlists/components/Spotlists";
-import axios from "axios";
 import LoadingWave from "../common/LoadingWave";
 
 export function ProfileSpotlists() {
-  const [spotlists, setSpotlists] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { user, userData, options, setOptions } = useOutletContext();
 
-  useEffect(() => {
-    const fetchProfileSpotlits = async () => {
-      try {
-        const res = await axios({
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/${user.handle}/spotlists`,
-          withCredentials: true,
-        });
-        setSpotlists(res.data.data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data, isLoading } = useQuery({
+    queryKey: ["userSpotlists", user.handle],
+    queryFn: () => getProfileSpotlists(user.handle),
+  });
 
-    if (user) fetchProfileSpotlits();
-  }, [user]);
+  const spotlists = data?.data;
 
   if (isLoading) return <LoadingWave />;
 
@@ -40,7 +24,6 @@ export function ProfileSpotlists() {
         <div className="spotlists-wrapper">
           <Spotlists
             spotlists={spotlists}
-            setSpotlists={setSpotlists}
             options={options}
             setOptions={setOptions}
           />

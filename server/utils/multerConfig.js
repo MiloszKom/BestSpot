@@ -22,6 +22,8 @@ const uploadSpotPhoto = upload.single("photo");
 const adjustPhoto = async (req, res, next) => {
   if (!req.file) return next();
 
+  console.log(req);
+
   const filename = `spot-${req.user._id}-${Date.now()}.jpeg`;
 
   await sharp(req.file.buffer)

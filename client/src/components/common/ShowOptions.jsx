@@ -1,5 +1,4 @@
-import React, { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,17 +9,7 @@ import {
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { AlertContext } from "../context/AlertContext";
-
-import {
-  deletePost,
-  deleteComment,
-  deleteSpotlist,
-  deleteFromSpotlist,
-  deleteNotification,
-  deleteSpot,
-  deleteInsight,
-} from "../utils/showOptionsUtils";
+import { useNotificationsMutations } from "../hooks/useNotificationsMutations";
 
 export default function ShowOptions({
   options,
@@ -30,11 +19,15 @@ export default function ShowOptions({
   setComment,
   setEditingSpotlist,
   setEditingSpot,
-  Unbookmark,
+  deleteSpotFromSpotlist,
+  deleteSpotlist,
+  deletePost,
+  deletePostComment,
+  deletePostReply,
+  deleteSpot,
+  deleteInsight,
 }) {
-  const navigate = useNavigate();
-
-  const { showAlert } = useContext(AlertContext);
+  const { deleteNotificationMutation } = useNotificationsMutations();
 
   const editComment = () => {
     setIsEditing({
@@ -55,27 +48,9 @@ export default function ShowOptions({
     setOptions(false);
   };
 
-  const editSpotlist = () => {
-    setEditingSpotlist(options.spotlistInfo);
-    setOptions(false);
-  };
-
   const editSpot = () => {
     setEditingSpot(true);
     setOptions(false);
-  };
-
-  const deleteSpotAndMove = () => {
-    deleteSpot(options, setOptions, showAlert);
-  };
-
-  const deleteSpotlistAndMove = () => {
-    deleteSpotlist(options, setOptions, setData, showAlert);
-    if (options.spotlistInfo.context === "spotlistContent") {
-      setTimeout(() => {
-        if (!options) navigate("/spotlists");
-      }, 500);
-    }
   };
 
   return (
@@ -92,12 +67,7 @@ export default function ShowOptions({
 
       {options.entity === "post" &&
         options.aviableOptions.includes("delete") && (
-          <div
-            className="option delete"
-            onClick={() =>
-              deletePost(options, setOptions, setData, Unbookmark, showAlert)
-            }
-          >
+          <div className="option delete" onClick={deletePost}>
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
           </div>
@@ -153,12 +123,7 @@ export default function ShowOptions({
 
       {options.entity === "comment" &&
         options.aviableOptions.includes("delete") && (
-          <div
-            className="option delete"
-            onClick={() =>
-              deleteComment(options, setOptions, setData, showAlert)
-            }
-          >
+          <div className="option delete" onClick={deletePostComment}>
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
           </div>
@@ -184,10 +149,7 @@ export default function ShowOptions({
 
       {options.entity === "reply" &&
         options.aviableOptions.includes("delete") && (
-          <div
-            className="option delete"
-            onClick={() => deletePost(options, setOptions, setData, showAlert)}
-          >
+          <div className="option delete" onClick={deletePostReply}>
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
           </div>
@@ -197,7 +159,13 @@ export default function ShowOptions({
 
       {options.entity === "spotlist" &&
         options.aviableOptions.includes("edit") && (
-          <div className="option" onClick={editSpotlist}>
+          <div
+            className="option"
+            onClick={() => {
+              setEditingSpotlist(options.spotlistInfo);
+              setOptions(false);
+            }}
+          >
             <FontAwesomeIcon icon={faPen} />
             <span>Edit</span>
           </div>
@@ -205,7 +173,7 @@ export default function ShowOptions({
 
       {options.entity === "spotlist" &&
         options.aviableOptions.includes("delete") && (
-          <div className="option delete" onClick={deleteSpotlistAndMove}>
+          <div className="option delete" onClick={deleteSpotlist}>
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
           </div>
@@ -215,12 +183,7 @@ export default function ShowOptions({
 
       {options.entity === "spotlistSpot" &&
         options.aviableOptions.includes("delete") && (
-          <div
-            className="option delete"
-            onClick={() =>
-              deleteFromSpotlist(options, setOptions, setData, showAlert)
-            }
-          >
+          <div className="option delete" onClick={deleteSpotFromSpotlist}>
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
           </div>
@@ -232,9 +195,10 @@ export default function ShowOptions({
         options.aviableOptions.includes("delete") && (
           <div
             className="option delete"
-            onClick={() =>
-              deleteNotification(options, setOptions, setData, showAlert)
-            }
+            onClick={() => {
+              deleteNotificationMutation.mutate(options.notificationId);
+              setOptions(false);
+            }}
           >
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
@@ -260,7 +224,7 @@ export default function ShowOptions({
 
       {options.entity === "spot" &&
         options.aviableOptions.includes("delete") && (
-          <div className="option delete" onClick={deleteSpotAndMove}>
+          <div className="option delete" onClick={deleteSpot}>
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
           </div>
@@ -278,12 +242,7 @@ export default function ShowOptions({
 
       {options.entity === "insight" &&
         options.aviableOptions.includes("delete") && (
-          <div
-            className="option delete"
-            onClick={() =>
-              deleteInsight(options, setOptions, setData, showAlert)
-            }
-          >
+          <div className="option delete" onClick={deleteInsight}>
             <FontAwesomeIcon icon={faTrash} />
             <span>Delete</span>
           </div>

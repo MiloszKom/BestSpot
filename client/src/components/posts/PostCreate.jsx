@@ -1,6 +1,5 @@
 import React, { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { Link } from "react-router-dom";
 
 import { AlertContext } from "../context/AlertContext";
 import { AuthContext } from "../context/AuthContext";
@@ -23,6 +22,7 @@ import PostSpotlists from "./components/PostSpotlists";
 import PostAddSpotlists from "./components/PostAddSpotlists";
 
 import ShowOptions from "../common/ShowOptions";
+import { usePostsMutations } from "../hooks/usePostsMutations";
 
 export default function PostCreate({ setCreatingPost }) {
   const [postContent, setPostContent] = useState("");
@@ -43,8 +43,7 @@ export default function PostCreate({ setCreatingPost }) {
 
   const { showAlert } = useContext(AlertContext);
   const { userData } = useContext(AuthContext);
-
-  const navigate = useNavigate();
+  const { createPostMutation } = usePostsMutations();
 
   const handleInputChange = (e) => {
     const content = e.target.value;
@@ -96,40 +95,24 @@ export default function PostCreate({ setCreatingPost }) {
   };
 
   const createPost = async () => {
-    try {
-      const formData = new FormData();
+    const formData = new FormData();
 
-      formData.append("visibility", postVisibility.toLowerCase());
-      formData.append("content", postContent);
+    formData.append("visibility", postVisibility.toLowerCase());
+    formData.append("content", postContent);
 
-      selectedPhotos.forEach((photo) => {
-        formData.append("photos", photo);
-      });
+    selectedPhotos.forEach((photo) => {
+      formData.append("photos", photo);
+    });
 
-      selectedSpotlists.forEach((spotlist) => {
-        formData.append("spotlists", spotlist._id);
-      });
+    selectedSpotlists.forEach((spotlist) => {
+      formData.append("spotlists", spotlist._id);
+    });
 
-      selectedSpots.forEach((spot) => {
-        formData.append("spots", spot._id);
-      });
+    selectedSpots.forEach((spot) => {
+      formData.append("spots", spot._id);
+    });
 
-      const res = await axios({
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        data: formData,
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts`,
-        withCredentials: true,
-      });
-
-      navigate("/");
-      showAlert(res.data.message, res.data.status);
-    } catch (err) {
-      console.log(err);
-      showAlert(err.response.data.message, err.response.data.status);
-    }
+    createPostMutation.mutate(formData);
   };
 
   return (
