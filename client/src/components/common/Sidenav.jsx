@@ -11,7 +11,7 @@ import {
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { faHeart, faBookmark } from "@fortawesome/free-regular-svg-icons";
+import { faBookmark } from "@fortawesome/free-regular-svg-icons";
 
 import { logout } from "../utils/helperFunctions";
 
@@ -20,16 +20,6 @@ export default function Sidenav({ setShowMenu }) {
 
   return (
     <div className="sidebar-nav">
-      <Link
-        to="/spotlists"
-        className="sidebar-el"
-        onClick={() => setShowMenu(false)}
-      >
-        <div className="sidebar-el-svg-wrapper">
-          <FontAwesomeIcon icon={faHeart} />
-        </div>
-        <span>Spotlists</span>
-      </Link>
       <Link
         to="/bookmarks"
         className="sidebar-el"

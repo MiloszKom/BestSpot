@@ -13,7 +13,7 @@ router
   .patch(authController.protect, spotlistController.updateSpotlists);
 
 router
-  .route("/discover")
+  .route("/hub")
   .get(authController.protect, spotlistController.getHubSpotlists);
 
 router

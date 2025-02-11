@@ -9,7 +9,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeftLong,
   faEllipsisVertical,
-  faLocationDot,
   faHeart as solidHeart,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
@@ -18,6 +17,7 @@ import EditSpotlist from "./components/EditSpotlist";
 import { useQuery } from "@tanstack/react-query";
 import { getSpotsInSpotlist } from "../api/spotlistsApis";
 import { useSpotlistsMutations } from "../hooks/useSpotlistsMutations";
+import Spot from "../spot/Spot";
 
 export default function SpotlistContent() {
   const [editingSpotlist, setEditingSpotlist] = useState(false);
@@ -41,7 +41,7 @@ export default function SpotlistContent() {
 
   const spotlistData = data?.data;
 
-  if (isLoading) return <div className="loader" />;
+  if (isLoading) return <div className="loader big" />;
 
   const deleteSpotFromSpotlist = () => {
     deleteSpotFromSpotlistMutation.mutate({
@@ -156,48 +156,14 @@ export default function SpotlistContent() {
       <div className="spotlist-detail-spots">
         {spotlistData.spots?.map((spot) => {
           return (
-            <Link
-              to={`/spot/${spot._id}`}
-              className="spotlist-detail-spots-el"
+            <Spot
               key={spot._id}
-            >
-              <div
-                className="image"
-                style={{
-                  backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
-                }}
-              />
-              <div className="info">
-                <div className="name">{spot.name}</div>
-                <div className="location">
-                  <FontAwesomeIcon icon={faLocationDot} />
-                  {spot.city}, {spot.country}
-                </div>
-              </div>
-              {userData._id === spotlistData.author._id && (
-                <div className="menu" onClick={(e) => e.preventDefault()}>
-                  <button
-                    className="options"
-                    onClick={() =>
-                      setOptions({
-                        spotlistId: spotlistData._id,
-                        spotId: spot._id,
-                        aviableOptions: ["delete"],
-                        entity: "spotlistSpot",
-                      })
-                    }
-                  >
-                    <FontAwesomeIcon icon={faEllipsisVertical} />
-                  </button>
-                  {options?.spotId === spot._id && (
-                    <ShowOptions
-                      options={options}
-                      deleteSpotFromSpotlist={deleteSpotFromSpotlist}
-                    />
-                  )}
-                </div>
-              )}
-            </Link>
+              spot={spot}
+              spotlistData={spotlistData}
+              options={options}
+              setOptions={setOptions}
+              deleteSpotFromSpotlist={deleteSpotFromSpotlist}
+            />
           );
         })}
       </div>

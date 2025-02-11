@@ -348,7 +348,7 @@ exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
       {
         path: "spots",
         select:
-          "_id google_id name rating user_ratings_total photo city country",
+          "_id google_id name rating user_ratings_total photo city country likes",
       },
       {
         path: "author",
@@ -404,28 +404,33 @@ exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
 });
 
 exports.getHubSpotlists = catchAsync(async (req, res) => {
-  const { order } = req.query;
+  const sort = req.query.sort;
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
 
-  let query = Spotlist.find({ visibility: "public" }).populate(
-    "author",
-    "handle"
-  );
+  let spotlists;
 
-  if (order === "newest") {
-    query = query.sort({ createdAt: -1 });
-  } else if (order === "popular") {
-    query = query.sort({ likesCount: -1 });
+  if (sort === "popular") {
+    spotlists = await Spotlist.find().lean();
+
+    spotlists.sort((a, b) => {
+      const aActiveLikes = a.likes.filter((like) => like.isLikeActive).length;
+      const bActiveLikes = b.likes.filter((like) => like.isLikeActive).length;
+      return bActiveLikes - aActiveLikes;
+    });
+
+    spotlists = spotlists.slice(skip, skip + limit);
   } else {
-    query = query.sort({ createdAt: -1 });
+    spotlists = await Spotlist.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
   }
-
-  const spotlists = await query;
 
   res.status(200).json({
     status: "success",
-    results: spotlists.length,
-    data: {
-      spotlists,
-    },
+    message: "HubSpotlists retrieved successfully",
+    data: spotlists,
   });
 });

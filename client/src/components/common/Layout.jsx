@@ -12,6 +12,7 @@ export default function Layout() {
       <Header setShowMenu={setShowMenu} />
       <div className="content">
         <Outlet />
+        <div className="sidePanel">Side panel</div>
       </div>
       <Nav />
       {showMenu && <Sidenav setShowMenu={setShowMenu} />}

@@ -85,3 +85,13 @@ export const getSpotsInSpotlist = async (spotlistId) => {
   });
   return res.data;
 };
+
+export const getHubSpotlists = async ({ pageParam = 1, sortOption }) => {
+  const res = await axios({
+    method: "GET",
+    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/hub?sort=${sortOption}&page=${pageParam}&limit=20`,
+    withCredentials: true,
+  });
+  sessionStorage.setItem("spotlistHubOrder", sortOption);
+  return res.data;
+};

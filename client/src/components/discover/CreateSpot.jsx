@@ -11,7 +11,7 @@ import ConfirmButton from "./components/ConfirmButton";
 import { fetchUserLocation, convertCategory } from "../utils/helperFunctions";
 import axios from "axios";
 
-export default function SpotAdd() {
+export default function CreateSpotPage() {
   const [spotName, setSpotName] = useState("");
   const [spotOverview, setSpotOverview] = useState("");
   const [spotAddress, setSpotAddress] = useState("");
@@ -157,13 +157,13 @@ export default function SpotAdd() {
 
   return (
     <APIProvider apiKey={process.env.REACT_APP_API_KEY}>
-      <div className="add-spot-container">
-        <div className="add-spot-form">
-          <div className="add-spot-header">
+      <div className="create-spot-container">
+        <div className="create-spot-form">
+          <div className="create-spot-header">
             <h3>Spot details</h3>
             <p>Provide some information about your spot</p>
           </div>
-          <div className="add-spot-body">
+          <div className="create-spot-body">
             <div>
               <label>Name</label>
               <input
@@ -227,9 +227,11 @@ export default function SpotAdd() {
                 {spotLocation && <div className="marker" />}
               </Map>
             </div>
-            <div className="add-spot-cover">
+            <div className="create-spot-cover">
               <label
-                className={`add-spot-cover-label ${spotCover ? "active" : ""}`}
+                className={`create-spot-cover-label ${
+                  spotCover ? "active" : ""
+                }`}
                 htmlFor="cover"
               >
                 {spotCover ? (
@@ -248,7 +250,7 @@ export default function SpotAdd() {
               />
             </div>
             {spotCover && (
-              <div className="add-spot-image-preview">
+              <div className="create-spot-image-preview">
                 <div
                   className="image-preview"
                   style={{ backgroundImage: `url(${photoPreview})` }}
@@ -269,7 +271,7 @@ export default function SpotAdd() {
             </button>
           </div>
         </div>
-        <div className={`add-spot-map ${visibleMap ? "visible" : ""}`}>
+        <div className={`create-spot-map ${visibleMap ? "visible" : ""}`}>
           <div className="map">
             <Map
               defaultZoom={15}

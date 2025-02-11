@@ -17,7 +17,7 @@ export default function SpotlistsPage() {
 
   return (
     <div className="spotlists">
-      <div className="spotlists-header">Spotlists</div>
+      <div className="spotlists-header">Your Spotlists</div>
       <div className="spotlists-body">
         {isLoading ? (
           <LoadingWave />

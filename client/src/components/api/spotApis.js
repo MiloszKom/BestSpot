@@ -81,3 +81,13 @@ export const toggleInsightLike = async ({ isLiked, spotId, insightId }) => {
   });
   return res.data;
 };
+
+export const getSpotLiblary = async ({ pageParam = 1, sortOption }) => {
+  const res = await axios({
+    method: "GET",
+    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/liblary?sort=${sortOption}&page=${pageParam}&limit=20`,
+    withCredentials: true,
+  });
+  sessionStorage.setItem("spotLiblaryOrder", sortOption);
+  return res.data;
+};

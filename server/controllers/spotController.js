@@ -3,8 +3,6 @@ const User = require("../models/userModel");
 const Spotlist = require("./../models/spotlistModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
-const fs = require("fs");
-const path = require("path");
 
 const {
   createNotifications,
@@ -452,5 +450,34 @@ exports.unlikeInsight = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "Insight unliked",
+  });
+});
+
+exports.getSpotLiblary = catchAsync(async (req, res) => {
+  const sort = req.query.sort;
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  let spots;
+
+  if (sort === "popular") {
+    spots = await Spot.find().lean();
+
+    spots.sort((a, b) => {
+      const aActiveLikes = a.likes.filter((like) => like.isLikeActive).length;
+      const bActiveLikes = b.likes.filter((like) => like.isLikeActive).length;
+      return bActiveLikes - aActiveLikes;
+    });
+
+    spots = spots.slice(skip, skip + limit);
+  } else {
+    spots = await Spot.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+  }
+
+  res.status(200).json({
+    status: "success",
+    message: "SpotLiblary retrieved successfully",
+    data: spots,
   });
 });

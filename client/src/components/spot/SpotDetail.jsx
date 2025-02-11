@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { AlertContext } from "../context/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
@@ -46,7 +45,6 @@ export default function SpotDetail() {
   const location = useLocation();
 
   const { userData } = useContext(AuthContext);
-  const { showAlert } = useContext(AlertContext);
 
   const highlightedInsightId = location.state?.highlightedInsightId;
 

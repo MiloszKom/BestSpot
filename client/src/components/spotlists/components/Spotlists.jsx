@@ -13,7 +13,13 @@ import { getVisibilityDisplayName } from "./../../utils/helperFunctions";
 import EditSpotlist from "./EditSpotlist";
 import { useSpotlistsMutations } from "../../hooks/useSpotlistsMutations";
 
-export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
+export function Spotlists({
+  spotlists,
+  setSpotlists,
+  options,
+  setOptions,
+  disableOptions,
+}) {
   const [editingSpotlist, setEditingSpotlist] = useState(false);
   const { userData } = useContext(AuthContext);
 
@@ -61,7 +67,8 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
                 {likeCount} <FontAwesomeIcon icon={faHeart} />
               </span>
               <span className="spotlists-spot-count">
-                {spotlist.spots.length} spots
+                {spotlist.spots.length}{" "}
+                {spotlist.spots.length === 1 ? "spot" : "spots"}
               </span>
             </div>
             <div className="spotlists-info">
@@ -73,7 +80,7 @@ export function Spotlists({ spotlists, setSpotlists, options, setOptions }) {
                 <p className="spotlists-description">{spotlist.description}</p>
               )}
             </div>
-            {userData._id === spotlist.author && (
+            {userData._id === spotlist.author && !disableOptions && (
               <div
                 className="spotlists-menu"
                 onClick={(e) => e.preventDefault()}

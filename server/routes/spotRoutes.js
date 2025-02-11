@@ -15,6 +15,8 @@ router
     spotController.createSpot
   );
 
+router.route("/liblary").get(spotController.getSpotLiblary);
+
 router
   .route("/:id")
   .get(authController.protect, spotController.getSpot)

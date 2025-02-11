@@ -1,5 +1,4 @@
-import React, { useState, useContext } from "react";
-import { AlertContext } from "../../context/AlertContext";
+import React, { useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";

@@ -44,10 +44,11 @@ import NotFoundPage from "./components/pages/NotFoundPage";
 import Discover from "./components/discover/DiscoverPage";
 import AreaSearchFilters from "./components/discover/AreaSearchFilters";
 import Results from "./components/discover/Results";
-import SpotAdd from "./components/discover/SpotAdd";
+import CreateSpot from "./components/discover/CreateSpot";
 import SpotlistsHub from "./components/discover/SpotlistsHub";
 import Bookmarks from "./components/pages/Bookmarks";
 import ProfileSpots from "./components/profile/ProfileSpots";
+import SpotLiblary from "./components/discover/SpotLiblary";
 
 function App() {
   return (
@@ -149,7 +150,17 @@ function App() {
                     element={<SpotlistsHub />}
                   />
 
-                  <Route path="/create" element={<SpotAdd />} />
+                  <Route
+                    path="/discover/spot-liblary"
+                    element={<SpotLiblary />}
+                  />
+
+                  <Route
+                    path="/discover/spotlists-hub/list/:id"
+                    element={<SpotlistContent />}
+                  />
+
+                  <Route path="/create" element={<CreateSpot />} />
 
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>

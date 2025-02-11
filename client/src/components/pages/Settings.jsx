@@ -111,8 +111,8 @@ export default function Settings() {
 
   return (
     <div className="settings-container">
-      <div className="settings-header" onClick={() => navigate(-1)}>
-        <div className="svg-wrapper">
+      <div className="settings-header">
+        <div className="svg-wrapper" onClick={() => navigate(-1)}>
           <FontAwesomeIcon icon={faArrowLeft} />
         </div>
         <span>Your Account Settings</span>

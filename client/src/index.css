@@ -47,7 +47,6 @@ img {
     "nav";
   width: 100%;
   height: 100dvh;
-  max-width: 1350px;
   margin: 0 auto;
   grid-template-rows: 50px auto 50px;
   overflow: hidden;
@@ -90,9 +89,15 @@ img {
 }
 
 .content {
+  display: flex;
+  width: 100%;
   background-color: #212121;
   grid-area: content;
   overflow: hidden;
+}
+
+.sidePanel {
+  display: none;
 }
 
 .nav {
@@ -138,8 +143,8 @@ img {
 }
 
 .nav-el-svg-wrapper .nav-photo {
-  height: 30px;
-  width: 30px;
+  height: 35px;
+  width: 35px;
   border-radius: 100%;
   border: 1px solid #0088ff;
   background-size: cover;
@@ -217,6 +222,9 @@ img {
       "nav content";
     grid-template-rows: 50px auto;
     grid-template-columns: 82px auto;
+    border-left: 1px solid #0088ff;
+    border-right: 1px solid #0088ff;
+    max-width: 685px;
   }
 
   .header {
@@ -265,6 +273,30 @@ img {
   .sidebar-overlay {
     display: none;
   }
+
+  .content {
+    max-width: 600px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .container {
+    max-width: 1050px;
+  }
+
+  .content {
+    max-width: none;
+    width: 100%;
+  }
+
+  .sidePanel {
+    display: block;
+    border-left: 1px solid #404040;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 @media (min-width: 1200px) {
@@ -272,6 +304,7 @@ img {
     grid-template-columns: 300px auto;
     border-right: 1px solid #0088ff;
     border-left: 1px solid #0088ff;
+    max-width: 1350px;
   }
 
   .header span {
@@ -379,8 +412,6 @@ img {
 @media (min-width: 600px) {
   .spot-detail {
     position: unset;
-    max-width: 600px;
-    border-right: 1px solid #0088ff;
   }
 }
 
@@ -597,6 +628,7 @@ img {
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
+  min-width: 100%;
 }
 
 .spotlists-header {
@@ -626,13 +658,8 @@ img {
     grid-template-columns: 1fr 1fr;
   }
 }
-@media (min-width: 750px) {
-  .spotlists-wrapper:not(.profile-spotlists-container .spotlists-wrapper) {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-}
 
-@media (min-width: 900px) {
+@media (min-width: 1000px) {
   .spotlists-wrapper:not(.profile-spotlists-container .spotlists-wrapper) {
     grid-template-columns: 1fr 1fr 1fr 1fr;
   }
@@ -1116,6 +1143,10 @@ img {
   background-color: #212121;
 }
 
+.loader.big {
+  min-width: 100%;
+}
+
 .loader::after {
   content: "";
   width: 75px;
@@ -1305,11 +1336,6 @@ img {
     padding-top: 50px;
     position: unset;
     height: 100%;
-    border-right: 1px solid #0088ff;
-  }
-
-  .profile-header {
-    border-right: 1px solid #0088ff;
   }
 }
 
@@ -1325,7 +1351,6 @@ img {
   height: 50px;
   background-color: #212121;
   font-size: 1.25rem;
-  border-right: 1px solid #0088ff;
   box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
@@ -1462,16 +1487,7 @@ img {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.profile-spots-container .spotlist-detail-spots-el {
-  grid-template-columns: 178px 1fr auto;
-}
-
-.profile-spots-container .spotlist-detail-spots-el .image {
-  width: 178px;
-  height: 100px;
+  gap: 1rem;
 }
 
 .empty-profile-message {
@@ -1489,13 +1505,11 @@ img {
 .settings-container {
   width: 100%;
   height: 100%;
-  max-width: 600px;
   color: #fff;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   scrollbar-width: none;
-  border-right: 1px solid #0088ff;
 }
 
 .settings-header {
@@ -1660,19 +1674,12 @@ img {
 /* Spotlist detail */
 
 .spotlist-detail-container {
-  width: 100%;
+  min-width: 100%;
   height: 100%;
   overflow-y: auto;
 }
 
-@media (min-width: 500px) {
-  .spotlist-detail-container {
-    position: unset;
-    height: 100%;
-  }
-}
-
-@media (min-width: 850px) {
+@media (min-width: 1000px) {
   .spotlist-detail-container {
     display: flex;
   }
@@ -1818,8 +1825,9 @@ img {
 }
 
 .spotlist-detail-spots-el {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 178px 1fr auto;
   gap: 0.5rem;
   width: 100%;
   color: #fff;
@@ -1835,6 +1843,8 @@ img {
   border-radius: 0.5rem;
   background-size: cover;
   background-position: center;
+  width: 178px;
+  height: 100px;
 }
 
 .spotlist-detail-spots-el .info {
@@ -1873,11 +1883,6 @@ img {
   .spotlist-detail-spots-el {
     grid-template-columns: 178px 1fr auto;
   }
-
-  .spotlist-detail-spots-el .image {
-    width: 178px;
-    height: 100px;
-  }
 }
 
 .spotlist-detail-error {
@@ -1903,6 +1908,7 @@ img {
 .messages-and-chat-container {
   display: flex;
   height: 100%;
+  min-width: 100%;
   overflow: hidden;
 }
 
@@ -1920,7 +1926,7 @@ img {
   height: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 999px) {
   .messages-container.hidden {
     transform: translateX(-100%);
     position: absolute;
@@ -1940,7 +1946,7 @@ img {
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1000px) {
   .messages-and-chat-container {
     flex: 1;
   }
@@ -1954,6 +1960,10 @@ img {
     transform: none;
     position: relative;
   }
+
+  .messages-container {
+    border-right: 1px solid #007bff;
+  }
 }
 
 .messages-container {
@@ -1966,15 +1976,10 @@ img {
   overflow-y: auto;
 }
 
-@media (min-width: 769px) {
-  .messages-container {
-    border-right: 1px solid #007bff;
-  }
-}
-
 .messages-header {
   padding: 1rem;
   font-size: 1.5rem;
+  font-weight: 500;
   border-bottom: 1px solid #404040;
 }
 
@@ -2316,8 +2321,6 @@ img {
 @media (min-width: 500px) {
   .chat-search-container {
     position: unset;
-    max-width: 600px;
-    border-right: 1px solid #0088ff;
     height: 100%;
   }
 }
@@ -2431,13 +2434,14 @@ img {
   height: 100%;
   overflow-y: auto;
   color: #fff;
-  max-width: 600px;
+  width: 100%;
   border-right: 1px solid #0088ff;
 }
 
 .friends-header {
   padding: 1rem;
   font-size: 1.5rem;
+  font-weight: 500;
   border-bottom: 1px solid #404040;
 }
 
@@ -2634,13 +2638,8 @@ img {
   overflow-y: auto;
   scrollbar-width: none;
   height: 100%;
+  width: 100%;
   max-width: 600px;
-}
-
-@media (min-width: 600px) {
-  .posts-container {
-    border-right: 1px solid #0088ff;
-  }
 }
 
 .posts-container button {
@@ -2850,6 +2849,7 @@ img {
 }
 
 .post-fetch-info {
+  grid-column: 1/-1;
   width: 100%;
   padding: 1rem;
   color: #fff;
@@ -3136,6 +3136,7 @@ img {
   white-space: pre-wrap;
   display: flex;
   flex-direction: column;
+  max-width: 600px;
 }
 
 @media (max-width: 499px) {
@@ -4064,13 +4065,8 @@ img {
   color: #fff;
   height: 100%;
   overflow-y: auto;
-  max-width: 600px;
-}
-
-@media (min-width: 500px) {
-  .notifications-container {
-    border-right: 1px solid #0088ff;
-  }
+  scrollbar-width: none;
+  width: 100%;
 }
 
 .notifications-header {
@@ -4174,31 +4170,32 @@ img {
 /* Discover  */
 
 .discover-container {
-  padding: 1rem;
   max-width: 600px;
+  height: 100%;
   color: #fff;
 }
 
 .discover-header {
   font-size: 1.5rem;
   font-weight: 500;
+  padding: 1rem;
+  border-bottom: 1px solid #404040;
 }
 
 .discover-body {
-  margin-top: 1rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .discover-el {
-  display: flex;
   gap: 1rem;
-  align-items: center;
+  text-align: center;
   border: 1px solid #0088ff;
-  background-color: #282828;
+  background-color: #14161a;
   padding: 1rem;
-  color: #0088ff;
+  color: #fff;
   user-select: none;
   border-radius: 1rem;
   transition: all 0.2s;
@@ -4209,18 +4206,14 @@ img {
   background-color: #333;
 }
 
-.discover-el .discover-el-title {
+.discover-el-title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 500;
 }
 
-.discover-el .discover-el-description {
+.discover-el-description {
   font-size: 0.85rem;
-}
-
-.discover-el .arrow {
-  margin-left: auto;
 }
 
 /* Area Search Filters */
@@ -4353,6 +4346,13 @@ img {
   margin: 0;
 }
 
+[role="listbox"] {
+  margin-top: 0;
+  list-style-type: none;
+  padding-left: 0;
+  border: 1px solid #0088ff;
+}
+
 [role="listbox"] > [role="option"] {
   padding: 10px 15px;
   font-size: 14px;
@@ -4369,7 +4369,7 @@ img {
 .results-container {
   position: relative;
   height: 100%;
-  width: 100%;
+  min-width: 100%;
 }
 
 .results-content-wrapper {
@@ -4485,7 +4485,7 @@ img {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1000px) {
   .results-items,
   .results-map {
     width: 50%;
@@ -4502,14 +4502,14 @@ img {
 }
 
 /* SPOT ADD */
-.add-spot-container {
+.create-spot-container {
   position: relative;
   height: 100%;
-  max-width: 600px;
+  width: 100%;
   overflow-y: auto;
 }
 
-.add-spot-form {
+.create-spot-form {
   position: absolute;
   top: 0;
   left: 0;
@@ -4519,12 +4519,12 @@ img {
   color: #fff;
 }
 
-.add-spot-header h3,
-.add-spot-header p {
+.create-spot-header h3,
+.create-spot-header p {
   margin: 0;
 }
 
-.add-spot-body {
+.create-spot-body {
   margin-top: 0.5rem;
   height: 100%;
   display: flex;
@@ -4559,24 +4559,24 @@ img {
   pointer-events: none;
 }
 
-.add-spot-cover-label {
+.create-spot-cover-label {
   font-weight: 500;
   color: #0088ff;
   border-radius: 1rem;
   cursor: pointer;
 }
 
-.add-spot-cover-label.active {
+.create-spot-cover-label.active {
   font-weight: normal;
   color: #fff;
   pointer-events: none;
 }
 
-.add-spot-cover input {
+.create-spot-cover input {
   display: none;
 }
 
-.add-spot-image-preview {
+.create-spot-image-preview {
   position: relative;
   width: 100%;
   min-height: 200px;
@@ -4592,7 +4592,7 @@ img {
   background-position: center;
 }
 
-.add-spot-image-preview .delete {
+.create-spot-image-preview .delete {
   position: absolute;
   right: 0.5rem;
   top: 0.5rem;
@@ -4610,7 +4610,7 @@ img {
   margin-top: auto;
 }
 
-.add-spot-map {
+.create-spot-map {
   position: fixed;
   height: calc(100% - 100px);
   width: 100%;
@@ -4624,7 +4624,7 @@ img {
 }
 
 @media (min-width: 500px) {
-  .add-spot-map {
+  .create-spot-map {
     position: relative;
     top: 0;
     bottom: 0;
@@ -4634,7 +4634,7 @@ img {
   }
 }
 
-.add-spot-map.visible {
+.create-spot-map.visible {
   opacity: 1;
   pointer-events: auto;
   scale: 1;
@@ -4645,7 +4645,7 @@ img {
   width: 100%;
 }
 
-.add-spot-map button {
+.create-spot-map button {
   position: absolute;
   background-color: #14161a;
   border: 1px solid #0088ff;
@@ -4654,7 +4654,7 @@ img {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
-.add-spot-map button:hover {
+.create-spot-map button:hover {
   background-color: #212121;
 }
 
@@ -4686,19 +4686,24 @@ img {
   flex-direction: column;
   gap: 0.5rem;
   color: #fff;
-  padding: 1rem;
   height: 100%;
+  min-width: 100%;
   overflow-y: auto;
 }
 
 .spotlists-hub-header {
+  display: flex;
+  gap: 0.5rem;
   font-size: 1.5rem;
   font-weight: 500;
+  padding: 1rem;
+  border-bottom: 1px solid #404040;
 }
 
 .spotlists-hub-sort-options {
   display: flex;
   gap: 1rem;
+  padding: 0.5rem 1rem 0rem;
 }
 
 .sort-option {
@@ -4719,6 +4724,24 @@ img {
   border: 1px solid #0088ff;
 }
 
+.spotlists-hub-body {
+  height: 100%;
+  width: 100%;
+}
+
+.spot-liblary-spots {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 1rem;
+  padding: 1rem;
+}
+
+@media (min-width: 800px) {
+  .spot-liblary-spots {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* Bookmarks  */
 
 .bookmarks-container {
@@ -4726,15 +4749,9 @@ img {
   flex-direction: column;
   color: #fff;
   height: 100%;
-  max-width: 600px;
+  width: 100%;
   overflow-y: auto;
   scrollbar-width: none;
-}
-
-@media (min-width: 500px) {
-  .bookmarks-container {
-    border-right: 1px solid #0088ff;
-  }
 }
 
 .bookmarks-header {
@@ -4751,6 +4768,26 @@ img {
 .empty-bookmarks-message {
   padding: 1rem;
   text-align: center;
+}
+
+/* Responsiveness */
+
+@media (min-width: 1000px) {
+  .loader,
+  .profile-container,
+  .settings-container,
+  .chat-search-container,
+  .friends-container,
+  .posts-container,
+  .spot-detail,
+  .post-detail-container,
+  .notifications-container,
+  .discover-container,
+  .search-filters,
+  .create-spot-container,
+  .bookmarks-container {
+    min-width: 600px;
+  }
 }
 
 /* Loading Wave  */
