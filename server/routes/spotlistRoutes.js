@@ -14,11 +14,11 @@ router
 
 router
   .route("/hub")
-  .get(authController.protect, spotlistController.getHubSpotlists);
+  .get(authController.softAuth, spotlistController.getHubSpotlists);
 
 router
   .route("/:id")
-  .get(authController.protect, spotlistController.getSpotsInSpotlist)
+  .get(authController.softAuth, spotlistController.getSpotsInSpotlist)
   .delete(authController.protect, spotlistController.deleteSpotlist)
   .patch(authController.protect, spotlistController.editSpotlist);
 

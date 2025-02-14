@@ -18,18 +18,15 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   const { name, email } = req.body;
-  const updateData = {};
 
-  if (name) updateData.name = name;
-  if (email) updateData.email = email;
-  if (req.file) updateData.photo = req.file.filename;
-
-  const user = await User.findByIdAndUpdate(req.user.id, updateData, {
-    new: true,
-    runValidators: true,
-  });
-
+  const user = await User.findById(req.user.id);
   if (!user) return next(new AppError("User not found.", 404));
+
+  if (name) user.name = name;
+  if (email) user.email = email;
+  if (req.file) user.photo = req.file.filename;
+
+  await user.save();
 
   res.status(200).json({
     status: "success",
@@ -69,23 +66,24 @@ exports.getUser = catchAsync(async (req, res) => {
 // Profile APIs
 
 exports.getUserProfile = catchAsync(async (req, res, next) => {
-  const currentUser = await User.findById(req.user._id);
+  const currentUser = req.user?._id;
   const { handle } = req.params;
 
   const viewedUser = await User.findOne({ handle }).select(
     "_id name photo handle friends pendingRequests"
   );
+
   if (!viewedUser) {
     return next(new AppError("This account doens't exist", 404));
   }
 
-  const isCurrentUser = currentUser._id.equals(viewedUser._id);
-  const isFriend = viewedUser.friends.includes(currentUser._id);
+  const isCurrentUser = currentUser?._id.equals(viewedUser._id);
+  const isFriend = viewedUser.friends.includes(currentUser?._id);
 
   let inviteStatus = "not-sent";
   if (!isCurrentUser) {
     if (isFriend) inviteStatus = "accepted";
-    else if (viewedUser.pendingRequests.includes(currentUser._id))
+    else if (viewedUser.pendingRequests.includes(currentUser?._id))
       inviteStatus = "pending";
   }
 
@@ -97,7 +95,7 @@ exports.getUserProfile = catchAsync(async (req, res, next) => {
 });
 
 exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
-  const currentUser = await User.findById(req.user._id);
+  const currentUser = req.user?._id;
   const { handle } = req.params;
   const viewedUser = await User.findOne({ handle }).select("_id friends");
 
@@ -109,8 +107,8 @@ exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
-  const isCurrentUser = currentUser._id.equals(viewedUser._id);
-  const isFriend = viewedUser.friends.includes(currentUser._id);
+  const isCurrentUser = currentUser?._id.equals(viewedUser._id);
+  const isFriend = viewedUser.friends.includes(currentUser?._id);
 
   const postQuery = {
     author: viewedUser._id,
@@ -141,14 +139,14 @@ exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
     const likeCount = post.likes.filter((like) => like.isLikeActive).length;
     const isLiked = post.likes.some(
       (like) =>
-        like._id.toString() === currentUser._id.toString() && like.isLikeActive
+        like._id.toString() === currentUser?._id.toString() && like.isLikeActive
     );
     const bookmarkCount = post.bookmarks.filter(
       (bookmark) => bookmark.isLikeActive
     ).length;
     const isBookmarked = post.bookmarks.some(
       (bookmark) =>
-        bookmark._id.toString() === currentUser._id.toString() &&
+        bookmark._id.toString() === currentUser?._id.toString() &&
         bookmark.isLikeActive
     );
 
@@ -169,7 +167,7 @@ exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
 });
 
 exports.getUserProfileSpotlists = catchAsync(async (req, res, next) => {
-  const currentUser = await User.findById(req.user._id);
+  const currentUser = req.user?._id;
   const { handle } = req.params;
   const viewedUser = await User.findOne({ handle }).select("_id friends");
 
@@ -177,8 +175,8 @@ exports.getUserProfileSpotlists = catchAsync(async (req, res, next) => {
     return next(new AppError("This account doesn't exist", 404));
   }
 
-  const isCurrentUser = currentUser._id.equals(viewedUser._id);
-  const isFriend = viewedUser.friends.includes(currentUser._id);
+  const isCurrentUser = currentUser?._id.equals(viewedUser._id);
+  const isFriend = viewedUser.friends.includes(currentUser?._id);
 
   const spotlistQuery = {
     author: viewedUser._id,

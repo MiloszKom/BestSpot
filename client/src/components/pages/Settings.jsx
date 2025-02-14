@@ -1,10 +1,11 @@
 import React, { useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCamera } from "@fortawesome/free-solid-svg-icons";
 import { AlertContext } from "../context/AlertContext";
+
+import { useAuthMutations } from "../hooks/useAuthMutations";
 
 export default function Settings() {
   const auth = useContext(AuthContext);
@@ -51,62 +52,26 @@ export default function Settings() {
     }
   };
 
+  const { updatePasswordMutation, updateInfoMutation } = useAuthMutations();
+
   const saveSettings = async (e) => {
     e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("email", email);
-      formData.append("photo", selectedPhoto);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("photo", selectedPhoto);
 
-      const res = await axios({
-        method: "PATCH",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/updateMe`,
-        data: formData,
-        withCredentials: true,
-      });
-
-      console.log(res);
-
-      auth.login(res.data);
-      if (res.data.status === "success") {
-        showAlert(res.data.message, res.data.status);
-        navigate(`/${user.handle}`);
-      }
-    } catch (err) {
-      showAlert(err.response.data.message, "fail");
-    }
+    updateInfoMutation.mutate(formData);
   };
 
   const savePassword = async (e) => {
     e.preventDefault();
-    try {
-      const res = await axios({
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/updateMyPassword`,
-        data: {
-          passwordCurrent,
-          password,
-          passwordConfirm,
-        },
-        withCredentials: true,
-      });
-      console.log(res);
-      auth.login(res.data);
-      if (res.data.status === "success") {
-        showAlert(res.data.message, res.data.status);
-        navigate(`/${user.handle}`);
-      }
-    } catch (err) {
-      console.log(err);
-      showAlert(err.response.data.message, "fail");
-    }
+    const data = {
+      passwordCurrent,
+      password,
+      passwordConfirm,
+    };
+    updatePasswordMutation.mutate(data);
   };
 
   return (

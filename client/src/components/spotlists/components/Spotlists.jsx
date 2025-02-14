@@ -37,15 +37,15 @@ export function Spotlists({
     <>
       {spotlists.map((spotlist) => {
         const linkUrl = spotlist.author.handle
-          ? `/${spotlist.author.handle}/spotlists/list/${spotlist._id}`
-          : `list/${spotlist._id}`;
+          ? `/${spotlist.author.handle}/spotlists/${spotlist._id}`
+          : `${spotlist._id}`;
 
         const likeCount = spotlist.likes.filter(
           (like) => like.isLikeActive === true
         ).length;
 
         const isSpotlistLiked = spotlist.likes.some(
-          (like) => like._id === userData._id && like.isLikeActive
+          (like) => like._id === userData?._id && like.isLikeActive
         );
         return (
           <Link to={linkUrl} className="spotlists-el" key={spotlist._id}>
@@ -80,7 +80,7 @@ export function Spotlists({
                 <p className="spotlists-description">{spotlist.description}</p>
               )}
             </div>
-            {userData._id === spotlist.author && !disableOptions && (
+            {userData?._id === spotlist.author && !disableOptions && (
               <div
                 className="spotlists-menu"
                 onClick={(e) => e.preventDefault()}

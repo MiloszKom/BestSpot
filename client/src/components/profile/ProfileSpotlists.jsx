@@ -30,7 +30,7 @@ export function ProfileSpotlists() {
         </div>
       ) : (
         <div className="empty-profile-message">
-          {userData._id === user._id
+          {userData?._id === user._id
             ? "Your profile currently doesn't have any spotlists. Consider creating some to share your favorite places with others."
             : `@${user.handle} hasn't shared any spotlists. Maybe they’re still exploring!`}
         </div>

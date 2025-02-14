@@ -36,17 +36,6 @@ const createSendToken = (user, statusCode, res, message) => {
   });
 };
 
-exports.signup = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-  });
-
-  createSendToken(newUser, 201, res, "Account created.");
-});
-
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -63,6 +52,17 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res, "Successfully logged in.");
 });
 
+exports.signup = catchAsync(async (req, res, next) => {
+  const newUser = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    passwordConfirm: req.body.passwordConfirm,
+  });
+
+  createSendToken(newUser, 201, res, "Account created.");
+});
+
 exports.logout = (req, res) => {
   res.cookie("jwt", "loggedout", {
     expires: new Date(Date.now() + 10 * 1000),
@@ -71,6 +71,19 @@ exports.logout = (req, res) => {
   res.status(200).json({
     status: "success",
   });
+};
+
+const getUserFromToken = async (token) => {
+  if (!token) return null;
+
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) return null;
+
+  if (currentUser.changedPasswordAfter(decoded.iat)) return null;
+
+  return currentUser;
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -84,29 +97,115 @@ exports.protect = catchAsync(async (req, res, next) => {
     token = req.cookies.jwt;
   }
 
-  if (!token) {
+  const currentUser = await getUserFromToken(token);
+
+  if (!currentUser) {
     return next(
       new AppError("You are not logged in! Please log in to get access", 401)
     );
   }
 
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
-  const currentUser = await User.findById(decoded.id);
-  if (!currentUser) {
-    return next(
-      new AppError("The user belonging to this token no longer exists", 401)
-    );
-  }
-
-  if (currentUser.changedPasswordAfter(decoded.id)) {
-    return next(
-      new AppError("User recently changed password! Please log in again", 401)
-    );
-  }
-
   req.user = currentUser;
 
+  next();
+});
+
+exports.softAuth = catchAsync(async (req, res, next) => {
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+  let currentUser;
+
+  if (token !== "loggedout") {
+    currentUser = await getUserFromToken(token);
+  }
+
+  if (currentUser) {
+    req.user = currentUser;
+  }
+
+  next();
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const { passwordCurrent, password, passwordConfirm } = req.body;
+  if (!passwordCurrent || !password || !passwordConfirm) {
+    return next(
+      new AppError(
+        "Please provide your current password, new password, and password confirmation.",
+        400
+      )
+    );
+  }
+
+  if (password !== passwordConfirm) {
+    return next(
+      new AppError("New password and password confirmation do not match.", 400)
+    );
+  }
+
+  const user = await User.findById(req.user.id).select("+password");
+  if (!user) {
+    return next(new AppError("User not found.", 404));
+  }
+
+  if (!(await user.correctPassword(passwordCurrent, user.password))) {
+    return next(new AppError("Your current password is incorrect.", 401));
+  }
+
+  if (await user.correctPassword(password, user.password)) {
+    return next(
+      new AppError(
+        "New password must be different from the current password.",
+        400
+      )
+    );
+  }
+
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+  await user.save();
+
+  createSendToken(user, 200, res, "Password updated successfully.");
+});
+
+exports.checkCookies = catchAsync(async (req, res, next) => {
+  let token;
+
+  if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+
+    try {
+      const decoded = await promisify(jwt.verify)(
+        token,
+        process.env.JWT_SECRET
+      );
+
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) {
+        return next(
+          new AppError("The user belonging to this token no longer exists", 401)
+        );
+      }
+
+      return res.status(200).json({
+        status: "success",
+        user: currentUser,
+        token,
+      });
+    } catch (err) {
+      return next(
+        new AppError("Invalid token or token verification failed.", 401)
+      );
+    }
+  }
   next();
 });
 
@@ -139,7 +238,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       message: "Token sent to email!",
     });
   } catch (err) {
-    console.log(err);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
 
@@ -174,51 +272,4 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   createSendToken(user, 200, res, "Password restarted.");
-});
-
-exports.updatePassword = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id).select("+password");
-
-  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
-    return next(new AppError("Your current password is wrong", 401));
-  }
-
-  user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
-  await user.save();
-
-  createSendToken(user, 200, res, "Password updated.");
-});
-
-exports.checkCookies = catchAsync(async (req, res, next) => {
-  let token;
-
-  if (req.cookies.jwt) {
-    token = req.cookies.jwt;
-
-    try {
-      const decoded = await promisify(jwt.verify)(
-        token,
-        process.env.JWT_SECRET
-      );
-
-      const currentUser = await User.findById(decoded.id);
-      if (!currentUser) {
-        return next(
-          new AppError("The user belonging to this token no longer exists", 401)
-        );
-      }
-
-      return res.status(200).json({
-        status: "success",
-        user: currentUser,
-        token,
-      });
-    } catch (err) {
-      return next(
-        new AppError("Invalid token or token verification failed.", 401)
-      );
-    }
-  }
-  next();
 });

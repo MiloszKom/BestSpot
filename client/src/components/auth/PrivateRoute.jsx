@@ -1,13 +1,20 @@
 import React, { useContext } from "react";
-import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext"; // Assuming the path is correct
+import { Navigate, useLocation, Outlet } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-export default function PrivateRoute({ children }) {
+export default function PrivateRoute({ children, message }) {
   const { isDataFetched, userData } = useContext(AuthContext);
+  const location = useLocation();
+
+  console.log("isDataFetched ", isDataFetched);
 
   if (isDataFetched === false) {
-    return <div>Loading...</div>;
-  } else {
-    return userData ? children : <Navigate to="/login" replace />;
+    return <div className="loader" />;
   }
+
+  if (!userData) {
+    return <Navigate to="/login" state={{ from: location, message }} replace />;
+  }
+
+  return children ? children : <Outlet />;
 }

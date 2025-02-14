@@ -16,7 +16,7 @@ const handleDuplicateFieldsDB = (err) => {
   const field = match ? match[1] : "unknown";
   const value = match ? match[2] : "unknown";
 
-  const message = `This ${field} is already taken: ${value}. Please use another value!`;
+  const message = `This ${field} is already taken: ${value}. Please use another ${field}!`;
   return new AppError(message, 400);
 };
 
@@ -33,6 +33,10 @@ const handleValidationErrorDB = (err) => {
       400
     );
   }
+};
+
+const handlePhotoLimit = () => {
+  return new AppError("Too many files uploaded", 400);
 };
 
 const handleJWTError = () =>
@@ -80,6 +84,7 @@ module.exports = (err, req, res, next) => {
     if (err.name === "ValidationError") error = handleValidationErrorDB(error);
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleJWTExpired();
+    if (err.code === "LIMIT_UNEXPECTED_FILE") error = handlePhotoLimit();
 
     sendErrorProd(error, res);
   }

@@ -38,6 +38,8 @@ import { ProfileSpotlists } from "./components/profile/ProfileSpotlists";
 import Settings from "./components/pages/Settings";
 
 import PrivateRoute from "./components/auth/PrivateRoute";
+import PublicRoute from "./components/auth/PublicRoute";
+import RedirectRoute from "./components/auth/RedirectRoute";
 import Layout from "./components/common/Layout";
 
 import NotFoundPage from "./components/pages/NotFoundPage";
@@ -60,8 +62,17 @@ function App() {
               <Alert />
               <Routes>
                 <Route element={<Layout />}>
-                  <Route path="/" element={<HomePage />}>
-                    <Route path="create-post" element={<PostCreate />} />
+                  <Route element={<PublicRoute />}>
+                    <Route path="/" element={<HomePage />}>
+                      <Route
+                        path="create-post"
+                        element={
+                          <PrivateRoute message="You need to be logged in to create posts">
+                            <PostCreate />
+                          </PrivateRoute>
+                        }
+                      />
+                    </Route>
                   </Route>
 
                   <Route path="/:handle/:postId" element={<PostDetail />} />
@@ -69,57 +80,94 @@ function App() {
                   <Route path="/spot/:id" element={<SpotDetail />} />
 
                   {/* SPOTLISTS  */}
-                  <Route path="spotlists" element={<SpotlistsPage />} />
                   <Route
-                    path="spotlists/list/:id"
-                    element={<SpotlistContent />}
+                    path="spotlists"
+                    element={
+                      <PrivateRoute message="You need to be logged in to view your spotlists">
+                        <SpotlistsPage />
+                      </PrivateRoute>
+                    }
                   />
+                  <Route path="spotlists/:id" element={<SpotlistContent />} />
 
-                  <Route path="messages" element={<Chats />}>
-                    <Route path="chat-room/:id" element={<ChatRoom />} />
+                  <Route
+                    element={
+                      <PrivateRoute message="You need to be logged in to chat with other users" />
+                    }
+                  >
+                    <Route path="messages" element={<Chats />}>
+                      <Route path="chat-room/:id" element={<ChatRoom />} />
+                    </Route>
+
+                    <Route path="requests" element={<Chats />}>
+                      <Route path="chat-room/:id" element={<ChatRoom />} />
+                    </Route>
                   </Route>
 
-                  <Route path="requests" element={<Chats />}>
-                    <Route path="chat-room/:id" element={<ChatRoom />} />
-                  </Route>
-
-                  <Route path="/search-bar" element={<UserSearch />} />
+                  <Route
+                    path="/search-bar"
+                    element={
+                      <PrivateRoute message="You need to be logged in to search other users">
+                        <UserSearch />
+                      </PrivateRoute>
+                    }
+                  />
 
                   {/* Friends Section */}
 
-                  <Route path="friends" element={<FriendsPage />}>
-                    <Route index element={<FriendsList />} />
-                    <Route path="requests" element={<FriendsRequests />} />
-                  </Route>
-
-                  <Route path="login" element={<Login />} />
-                  <Route path="signup" element={<Signup />} />
-
-                  <Route path="notifications" element={<Notifications />} />
-
-                  {/* Profile section  */}
                   <Route
-                    path="/:handle"
                     element={
-                      <PrivateRoute>
-                        <Profile />
-                      </PrivateRoute>
+                      <PrivateRoute message="You need to be logged in to add and accept friend requests" />
                     }
                   >
+                    <Route path="friends" element={<FriendsPage />}>
+                      <Route index element={<FriendsList />} />
+                      <Route path="requests" element={<FriendsRequests />} />
+                    </Route>
+                  </Route>
+
+                  <Route
+                    path="login"
+                    element={
+                      <RedirectRoute>
+                        <Login />
+                      </RedirectRoute>
+                    }
+                  />
+                  <Route
+                    path="signup"
+                    element={
+                      <RedirectRoute>
+                        <Signup />
+                      </RedirectRoute>
+                    }
+                  />
+
+                  <Route
+                    path="notifications"
+                    element={
+                      <PrivateRoute message="You need to be logged in to view your notifications">
+                        <Notifications />
+                      </PrivateRoute>
+                    }
+                  />
+
+                  {/* Profile section  */}
+                  <Route path="/:handle" element={<Profile />}>
                     <Route index element={<ProfilePosts />} />
                     <Route path="spotlists" element={<ProfileSpotlists />} />
                     <Route path="spots" element={<ProfileSpots />} />
                   </Route>
 
                   <Route
-                    path="/:handle/spotlists/list/:id"
+                    path="/:handle/spotlists/:id"
                     element={<SpotlistContent />}
                   />
 
                   <Route
                     path="/bookmarks"
                     element={
-                      <PrivateRoute>
+                      <PrivateRoute message="You need to be logged in to view your bookmarks">
                         <Bookmarks />
                       </PrivateRoute>
                     }
@@ -128,7 +176,7 @@ function App() {
                   <Route
                     path="/settings"
                     element={
-                      <PrivateRoute>
+                      <PrivateRoute message="You need to be logged in to change your account settings">
                         <Settings />
                       </PrivateRoute>
                     }
@@ -156,11 +204,18 @@ function App() {
                   />
 
                   <Route
-                    path="/discover/spotlists-hub/list/:id"
+                    path="/discover/spotlists-hub/:id"
                     element={<SpotlistContent />}
                   />
 
-                  <Route path="/create" element={<CreateSpot />} />
+                  <Route
+                    path="/create"
+                    element={
+                      <PrivateRoute message="You need to be logged in to create new spots">
+                        <CreateSpot />
+                      </PrivateRoute>
+                    }
+                  />
 
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>

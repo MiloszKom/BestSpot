@@ -54,9 +54,42 @@ const resizeUserPhoto = (req, res, next) => {
   next();
 };
 
+// Post
+
+const uploadPostPhotos = upload.array("photos", 5);
+
+const resizePostPhotos = async (req, res, next) => {
+  if (!req.files || req.files.length === 0) return next();
+
+  req.body.photos = [];
+
+  try {
+    await Promise.all(
+      req.files.map(async (file, index) => {
+        const filename = `user-${req.user._id}-${Date.now()}-${index + 1}.jpeg`;
+
+        await sharp(file.buffer)
+          .toFormat("jpeg")
+          .jpeg({ quality: 90 })
+          .toFile(`uploads/images/${filename}`);
+
+        req.body.photos.push(filename);
+      })
+    );
+
+    next();
+  } catch (err) {
+    return next(
+      new AppError("Error processing images. Please try again.", 500)
+    );
+  }
+};
+
 module.exports = {
   uploadSpotPhoto,
   adjustPhoto,
   uploadUserPhoto,
   resizeUserPhoto,
+  uploadPostPhotos,
+  resizePostPhotos,
 };

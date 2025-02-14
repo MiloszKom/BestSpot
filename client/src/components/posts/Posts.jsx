@@ -28,6 +28,7 @@ import PostSpotlists from "./components/PostSpotlists";
 import LoadingWave from "../common/LoadingWave";
 
 import { usePostsMutations } from "../hooks/usePostsMutations";
+import { useProtectedAction } from "../auth/useProtectedAction";
 
 export function Posts({
   postElements,
@@ -53,28 +54,32 @@ export function Posts({
     togglePostBookmarkMutation,
   } = usePostsMutations();
 
+  const protectedAction = useProtectedAction();
+
   const deletePost = () => {
     deletePostMutation.mutate(options.postId);
     setOptions(false);
   };
 
   const togglePostLike = (postId, isLiked) => {
-    togglePostLikeMutation.mutate({ postId, isLiked });
+    protectedAction(() => togglePostLikeMutation.mutate({ postId, isLiked }));
   };
 
   const togglePostBookmark = (postId, isBookmarked, post) => {
-    togglePostBookmarkMutation.mutate({
-      postId,
-      isBookmarked,
-      post,
-    });
+    protectedAction(() =>
+      togglePostBookmarkMutation.mutate({
+        postId,
+        isBookmarked,
+        post,
+      })
+    );
   };
 
   return (
     <div className="posts-wrapper">
       {posts.map((post) => {
         const postOptions =
-          post.author._id === userData._id ? ["delete"] : ["report"];
+          post.author._id === userData?._id ? ["delete"] : ["report"];
 
         return (
           <Link
@@ -116,11 +121,13 @@ export function Posts({
                   <button
                     className="svg-wrapper"
                     onClick={() =>
-                      setOptions({
-                        postId: post._id,
-                        aviableOptions: postOptions,
-                        entity: "post",
-                      })
+                      protectedAction(() =>
+                        setOptions({
+                          postId: post._id,
+                          aviableOptions: postOptions,
+                          entity: "post",
+                        })
+                      )
                     }
                   >
                     <FontAwesomeIcon icon={faEllipsisVertical} />

@@ -33,8 +33,10 @@ import { usePostsMutations } from "../hooks/usePostsMutations";
 import { useQuery } from "@tanstack/react-query";
 import { getPost } from "../api/postsApis";
 
+import { useProtectedAction } from "../auth/useProtectedAction";
+
 export default function PostDetail() {
-  const { userData } = useContext(AuthContext);
+  const { isLoggedIn, userData } = useContext(AuthContext);
   const navigate = useNavigate();
   const params = useParams();
   const location = useLocation();
@@ -54,6 +56,8 @@ export default function PostDetail() {
   const [taggedWord, setTaggedWord] = useState("");
 
   const [options, setOptions] = useState(false);
+
+  const protectedAction = useProtectedAction();
 
   const handleInputChange = (e) => {
     const content = e.target.value;
@@ -116,15 +120,19 @@ export default function PostDetail() {
   };
 
   const togglePostLike = (postId, isLiked) => {
-    togglePostLikeMutation.mutate({ postId, isLiked, postType });
+    protectedAction(() =>
+      togglePostLikeMutation.mutate({ postId, isLiked, postType })
+    );
   };
 
   const togglePostBookmark = (postId, isBookmarked) => {
-    togglePostBookmarkMutation.mutate({
-      postId,
-      isBookmarked,
-      postType,
-    });
+    protectedAction(() =>
+      togglePostBookmarkMutation.mutate({
+        postId,
+        isBookmarked,
+        postType,
+      })
+    );
   };
 
   const addPostComment = () => {
@@ -151,16 +159,19 @@ export default function PostDetail() {
       postId: post._id,
       commentId: options.commentId,
     });
+    setOptions(false);
   };
 
   const toggleCommentLike = (isLiked, commentId, replyId) => {
-    toggleCommentLikeMutation.mutate({
-      isLiked,
-      postId: post._id,
-      commentId,
-      replyId,
-      userData,
-    });
+    protectedAction(() =>
+      toggleCommentLikeMutation.mutate({
+        isLiked,
+        postId: post._id,
+        commentId,
+        replyId,
+        userData,
+      })
+    );
   };
 
   const addPostReply = () => {
@@ -179,12 +190,13 @@ export default function PostDetail() {
       commentId: options.commentId,
       replyId: options.replyId,
     });
+    setOptions(false);
   };
 
   if (isLoading) return <div className="loader" />;
 
   const postOptions =
-    post.author._id === userData._id ? ["delete"] : ["report"];
+    post.author._id === userData?._id ? ["delete"] : ["report"];
 
   return (
     <div className="post-detail-container">
@@ -213,11 +225,13 @@ export default function PostDetail() {
             <button
               className="svg-wrapper"
               onClick={() =>
-                setOptions({
-                  postId: post._id,
-                  aviableOptions: postOptions,
-                  entity: "post",
-                })
+                protectedAction(() =>
+                  setOptions({
+                    postId: post._id,
+                    aviableOptions: postOptions,
+                    entity: "post",
+                  })
+                )
               }
             >
               <FontAwesomeIcon icon={faEllipsisVertical} />
@@ -294,15 +308,15 @@ export default function PostDetail() {
           ).length;
 
           const isCommentLiked = comment.likes.some(
-            (like) => like._id === userData._id && like.isLikeActive
+            (like) => like._id === userData?._id && like.isLikeActive
           );
 
           let isRepliesVisible = visibleReplies[comment._id];
 
           const commentOptions =
-            comment.user._id === userData._id
+            comment.user._id === userData?._id
               ? ["delete", "edit"]
-              : post.author._id === userData._id
+              : post.author._id === userData?._id
               ? ["delete", "report"]
               : ["report"];
           const isHiglighted =
@@ -336,13 +350,15 @@ export default function PostDetail() {
                 <button
                   className="options svg-wrapper"
                   onClick={() =>
-                    setOptions({
-                      postId: post._id,
-                      commentId: comment._id,
-                      aviableOptions: commentOptions,
-                      entity: "comment",
-                      message: comment.comment,
-                    })
+                    protectedAction(() =>
+                      setOptions({
+                        postId: post._id,
+                        commentId: comment._id,
+                        aviableOptions: commentOptions,
+                        entity: "comment",
+                        message: comment.comment,
+                      })
+                    )
                   }
                 >
                   <FontAwesomeIcon icon={faEllipsisVertical} />
@@ -410,13 +426,13 @@ export default function PostDetail() {
                       (like) => like.isLikeActive === true
                     ).length;
                     const isReplyLiked = reply.likes.some(
-                      (like) => like._id === userData._id && like.isLikeActive
+                      (like) => like._id === userData?._id && like.isLikeActive
                     );
 
                     const replyOptions =
-                      reply.user._id === userData._id
+                      reply.user._id === userData?._id
                         ? ["delete", "edit"]
-                        : post.author._id === userData._id
+                        : post.author._id === userData?._id
                         ? ["delete", "report"]
                         : ["report"];
 
@@ -457,14 +473,16 @@ export default function PostDetail() {
                           <div
                             className="options svg-wrapper"
                             onClick={() =>
-                              setOptions({
-                                postId: post._id,
-                                commentId: comment._id,
-                                replyId: reply._id,
-                                aviableOptions: replyOptions,
-                                entity: "reply",
-                                message: reply.comment,
-                              })
+                              protectedAction(() =>
+                                setOptions({
+                                  postId: post._id,
+                                  commentId: comment._id,
+                                  replyId: reply._id,
+                                  aviableOptions: replyOptions,
+                                  entity: "reply",
+                                  message: reply.comment,
+                                })
+                              )
                             }
                           >
                             <FontAwesomeIcon icon={faEllipsisVertical} />
@@ -526,68 +544,70 @@ export default function PostDetail() {
         })}
       </div>
 
-      <div className="post-detail-your-comment">
-        {isTagging && (
-          <PostTagging
-            taggedWord={taggedWord}
-            setTaggedWord={setTaggedWord}
-            setIsTagging={setIsTagging}
-            handleTagCompletion={handleTagCompletion}
-          />
-        )}
-        <div
-          className="reply-info"
-          style={{
-            marginBottom: `${isReplying || isEditing ? "0" : "-50px"}`,
-          }}
-        >
-          {isEditing ? (
-            <span>Editting message</span>
-          ) : (
-            <span>Replying to @{replyingToHandle}</span>
+      {isLoggedIn && (
+        <div className="post-detail-your-comment">
+          {isTagging && (
+            <PostTagging
+              taggedWord={taggedWord}
+              setTaggedWord={setTaggedWord}
+              setIsTagging={setIsTagging}
+              handleTagCompletion={handleTagCompletion}
+            />
           )}
           <div
-            className="svg-wrapper"
-            onClick={() => {
-              setIsReplying(null);
-              setReplyingToHandle("");
-              setComment("");
-              setIsEditing(null);
+            className="reply-info"
+            style={{
+              marginBottom: `${isReplying || isEditing ? "0" : "-50px"}`,
             }}
           >
-            <FontAwesomeIcon icon={faXmark} />
+            {isEditing ? (
+              <span>Editting message</span>
+            ) : (
+              <span>Replying to @{replyingToHandle}</span>
+            )}
+            <div
+              className="svg-wrapper"
+              onClick={() => {
+                setIsReplying(null);
+                setReplyingToHandle("");
+                setComment("");
+                setIsEditing(null);
+              }}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </div>
+          </div>
+          <div className="input-wrapper">
+            <div
+              className="profile-icon"
+              style={{
+                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData?.photo})`,
+              }}
+            ></div>
+            <textarea
+              placeholder="Write a comment"
+              value={comment}
+              onChange={(e) => handleInputChange(e)}
+            />
+            <button
+              className={`post-comment-btn ${
+                !comment || isEditing?.messageContent === comment
+                  ? "disabled"
+                  : ""
+              }`}
+              onClick={
+                isEditing
+                  ? editPostComment
+                  : isReplying
+                  ? addPostReply
+                  : addPostComment
+              }
+            >
+              {isEditing ? "Edit" : isReplying ? "Reply" : "Post"}
+            </button>
           </div>
         </div>
-        <div className="input-wrapper">
-          <div
-            className="profile-icon"
-            style={{
-              backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData.photo})`,
-            }}
-          ></div>
-          <textarea
-            placeholder="Write a comment"
-            value={comment}
-            onChange={(e) => handleInputChange(e)}
-          />
-          <button
-            className={`post-comment-btn ${
-              !comment || isEditing?.messageContent === comment
-                ? "disabled"
-                : ""
-            }`}
-            onClick={
-              isEditing
-                ? editPostComment
-                : isReplying
-                ? addPostReply
-                : addPostComment
-            }
-          >
-            {isEditing ? "Edit" : isReplying ? "Reply" : "Post"}
-          </button>
-        </div>
-      </div>
+      )}
       {options && (
         <div className="options-overlay" onClick={() => setOptions(false)} />
       )}

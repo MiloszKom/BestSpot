@@ -34,29 +34,31 @@ exports.getSpot = catchAsync(async (req, res, next) => {
     })
     .lean();
 
-  const user = await User.findById(req.user._id).populate("spotlists");
+  const user = await User.findById(req.user?._id).populate("spotlists");
 
   if (!spot) {
     return next(new AppError("No spot found with that ID", 404));
   }
 
-  spot.insights.sort((a, b) => {
-    const aIsUser = a.user._id.toString() === user._id.toString();
-    const bIsUser = b.user._id.toString() === user._id.toString();
+  if (user) {
+    spot.insights.sort((a, b) => {
+      const aIsUser = a.user._id.toString() === user._id.toString();
+      const bIsUser = b.user._id.toString() === user._id.toString();
 
-    if (aIsUser && !bIsUser) return -1;
-    if (!aIsUser && bIsUser) return 1;
+      if (aIsUser && !bIsUser) return -1;
+      if (!aIsUser && bIsUser) return 1;
 
-    return b.likes.length - a.likes.length;
-  });
+      return b.likes.length - a.likes.length;
+    });
+  }
 
   const likeCount = spot.likes.filter((like) => like.isLikeActive).length;
 
   const isLiked = spot.likes.some((like) => {
-    return like._id.equals(user._id) && like.isLikeActive;
+    return like._id.equals(user?._id) && like.isLikeActive;
   });
 
-  const spotlistData = user.spotlists.find((spotlist) =>
+  const spotlistData = user?.spotlists.find((spotlist) =>
     spotlist.spots.some(
       (spotItem) => spotItem._id.toString() === spot._id.toString()
     )
@@ -66,7 +68,7 @@ exports.getSpot = catchAsync(async (req, res, next) => {
 
   const spotNote =
     spot.favouritedBy.find(
-      (fav) => fav.userId.toString() === user._id.toString()
+      (fav) => fav.userId.toString() === user?._id.toString()
     )?.note || null;
 
   res.status(200).json({

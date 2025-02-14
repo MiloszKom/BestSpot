@@ -25,7 +25,7 @@ export default function ProfileSpots() {
         })
       ) : (
         <div className="empty-profile-message">
-          {userData._id === user._id
+          {userData?._id === user._id
             ? "No spots have been added yet. Start adding your favorite places to share with the community!"
             : `No spots have been added by @${user.handle} yet`}
         </div>

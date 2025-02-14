@@ -5,22 +5,25 @@ const authController = require("../controllers/authController");
 
 const router = express.Router();
 
-router.get("/", authController.protect, postController.getPosts);
+const { uploadPostPhotos, resizePostPhotos } = require("../utils/multerConfig");
+
+router
+  .route("/")
+  .get(authController.softAuth, postController.getPosts)
+  .post(
+    authController.protect,
+    uploadPostPhotos,
+    resizePostPhotos,
+    postController.createPost
+  );
+
 router.get(
   "/bookmarks",
   authController.protect,
   postController.getUserBookmarks
 );
-router.post(
-  "/",
-  authController.protect,
-  postController.uploadPostPhotos,
-  postController.resizePostPhotos,
-  postController.uploadErrorHandler,
-  postController.createPost
-);
 
-router.get("/:id", authController.protect, postController.getPost);
+router.get("/:id", authController.softAuth, postController.getPost);
 router.delete("/:id", authController.protect, postController.deletePost);
 
 router

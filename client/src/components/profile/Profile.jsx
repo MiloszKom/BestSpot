@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Link,
   NavLink,
+  useLocation,
   useNavigate,
   useParams,
   Outlet,
@@ -31,7 +32,10 @@ export default function Profile() {
 
   const params = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
+  console.log(location);
+  console.log(navigate);
   const { userData } = useContext(AuthContext);
 
   const containerRef = useRef();
@@ -83,7 +87,7 @@ export default function Profile() {
       </div>
       <div className="profile-actions-wrapper">
         <div className="profile-actions">
-          {userData._id === user._id ? (
+          {userData?._id === user._id ? (
             <Link to="/settings" className="action-el settings">
               <FontAwesomeIcon icon={faGear} />
               <span>Profile Settings</span>
@@ -133,14 +137,22 @@ export default function Profile() {
         <div className="profile-content-header">
           <NavLink
             to=""
-            end
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("", { replace: true });
+            }}
             className={({ isActive }) => (isActive ? "active" : "")}
+            end
           >
             Posts
           </NavLink>
 
           <NavLink
             to="spotlists"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("spotlists", { replace: true });
+            }}
             className={({ isActive }) => (isActive ? "active" : "")}
           >
             Spotlists
@@ -148,6 +160,10 @@ export default function Profile() {
 
           <NavLink
             to="spots"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("spots", { replace: true });
+            }}
             className={({ isActive }) => (isActive ? "active" : "")}
           >
             Spots

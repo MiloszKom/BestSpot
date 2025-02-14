@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
 
@@ -20,7 +20,7 @@ export default function Sidenav({ setShowMenu }) {
 
   return (
     <div className="sidebar-nav">
-      <Link
+      <NavLink
         to="/bookmarks"
         className="sidebar-el"
         onClick={() => setShowMenu(false)}
@@ -32,8 +32,8 @@ export default function Sidenav({ setShowMenu }) {
           <FontAwesomeIcon icon={faBookmark} />
         </div>
         <span>Bookmarks</span>
-      </Link>
-      <Link
+      </NavLink>
+      <NavLink
         to="/friends"
         className="sidebar-el"
         onClick={() => setShowMenu(false)}
@@ -42,8 +42,8 @@ export default function Sidenav({ setShowMenu }) {
           <FontAwesomeIcon icon={faUserGroup} />
         </div>
         <span>Friends</span>
-      </Link>
-      <Link
+      </NavLink>
+      <NavLink
         to="/create"
         className="sidebar-el create"
         onClick={() => setShowMenu(false)}
@@ -52,16 +52,28 @@ export default function Sidenav({ setShowMenu }) {
           <FontAwesomeIcon icon={faCirclePlus} />
         </div>
         <span>Create</span>
-      </Link>
-      <div className="sidebar-el" onClick={() => logout(auth)}>
-        <div
-          className="sidebar-el-svg-wrapper"
-          onClick={() => setShowMenu(false)}
-        >
-          <FontAwesomeIcon icon={faArrowRightFromBracket} />
+      </NavLink>
+      {auth.isLoggedIn ? (
+        <div className="sidebar-el" onClick={() => logout(auth)}>
+          <div
+            className="sidebar-el-svg-wrapper"
+            onClick={() => setShowMenu(false)}
+          >
+            <FontAwesomeIcon icon={faArrowRightFromBracket} />
+          </div>
+          <span>Log out</span>
         </div>
-        <span>Log out</span>
-      </div>
+      ) : (
+        <NavLink to="/login" className="sidebar-el">
+          <div
+            className="sidebar-el-svg-wrapper"
+            onClick={() => setShowMenu(false)}
+          >
+            <FontAwesomeIcon icon={faArrowRightFromBracket} />
+          </div>
+          <span>Log in</span>
+        </NavLink>
+      )}
     </div>
   );
 }

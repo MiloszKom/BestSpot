@@ -35,7 +35,8 @@ export const AuthContextProvider = ({ children }) => {
     console.log(data);
     setIsLoggedIn(true);
     setUserData(data.data.user);
-    setToken(data.data.token);
+    setToken(data.token);
+    setIsDataFetched(true);
   }, []);
 
   const logout = useCallback(() => {

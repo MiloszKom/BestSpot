@@ -366,19 +366,19 @@ exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
 
   if (
     spotlist.visibility === "friends-only" &&
-    spotlist.author._id.toString() !== req.user._id.toString()
+    spotlist.author._id.toString() !== req.user?._id.toString()
   ) {
-    if (!spotlist.author.friends.includes(req.user._id)) {
+    if (req.user?._id || !spotlist.author.friends.includes(req.user?._id)) {
       return res.status(403).json({
         status: "fail",
-        message: "You are not authorized to view this spotlist",
+        message: `You need to be friends with ${spotlist.author.name} to view this spotlist`,
       });
     }
   }
 
   if (
     spotlist.visibility === "private" &&
-    spotlist.author._id.toString() !== req.user._id.toString()
+    spotlist.author._id.toString() !== req.user?._id.toString()
   ) {
     return res.status(403).json({
       status: "fail",
@@ -389,7 +389,7 @@ exports.getSpotsInSpotlist = catchAsync(async (req, res) => {
   const likeCount = spotlist.likes.filter((like) => like.isLikeActive).length;
   const isSpotlistLiked = spotlist.likes.some(
     (like) =>
-      like._id.toString() === req.user._id?.toString() && like.isLikeActive
+      like._id.toString() === req.user?._id.toString() && like.isLikeActive
   );
 
   res.status(200).json({
@@ -412,7 +412,7 @@ exports.getHubSpotlists = catchAsync(async (req, res) => {
   let spotlists;
 
   if (sort === "popular") {
-    spotlists = await Spotlist.find().lean();
+    spotlists = await Spotlist.find({ visibility: "public" }).lean();
 
     spotlists.sort((a, b) => {
       const aActiveLikes = a.likes.filter((like) => like.isLikeActive).length;
@@ -422,7 +422,7 @@ exports.getHubSpotlists = catchAsync(async (req, res) => {
 
     spotlists = spotlists.slice(skip, skip + limit);
   } else {
-    spotlists = await Spotlist.find()
+    spotlists = await Spotlist.find({ visibility: "public" })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);

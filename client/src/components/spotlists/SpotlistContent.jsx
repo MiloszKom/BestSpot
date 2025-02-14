@@ -19,6 +19,8 @@ import { getSpotsInSpotlist } from "../api/spotlistsApis";
 import { useSpotlistsMutations } from "../hooks/useSpotlistsMutations";
 import Spot from "../spot/Spot";
 
+import { useProtectedAction } from "../auth/useProtectedAction";
+
 export default function SpotlistContent() {
   const [editingSpotlist, setEditingSpotlist] = useState(false);
 
@@ -27,6 +29,8 @@ export default function SpotlistContent() {
   const navigate = useNavigate();
 
   const { userData } = useContext(AuthContext);
+
+  const protectedAction = useProtectedAction();
 
   const {
     deleteSpotFromSpotlistMutation,
@@ -37,6 +41,7 @@ export default function SpotlistContent() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["spotlistContent", params.id],
     queryFn: () => getSpotsInSpotlist(params.id),
+    retry: 1,
   });
 
   const spotlistData = data?.data;
@@ -112,10 +117,12 @@ export default function SpotlistContent() {
               spotlistData.isSpotlistLiked ? "active" : ""
             }`}
             onClick={() =>
-              toggleSpotlistLikeMutation.mutate({
-                isLiked: spotlistData.isSpotlistLiked,
-                spotlistId: spotlistData._id,
-              })
+              protectedAction(() =>
+                toggleSpotlistLikeMutation.mutate({
+                  isLiked: spotlistData.isSpotlistLiked,
+                  spotlistId: spotlistData._id,
+                })
+              )
             }
           >
             <FontAwesomeIcon

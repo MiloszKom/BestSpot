@@ -3,11 +3,43 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
+const validateName = (name) => {
+  if (!/^[a-zA-Z\s-]+$/.test(name)) {
+    return false;
+  }
+
+  if (name.length < 3) {
+    return false;
+  }
+
+  const RESERVED_NAMES = ["admin", "root", "system", "null", "undefined"];
+  if (RESERVED_NAMES.includes(name.toLowerCase())) {
+    return false;
+  }
+
+  if (
+    name.startsWith(" ") ||
+    name.endsWith(" ") ||
+    name.startsWith("-") ||
+    name.endsWith("-")
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "A user must have a name"],
+    required: [true, "A user must have a username"],
+    minlength: [3, "Username must be at least 3 characters long"],
+    maxlength: [20, "Username cannot exceed 20 characters"],
     unique: true,
+    validate: {
+      validator: validateName,
+      message: "Name can only contain letters, spaces, and hyphens",
+    },
   },
   handle: {
     type: String,
@@ -78,7 +110,7 @@ const userSchema = new mongoose.Schema({
         insightId: { type: mongoose.Schema.Types.ObjectId, ref: "Insight" },
       },
       title: { type: String },
-      message: { type: String, required: true },
+      message: { type: String },
       createdAt: { type: Date, default: Date.now },
       isRead: { type: Boolean, default: false },
     },
@@ -109,13 +141,28 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
-const generateHandle = async function (name, model) {
-  let baseHandle = name.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+const RESERVED_HANDLES = process.env.RESERVED_HANDLES
+  ? process.env.RESERVED_HANDLES.split(",")
+  : [];
+
+const generateHandle = async function (user, model) {
+  let baseHandle = user.name.toLowerCase().replace(/\s+/g, "");
+
+  baseHandle = baseHandle.replace(/[^a-z0-9_]/g, "");
+
+  if (user.handle === baseHandle) {
+    return baseHandle;
+  }
+
+  if (RESERVED_HANDLES.includes(baseHandle)) {
+    baseHandle = `${baseHandle}1`;
+  }
+
   let handle = baseHandle;
   let count = 1;
 
   while (await model.exists({ handle })) {
-    handle = `${baseHandle}_${count}`;
+    handle = `${baseHandle}${count}`;
     count++;
   }
 
@@ -123,8 +170,9 @@ const generateHandle = async function (name, model) {
 };
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("name")) return next();
-  this.handle = await generateHandle(this.name, this.constructor);
+  if (this.isModified("name") || !this?.handle) {
+    this.handle = await generateHandle(this, this.constructor);
+  }
   next();
 });
 

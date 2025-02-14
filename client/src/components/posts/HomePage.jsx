@@ -10,7 +10,7 @@ import { getAllPosts, getFriendsPosts } from "../api/postsApis";
 export default function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userData } = useContext(AuthContext);
+  const { isLoggedIn, userData } = useContext(AuthContext);
   const [options, setOptions] = useState(false);
   const [postType, setPostType] = useState(
     sessionStorage.getItem("postType") || "all"
@@ -46,7 +46,6 @@ export default function HomePage() {
         : "That's all from your friends! No more posts to show.",
   };
 
-  if (!userData) return <div className="loader" />;
   const posts = data?.pages.flatMap((page) => page.data) || [];
 
   return (
@@ -66,15 +65,17 @@ export default function HomePage() {
         </div>
       </div>
 
-      <Link to="create-post" className="post-add-box">
-        <div
-          className="profile-icon"
-          style={{
-            backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData.photo})`,
-          }}
-        ></div>
-        <div className="post-add-div">Add a post here</div>
-      </Link>
+      {isLoggedIn && (
+        <Link to="create-post" className="post-add-box">
+          <div
+            className="profile-icon"
+            style={{
+              backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData.photo})`,
+            }}
+          ></div>
+          <div className="post-add-div">Add a post here</div>
+        </Link>
+      )}
 
       <div className="posts-body">
         {isLoading ? (

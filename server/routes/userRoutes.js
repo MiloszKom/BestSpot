@@ -62,19 +62,19 @@ router.route("/").get(userController.getAllUsers);
 
 router
   .route("/:handle")
-  .get(authController.protect, userController.getUserProfile);
+  .get(authController.softAuth, userController.getUserProfile);
 
 router
   .route("/:handle/posts")
-  .get(authController.protect, userController.getUserProfilePosts);
+  .get(authController.softAuth, userController.getUserProfilePosts);
 
 router
   .route("/:handle/spotlists")
-  .get(authController.protect, userController.getUserProfileSpotlists);
+  .get(authController.softAuth, userController.getUserProfileSpotlists);
 
 router
   .route("/:handle/spots")
-  .get(authController.protect, userController.getUserProfileSpots);
+  .get(authController.softAuth, userController.getUserProfileSpots);
 
 router.post(
   "/sendFriendRequest/:id",

@@ -53,7 +53,7 @@ export function ProfilePosts() {
         />
       ) : (
         <div className="empty-profile-message">
-          {userData._id === user._id
+          {userData?._id === user._id
             ? "Your profile is looking a little empty. Start posting and let others see your favorite places!"
             : `Looks like @${user.handle} hasn’t posted anything yet.`}
         </div>

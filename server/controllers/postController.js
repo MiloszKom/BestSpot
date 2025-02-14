@@ -2,8 +2,6 @@ const Post = require("./../models/postModel");
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
-const multer = require("multer");
-const sharp = require("sharp");
 
 const {
   getPostCommentReply,
@@ -11,63 +9,6 @@ const {
   likeEntity,
   unlikeEntity,
 } = require("../utils/helpers");
-
-const multerStorage = multer.memoryStorage();
-
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
-
-exports.uploadPostPhotos = upload.array("photos", 5);
-
-exports.resizePostPhotos = async (req, res, next) => {
-  if (!req.files || req.files.length === 0) return next();
-
-  req.body.photos = [];
-
-  try {
-    await Promise.all(
-      req.files.map(async (file, index) => {
-        const filename = `user-${req.user._id}-${Date.now()}-${index + 1}.jpeg`;
-
-        await sharp(file.buffer)
-          .toFormat("jpeg")
-          .jpeg({ quality: 90 })
-          .toFile(`uploads/images/${filename}`);
-
-        req.body.photos.push(filename);
-      })
-    );
-
-    next();
-  } catch (err) {
-    console.log(err);
-    return next(
-      new AppError("Error processing images. Please try again.", 500)
-    );
-  }
-};
-
-exports.uploadErrorHandler = (err, req, res, next) => {
-  if (err.code === "LIMIT_UNEXPECTED_FILE") {
-    return next(
-      new AppError(
-        "Too many files uploaded. A maximum of 5 photos is allowed.",
-        400
-      )
-    );
-  }
-  next(err);
-};
 
 const extractAndValidateHandles = async (content) => {
   const handlePattern = /@([a-zA-Z0-9_]{3,30})/g;
@@ -410,7 +351,7 @@ exports.unbookmarkPost = catchAsync(async (req, res, next) => {
 });
 
 exports.getPost = catchAsync(async (req, res, next) => {
-  const userId = req.user._id;
+  const userId = req.user?._id;
 
   const post = await Post.findById(req.params.id)
     .populate("author", "_id name photo handle")
@@ -424,15 +365,17 @@ exports.getPost = catchAsync(async (req, res, next) => {
     return next(new AppError("Post not found", 404));
   }
 
-  post.comments.sort((a, b) => {
-    const aIsUser = a.user._id.toString() === userId.toString();
-    const bIsUser = b.user._id.toString() === userId.toString();
+  if (userId) {
+    post.comments.sort((a, b) => {
+      const aIsUser = a.user._id.toString() === userId.toString();
+      const bIsUser = b.user._id.toString() === userId.toString();
 
-    if (aIsUser && !bIsUser) return -1;
-    if (!aIsUser && bIsUser) return 1;
+      if (aIsUser && !bIsUser) return -1;
+      if (!aIsUser && bIsUser) return 1;
 
-    return b.likes.length - a.likes.length;
-  });
+      return b.likes.length - a.likes.length;
+    });
+  }
 
   const totalComments = post.comments.reduce((total, comment) => {
     return total + 1 + comment.replies.length;
@@ -596,11 +539,11 @@ exports.deletePostComment = catchAsync(async (req, res, next) => {
   }
 
   if (
-    comment.user.toString() !== post.author.toString() ||
-    comment.user.toString() !== user._id.toString()
+    comment.user.toString() !== user._id.toString() &&
+    post.author.toString() !== user._id.toString()
   ) {
     return next(
-      new AppError("You are not authorized to delete this comment", 404)
+      new AppError("You are not authorized to delete this comment", 403)
     );
   }
 

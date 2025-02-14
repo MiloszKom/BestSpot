@@ -28,6 +28,7 @@ import EditSpot from "./components/EditSpot";
 import { useQuery } from "@tanstack/react-query";
 import { getSpot } from "../api/spotApis";
 import { useSpotMutations } from "../hooks/useSpotMutations";
+import { useProtectedAction } from "../auth/useProtectedAction";
 
 export default function SpotDetail() {
   const [addingNote, setAddingNote] = useState(false);
@@ -44,7 +45,7 @@ export default function SpotDetail() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { userData } = useContext(AuthContext);
+  const { isLoggedIn, userData } = useContext(AuthContext);
 
   const highlightedInsightId = location.state?.highlightedInsightId;
 
@@ -62,14 +63,15 @@ export default function SpotDetail() {
     deleteInsightMutation,
     toggleInsightLikeMutation,
   } = useSpotMutations();
+  const protectedAction = useProtectedAction();
 
-  if (isLoading || !userData) return <div className="loader" />;
+  if (isLoading) return <div className="loader" />;
 
   const spotOptions =
-    spot.author._id === userData._id ? ["delete", "edit"] : ["report"];
+    spot.author._id === userData?._id ? ["delete", "edit"] : ["report"];
 
   const isInsightCreated = spot.insights.some(
-    (insight) => insight.user._id === userData._id
+    (insight) => insight.user._id === userData?._id
   );
 
   return (
@@ -89,11 +91,13 @@ export default function SpotDetail() {
               <button
                 className="options-btn"
                 onClick={() =>
-                  setOptions({
-                    spotId: spot._id,
-                    aviableOptions: spotOptions,
-                    entity: "spot",
-                  })
+                  protectedAction(() =>
+                    setOptions({
+                      spotId: spot._id,
+                      aviableOptions: spotOptions,
+                      entity: "spot",
+                    })
+                  )
                 }
               >
                 <FontAwesomeIcon icon={faEllipsisVertical} />
@@ -168,40 +172,42 @@ export default function SpotDetail() {
           </div>
           <div className="spot-detail-insights">
             <div className="insights-header">User insights (0)</div>
-            {!isInsightCreated && spot.author._id !== userData._id && (
-              <div className="insight-add">
-                <div
-                  className="photo"
-                  style={{
-                    backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData.photo})`,
-                  }}
-                />
-                <textarea
-                  type="text"
-                  value={insight}
-                  onChange={(e) => setInsight(e.target.value)}
-                  placeholder="Add your insight about the spot"
-                />
-                {insight && (
-                  <button
-                    onClick={() =>
-                      createInsightMutation.mutate({
-                        comment: insight,
-                        spotId: spot._id,
-                      })
-                    }
-                  >
-                    Post
-                  </button>
-                )}
-              </div>
-            )}
+            {!isInsightCreated &&
+              spot.author._id !== userData?._id &&
+              isLoggedIn && (
+                <div className="insight-add">
+                  <div
+                    className="photo"
+                    style={{
+                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData?.photo})`,
+                    }}
+                  />
+                  <textarea
+                    type="text"
+                    value={insight}
+                    onChange={(e) => setInsight(e.target.value)}
+                    placeholder="Add your insight about the spot"
+                  />
+                  {insight && (
+                    <button
+                      onClick={() =>
+                        createInsightMutation.mutate({
+                          comment: insight,
+                          spotId: spot._id,
+                        })
+                      }
+                    >
+                      Post
+                    </button>
+                  )}
+                </div>
+              )}
             <div className="spot-insights">
               {spot.insights.map((insight) => {
                 const insightOptions =
-                  insight.user._id === userData._id
+                  insight.user._id === userData?._id
                     ? ["delete"]
-                    : spot.author._id === userData._id
+                    : spot.author._id === userData?._id
                     ? ["delete", "report"]
                     : ["report"];
 
@@ -210,7 +216,7 @@ export default function SpotDetail() {
                 ).length;
 
                 const isInsightLiked = insight.likes.some(
-                  (like) => like._id === userData._id && like.isLikeActive
+                  (like) => like._id === userData?._id && like.isLikeActive
                 );
 
                 const isHiglighted = highlightedInsightId === insight._id;
@@ -247,12 +253,14 @@ export default function SpotDetail() {
                       <button
                         className="options svg-wrapper"
                         onClick={() =>
-                          setOptions({
-                            spotId: spot._id,
-                            insightId: insight._id,
-                            aviableOptions: insightOptions,
-                            entity: "insight",
-                          })
+                          protectedAction(() =>
+                            setOptions({
+                              spotId: spot._id,
+                              insightId: insight._id,
+                              aviableOptions: insightOptions,
+                              entity: "insight",
+                            })
+                          )
                         }
                       >
                         <FontAwesomeIcon icon={faEllipsisVertical} />
@@ -275,11 +283,13 @@ export default function SpotDetail() {
                       <div
                         className="comment-option-like"
                         onClick={() =>
-                          toggleInsightLikeMutation.mutate({
-                            isLiked: isInsightLiked,
-                            spotId: spot._id,
-                            insightId: insight._id,
-                          })
+                          protectedAction(() =>
+                            toggleInsightLikeMutation.mutate({
+                              isLiked: isInsightLiked,
+                              spotId: spot._id,
+                              insightId: insight._id,
+                            })
+                          )
                         }
                       >
                         {isInsightLiked ? (
@@ -304,10 +314,12 @@ export default function SpotDetail() {
           <button
             className={`option-el ${spot.isLiked ? "active" : ""}`}
             onClick={() =>
-              toggleSpotLikeMutation.mutate({
-                isLiked: spot.isLiked,
-                spotId: spot._id,
-              })
+              protectedAction(() =>
+                toggleSpotLikeMutation.mutate({
+                  isLiked: spot.isLiked,
+                  spotId: spot._id,
+                })
+              )
             }
           >
             <FontAwesomeIcon icon={spot.isLiked ? solidHeart : regularHeart} />
@@ -315,7 +327,7 @@ export default function SpotDetail() {
           </button>
           <button
             className={`option-el ${spot.isSaved ? "active" : ""}`}
-            onClick={() => setAddingToSpotlist(true)}
+            onClick={() => protectedAction(() => setAddingToSpotlist(true))}
           >
             <FontAwesomeIcon
               icon={spot.isSaved ? solidBookmark : regularBookmark}

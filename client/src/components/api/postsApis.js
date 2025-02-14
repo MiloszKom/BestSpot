@@ -61,6 +61,7 @@ export const getPost = async (postId) => {
     url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/${postId}?sortBy=likes`,
     withCredentials: true,
   });
+  console.log(res);
   return res.data;
 };
 

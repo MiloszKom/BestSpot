@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
@@ -17,11 +17,13 @@ export default function Header({ setShowMenu }) {
       </div>
       <span>BestSpot</span>
 
-      <Link to="/notifications">
-        <div className="header-svg-wrapper" onClick={() => setShowMenu(false)}>
-          <FontAwesomeIcon icon={faBell} />
-        </div>
-      </Link>
+      <NavLink
+        to="/notifications"
+        className="header-svg-wrapper"
+        onClick={() => setShowMenu(false)}
+      >
+        <FontAwesomeIcon icon={faBell} />
+      </NavLink>
     </div>
   );
 }

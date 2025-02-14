@@ -1,12 +1,22 @@
 import axios from "axios";
 
 export const getSpot = async (spotId) => {
-  const res = await axios({
-    method: "GET",
-    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${spotId}`,
-    withCredentials: true,
-  });
-  return res.data;
+  try {
+    const res = await axios({
+      method: "GET",
+      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${spotId}`,
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+  // const res = await axios({
+  //   method: "GET",
+  //   url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${spotId}`,
+  //   withCredentials: true,
+  // });
+  // return res.data;
 };
 
 export const editSpot = async ({ spotId, data }) => {

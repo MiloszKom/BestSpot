@@ -15,11 +15,13 @@ router
     spotController.createSpot
   );
 
-router.route("/liblary").get(spotController.getSpotLiblary);
+router
+  .route("/liblary")
+  .get(authController.softAuth, spotController.getSpotLiblary);
 
 router
   .route("/:id")
-  .get(authController.protect, spotController.getSpot)
+  .get(authController.softAuth, spotController.getSpot)
   .patch(
     authController.protect,
     uploadSpotPhoto,
