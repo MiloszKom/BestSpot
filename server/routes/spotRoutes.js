@@ -20,6 +20,10 @@ router
   .get(authController.softAuth, spotController.getSpotLiblary);
 
 router
+  .route("/latest-5")
+  .get(authController.softAuth, spotController.getLatestSpots);
+
+router
   .route("/:id")
   .get(authController.softAuth, spotController.getSpot)
   .patch(

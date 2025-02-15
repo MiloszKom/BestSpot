@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faChevronRight,
-  faLocationDot,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { getVisibilityDisplayName } from "../../utils/helperFunctions";
 
 export default function PostAddSpots({

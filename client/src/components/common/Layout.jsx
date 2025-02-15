@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import Header from "../common/Header"; // Assuming the path is correct
-import Nav from "../common/Nav"; // Assuming the path is correct
-import Sidenav from "../common/Sidenav"; // Assuming the path is correct
+import Header from "../common/Header";
+import Nav from "../common/Nav";
+import Sidenav from "../common/Sidenav";
 import { Outlet } from "react-router-dom";
+import SidePannel from "./SidePannel";
 
 export default function Layout() {
   const [showMenu, setShowMenu] = useState(false);
@@ -12,7 +13,7 @@ export default function Layout() {
       <Header setShowMenu={setShowMenu} />
       <div className="content">
         <Outlet />
-        <div className="sidePanel">Side panel</div>
+        <SidePannel />
       </div>
       <Nav />
       {showMenu && <Sidenav setShowMenu={setShowMenu} />}

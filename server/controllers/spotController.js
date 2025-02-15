@@ -483,3 +483,15 @@ exports.getSpotLiblary = catchAsync(async (req, res) => {
     data: spots,
   });
 });
+
+exports.getLatestSpots = catchAsync(async (req, res) => {
+  const spots = await Spot.find()
+    .sort({ createdAt: -1 })
+    .select("photo name city country createdAt")
+    .limit(5);
+
+  res.status(200).json({
+    status: "success",
+    data: spots,
+  });
+});

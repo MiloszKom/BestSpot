@@ -107,7 +107,10 @@ export default function SpotDetail() {
                   options={options}
                   setOptions={setOptions}
                   setEditingSpot={setEditingSpot}
-                  deleteSpot={() => deleteSpotMutation.mutate(spot._id)}
+                  deleteSpot={() => {
+                    deleteSpotMutation.mutate(spot._id);
+                    setOptions(false);
+                  }}
                 />
               )}
             </div>

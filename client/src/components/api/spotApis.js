@@ -1,22 +1,12 @@
 import axios from "axios";
 
 export const getSpot = async (spotId) => {
-  try {
-    const res = await axios({
-      method: "GET",
-      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${spotId}`,
-      withCredentials: true,
-    });
-    return res.data;
-  } catch (err) {
-    console.log(err);
-  }
-  // const res = await axios({
-  //   method: "GET",
-  //   url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${spotId}`,
-  //   withCredentials: true,
-  // });
-  // return res.data;
+  const res = await axios({
+    method: "GET",
+    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${spotId}`,
+    withCredentials: true,
+  });
+  return res.data;
 };
 
 export const editSpot = async ({ spotId, data }) => {
@@ -99,5 +89,14 @@ export const getSpotLiblary = async ({ pageParam = 1, sortOption }) => {
     withCredentials: true,
   });
   sessionStorage.setItem("spotLiblaryOrder", sortOption);
+  return res.data;
+};
+
+export const getLatestSpots = async () => {
+  const res = await axios({
+    method: "GET",
+    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/latest-5`,
+    withCredentials: true,
+  });
   return res.data;
 };
