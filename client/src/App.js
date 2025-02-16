@@ -51,6 +51,8 @@ import SpotlistsHub from "./components/discover/SpotlistsHub";
 import Bookmarks from "./components/pages/Bookmarks";
 import ProfileSpots from "./components/profile/ProfileSpots";
 import SpotLiblary from "./components/discover/SpotLiblary";
+import AdminRoute from "./components/auth/AdminRoute";
+import Reports from "./components/pages/Reports";
 
 function App() {
   return (
@@ -214,6 +216,15 @@ function App() {
                       <PrivateRoute message="You need to be logged in to create new spots">
                         <CreateSpot />
                       </PrivateRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/reports"
+                    element={
+                      <AdminRoute message="You are not authorized to view user reports">
+                        <Reports />
+                      </AdminRoute>
                     }
                   />
 

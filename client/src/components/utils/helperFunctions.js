@@ -295,6 +295,21 @@ export const getVisibilityIcon = (visibility) => {
   }
 };
 
+export const moveHighlightedItemToTop = (data, arrayKey, highlightedId) => {
+  if (data && highlightedId) {
+    const array = data.data[arrayKey];
+    const highlightedIndex = array.findIndex(
+      (item) => item._id === highlightedId
+    );
+
+    if (highlightedIndex !== -1) {
+      const [highlightedItem] = array.splice(highlightedIndex, 1);
+      array.unshift(highlightedItem);
+      data.data[arrayKey] = array;
+    }
+  }
+};
+
 // Post mutation helper functions
 
 export const updatePostLike = (oldData, postId, isLiked) => {

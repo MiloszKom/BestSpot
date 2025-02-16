@@ -783,7 +783,10 @@ exports.deleteReply = catchAsync(async (req, res, next) => {
     replyId
   );
 
-  if (!reply.user.equals(req.user._id)) {
+  if (
+    !reply.user.equals(req.user._id) &&
+    req.user._id.toString() !== post.author.toString()
+  ) {
     return next(
       new AppError("You are not authorized to delete this reply", 403)
     );

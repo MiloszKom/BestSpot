@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
-import { Navigate, useLocation, Outlet } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-export default function PrivateRoute({ children, message }) {
+export default function AdminRoute({ children, message }) {
   const { isDataFetched, userData } = useContext(AuthContext);
   const location = useLocation();
 
@@ -10,9 +10,9 @@ export default function PrivateRoute({ children, message }) {
     return <div className="loader" />;
   }
 
-  if (!userData) {
+  if (userData?.role !== "admin") {
     return <Navigate to="/login" state={{ from: location, message }} replace />;
   }
 
-  return children ? children : <Outlet />;
+  return children;
 }

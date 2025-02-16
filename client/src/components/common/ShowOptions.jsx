@@ -26,6 +26,7 @@ export default function ShowOptions({
   deletePostReply,
   deleteSpot,
   deleteInsight,
+  report,
 }) {
   const { deleteNotificationMutation } = useNotificationsMutations();
 
@@ -59,7 +60,7 @@ export default function ShowOptions({
 
       {options.entity === "post" &&
         options.aviableOptions.includes("report") && (
-          <div className="option">
+          <div className="option" onClick={report}>
             <FontAwesomeIcon icon={faFlag} />
             <span>Report</span>
           </div>
@@ -107,7 +108,7 @@ export default function ShowOptions({
 
       {options.entity === "comment" &&
         options.aviableOptions.includes("report") && (
-          <div className="option">
+          <div className="option" onClick={report}>
             <FontAwesomeIcon icon={faFlag} />
             <span>Report</span>
           </div>
@@ -133,7 +134,7 @@ export default function ShowOptions({
 
       {options.entity === "reply" &&
         options.aviableOptions.includes("report") && (
-          <div className="option">
+          <div className="option" onClick={report}>
             <FontAwesomeIcon icon={faFlag} />
             <span>Report</span>
           </div>
@@ -209,7 +210,7 @@ export default function ShowOptions({
 
       {options.entity === "spot" &&
         options.aviableOptions.includes("report") && (
-          <div className="option">
+          <div className="option" onClick={report}>
             <FontAwesomeIcon icon={faFlag} />
             <span>Report</span>
           </div>
@@ -234,7 +235,7 @@ export default function ShowOptions({
 
       {options.entity === "insight" &&
         options.aviableOptions.includes("report") && (
-          <div className="option">
+          <div className="option" onClick={report}>
             <FontAwesomeIcon icon={faFlag} />
             <span>Report</span>
           </div>

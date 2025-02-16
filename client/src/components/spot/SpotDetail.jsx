@@ -17,7 +17,11 @@ import {
   faBookmark as regularBookmark,
 } from "@fortawesome/free-regular-svg-icons";
 
-import { convertToDisplayName, formatTimeAgo } from "../utils/helperFunctions";
+import {
+  convertToDisplayName,
+  formatTimeAgo,
+  moveHighlightedItemToTop,
+} from "../utils/helperFunctions";
 
 import AddToSpotlist from "./components/AddToSpotlist";
 import CreateNewSpotlist from "./components/CreateNewSpotlist";
@@ -29,6 +33,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSpot } from "../api/spotApis";
 import { useSpotMutations } from "../hooks/useSpotMutations";
 import { useProtectedAction } from "../auth/useProtectedAction";
+import Report from "../common/Report";
 
 export default function SpotDetail() {
   const [addingNote, setAddingNote] = useState(false);
@@ -40,6 +45,8 @@ export default function SpotDetail() {
   const [editingSpot, setEditingSpot] = useState(false);
 
   const [insight, setInsight] = useState("");
+
+  const [isReporting, setIsReporting] = useState(false);
 
   const params = useParams();
   const navigate = useNavigate();
@@ -56,6 +63,10 @@ export default function SpotDetail() {
 
   const spot = data?.data;
 
+  if (data && highlightedInsightId) {
+    moveHighlightedItemToTop(data, "insights", highlightedInsightId);
+  }
+
   const {
     deleteSpotMutation,
     toggleSpotLikeMutation,
@@ -63,7 +74,16 @@ export default function SpotDetail() {
     deleteInsightMutation,
     toggleInsightLikeMutation,
   } = useSpotMutations();
+
   const protectedAction = useProtectedAction();
+
+  const report = () => {
+    setIsReporting({
+      spotId: options.spotId,
+      insightId: options.insightId,
+    });
+    setOptions(false);
+  };
 
   if (isLoading) return <div className="loader" />;
 
@@ -111,6 +131,7 @@ export default function SpotDetail() {
                     deleteSpotMutation.mutate(spot._id);
                     setOptions(false);
                   }}
+                  report={report}
                 />
               )}
             </div>
@@ -278,6 +299,7 @@ export default function SpotDetail() {
                               insightId: options.insightId,
                             })
                           }
+                          report={report}
                         />
                       )}
                     </div>
@@ -364,11 +386,15 @@ export default function SpotDetail() {
           spotId={spot._id}
         />
       )}
+      {isReporting && (
+        <Report isReporting={isReporting} setIsReporting={setIsReporting} />
+      )}
       {editingSpot && <EditSpot spot={spot} setEditingSpot={setEditingSpot} />}
       {addingToSpotlist && <div className="spotlist-shade" />}
       {creatingNewSpotlist && <div className="spotlist-shade" />}
       {addingNote && <div className="spotlist-shade" />}
       {editingSpot && <div className="spotlist-shade" />}
+      {isReporting && <div className="spotlist-shade" />}
     </>
   );
 }

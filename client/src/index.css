@@ -66,6 +66,7 @@ img {
 
 .header-svg-wrapper,
 .nav-el-svg-wrapper {
+  position: relative;
   display: flex;
   font-size: 1.35rem;
   width: 35px;
@@ -84,6 +85,21 @@ img {
 
 .header-svg-wrapper.active {
   background-color: #003059;
+}
+
+.alert-badge {
+  position: absolute;
+  top: 0rem;
+  right: 0rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1rem;
+  width: 1rem;
+  color: #fff;
+  font-size: 0.7rem;
+  border-radius: 100%;
+  background-color: #d5372f;
 }
 
 .header span {
@@ -203,7 +219,7 @@ img {
   height: 100%;
   cursor: pointer;
   font-size: 0.8rem;
-  transition: all 0.2s;
+  transition: background-color 0.2s;
 }
 
 .nav-el.active {
@@ -300,10 +316,11 @@ img {
 }
 
 .sidebar-el-svg-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
+  min-width: 24px;
   height: 24px;
   margin-right: 1rem;
 }
@@ -369,6 +386,11 @@ img {
 
   .content {
     max-width: 600px;
+  }
+
+  .alert-badge {
+    top: 0.5rem;
+    right: 0.5rem;
   }
 }
 
@@ -926,7 +948,7 @@ img {
   color: #fff;
   padding: 0;
   border: none;
-  font-size: 2rem;
+  font-size: 1.5rem;
   cursor: pointer;
 }
 
@@ -3311,7 +3333,7 @@ img {
   font-weight: 300;
 }
 
-.post-detail-author .post-options {
+.post-options {
   margin-left: auto;
 }
 
@@ -4875,6 +4897,54 @@ img {
 
 .empty-bookmarks-message {
   padding: 1rem;
+  text-align: center;
+}
+
+/* Reports */
+
+.reports-container {
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  height: 100%;
+  min-width: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.reports-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.reports-header,
+.report-el {
+  display: grid;
+  grid-template-columns: 30% 15% 45% 10%;
+  text-align: center;
+  background-color: #fff;
+  row-gap: 1px;
+  column-gap: 1px;
+  border-bottom: 1px solid #fff;
+}
+
+.reports-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background-color: #212121;
+}
+
+.reports-label.delete {
+  color: #d5372f;
+  cursor: pointer;
+}
+
+.reports-empty {
+  margin-top: 1rem;
   text-align: center;
 }
 

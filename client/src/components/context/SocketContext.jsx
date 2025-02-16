@@ -22,7 +22,6 @@ export const SocketContextProvider = ({ children }) => {
 
     socketRef.current.on("connect", () => {
       setSocket(socketRef.current);
-      console.log(`Connected to socket server`);
 
       socketRef.current.emit("user-online", userData._id, userData.chatsJoined);
     });

@@ -19,7 +19,11 @@ import {
   faBookmark as regularBookmark,
 } from "@fortawesome/free-regular-svg-icons";
 
-import { formatPostTimestamp, formatTimeAgo } from "../utils/helperFunctions";
+import {
+  formatPostTimestamp,
+  formatTimeAgo,
+  moveHighlightedItemToTop,
+} from "../utils/helperFunctions";
 import { highlightHandles } from "../utils/helperFunctions";
 
 import ShowOptions from "../common/ShowOptions";
@@ -34,6 +38,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getPost } from "../api/postsApis";
 
 import { useProtectedAction } from "../auth/useProtectedAction";
+import Report from "../common/Report";
 
 export default function PostDetail() {
   const { isLoggedIn, userData } = useContext(AuthContext);
@@ -51,6 +56,7 @@ export default function PostDetail() {
   const [visibleReplies, setVisibleReplies] = useState({});
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
 
   const [isTagging, setIsTagging] = useState(false);
   const [taggedWord, setTaggedWord] = useState("");
@@ -96,6 +102,10 @@ export default function PostDetail() {
     queryKey: ["post", params.postId],
     queryFn: () => getPost(params.postId),
   });
+
+  if (data && highlightedCommentId) {
+    moveHighlightedItemToTop(data, "comments", highlightedCommentId);
+  }
 
   const post = data?.data;
   sessionStorage.setItem("currentlyViewedPost", params.postId);
@@ -193,6 +203,15 @@ export default function PostDetail() {
     setOptions(false);
   };
 
+  const report = () => {
+    setIsReporting({
+      postId: options.postId,
+      commentId: options.commentId,
+      replyId: options.replyId,
+    });
+    setOptions(false);
+  };
+
   if (isLoading) return <div className="loader" />;
 
   const postOptions =
@@ -237,7 +256,11 @@ export default function PostDetail() {
               <FontAwesomeIcon icon={faEllipsisVertical} />
             </button>
             {options.postId === post._id && !options.commentId && (
-              <ShowOptions options={options} deletePost={deletePost} />
+              <ShowOptions
+                options={options}
+                deletePost={deletePost}
+                report={report}
+              />
             )}
           </div>
         </div>
@@ -311,7 +334,12 @@ export default function PostDetail() {
             (like) => like._id === userData?._id && like.isLikeActive
           );
 
-          let isRepliesVisible = visibleReplies[comment._id];
+          const isHighlightedComment = highlightedCommentId === comment._id;
+          const hasHighlightedReply =
+            isHighlightedComment && highlightedReplyId;
+
+          let isRepliesVisible =
+            hasHighlightedReply || visibleReplies[comment._id];
 
           const commentOptions =
             comment.user._id === userData?._id
@@ -319,12 +347,13 @@ export default function PostDetail() {
               : post.author._id === userData?._id
               ? ["delete", "report"]
               : ["report"];
-          const isHiglighted =
+
+          const isHighlighted =
             highlightedCommentId === comment._id && !highlightedReplyId;
 
           return (
             <div
-              className={`post-detail-comment ${isHiglighted ? "active" : ""}`}
+              className={`post-detail-comment ${isHighlighted ? "active" : ""}`}
               key={comment._id}
             >
               <Link
@@ -370,6 +399,7 @@ export default function PostDetail() {
                     setIsEditing={setIsEditing}
                     setComment={setComment}
                     deletePostComment={deletePostComment}
+                    report={report}
                   />
                 )}
               </div>
@@ -494,6 +524,7 @@ export default function PostDetail() {
                               setIsEditing={setIsEditing}
                               setComment={setComment}
                               deletePostReply={deletePostReply}
+                              report={report}
                             />
                           )}
                         </div>
@@ -607,6 +638,12 @@ export default function PostDetail() {
             </button>
           </div>
         </div>
+      )}
+      {isReporting && (
+        <>
+          <Report isReporting={isReporting} setIsReporting={setIsReporting} />
+          <div className="spotlist-shade" />
+        </>
       )}
       {options && (
         <div className="options-overlay" onClick={() => setOptions(false)} />

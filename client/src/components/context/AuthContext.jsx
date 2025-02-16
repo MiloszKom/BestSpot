@@ -1,4 +1,3 @@
-// AuthContext.js
 import { createContext, useState, useEffect, useCallback } from "react";
 import { checkCookies } from "../utils/helperFunctions";
 

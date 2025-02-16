@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { NavLink } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 import { AuthContext } from "../context/AuthContext";
 
@@ -14,9 +15,17 @@ import {
 import { faBookmark } from "@fortawesome/free-regular-svg-icons";
 
 import { logout } from "../utils/helperFunctions";
+import { getGlobalNotifications } from "../api/notificationsApis";
 
 export default function Sidenav({ setShowMenu }) {
   const auth = useContext(AuthContext);
+
+  const { data } = useQuery({
+    queryKey: ["globalNotificationsSidenav"],
+    queryFn: getGlobalNotifications,
+  });
+
+  const notifications = data?.data;
 
   return (
     <div className="sidebar-nav">
@@ -40,6 +49,13 @@ export default function Sidenav({ setShowMenu }) {
       >
         <div className="sidebar-el-svg-wrapper">
           <FontAwesomeIcon icon={faUserGroup} />
+          {notifications?.pendingRequests > 0 && (
+            <div className="alert-badge">
+              {notifications.pendingRequests > 9
+                ? "9+"
+                : notifications.pendingRequests}
+            </div>
+          )}
         </div>
         <span>Friends</span>
       </NavLink>

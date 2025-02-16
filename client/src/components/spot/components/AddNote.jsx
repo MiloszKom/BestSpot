@@ -21,11 +21,9 @@ export default function AddNote({ setAddingNote, spotNote, spotId }) {
     <div className="add-note-container">
       <div className="add-note-header">
         <span>Add Note</span>
-        <FontAwesomeIcon
-          icon={faXmark}
-          className="close-button"
-          onClick={() => setAddingNote(false)}
-        />
+        <div className="svg-wrapper" onClick={() => setAddingNote(false)}>
+          <FontAwesomeIcon icon={faXmark} className="close-button" />
+        </div>
       </div>
       <div className="add-note-input">
         <textarea

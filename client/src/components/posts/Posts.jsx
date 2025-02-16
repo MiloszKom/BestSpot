@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
@@ -29,6 +29,7 @@ import LoadingWave from "../common/LoadingWave";
 
 import { usePostsMutations } from "../hooks/usePostsMutations";
 import { useProtectedAction } from "../auth/useProtectedAction";
+import Report from "../common/Report";
 
 export function Posts({
   postElements,
@@ -38,6 +39,8 @@ export function Posts({
   fetchNextPage,
   feedCompleteMessage,
 }) {
+  const [isReporting, setIsReporting] = useState(false);
+
   const posts = postElements;
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -73,6 +76,13 @@ export function Posts({
         post,
       })
     );
+  };
+
+  const report = () => {
+    setIsReporting({
+      postId: options.postId,
+    });
+    setOptions(false);
   };
 
   return (
@@ -133,7 +143,11 @@ export function Posts({
                     <FontAwesomeIcon icon={faEllipsisVertical} />
                   </button>
                   {options.postId === post._id && (
-                    <ShowOptions options={options} deletePost={deletePost} />
+                    <ShowOptions
+                      options={options}
+                      deletePost={deletePost}
+                      report={report}
+                    />
                   )}
                 </div>
               </div>
@@ -205,6 +219,12 @@ export function Posts({
           </Link>
         );
       })}
+      {isReporting && (
+        <>
+          <Report isReporting={isReporting} setIsReporting={setIsReporting} />
+          <div className="spotlist-shade" />
+        </>
+      )}
       <div className="post-fetch-info" ref={ref}>
         {hasNextPage ? <LoadingWave /> : feedCompleteMessage?.message}
       </div>

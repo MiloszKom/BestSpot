@@ -416,6 +416,25 @@ exports.searchHandles = catchAsync(async (req, res) => {
 
 // NOTIFICATION APIS
 
+exports.getGlobalNotifications = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  const unreadNotifications = user.notifications.filter(
+    (notification) => !notification.isRead
+  );
+
+  const pendingRequests = user.pendingRequests;
+
+  res.status(200).json({
+    status: "success",
+    message: "Notifications retrieved",
+    data: {
+      unreadNotifications: unreadNotifications.length,
+      pendingRequests: pendingRequests.length,
+    },
+  });
+});
+
 exports.getNotifications = catchAsync(async (req, res) => {
   const user = await User.findById(req.user.id)
     .populate("notifications.sender", "_id photo name handle")

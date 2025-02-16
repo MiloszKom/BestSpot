@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Link,
   NavLink,
-  useLocation,
   useNavigate,
   useParams,
   Outlet,
@@ -32,10 +31,7 @@ export default function Profile() {
 
   const params = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  console.log(location);
-  console.log(navigate);
   const { userData } = useContext(AuthContext);
 
   const containerRef = useRef();

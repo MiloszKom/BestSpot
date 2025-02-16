@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 import { AuthContext } from "../context/AuthContext";
 
@@ -19,13 +20,22 @@ import {
   faHeart,
   faBookmark,
   faCompass,
+  faFlag,
 } from "@fortawesome/free-regular-svg-icons";
 
 import { logout } from "../utils/helperFunctions";
+import { getGlobalNotifications } from "../api/notificationsApis";
 
 export default function Nav() {
   const auth = useContext(AuthContext);
   const location = useLocation();
+
+  const { data } = useQuery({
+    queryKey: ["globalNotifications"],
+    queryFn: getGlobalNotifications,
+  });
+
+  const notifications = data?.data;
 
   return (
     <div className="nav">
@@ -67,6 +77,13 @@ export default function Nav() {
       <NavLink to="/notifications" className="nav-el nav-el-expanded">
         <div className="nav-el-svg-wrapper nav-el-expanded">
           <FontAwesomeIcon icon={faBell} className="icon" />
+          {notifications?.unreadNotifications > 0 && (
+            <div className="alert-badge">
+              {notifications.unreadNotifications > 9
+                ? "9+"
+                : notifications.unreadNotifications}
+            </div>
+          )}
         </div>
         <span>Notifications</span>
       </NavLink>
@@ -78,9 +95,16 @@ export default function Nav() {
         <span>Bookmarks</span>
       </NavLink>
 
-      <NavLink to="/friends" className="nav-el  nav-el-expanded">
+      <NavLink to="/friends" className="nav-el nav-el-expanded">
         <div className="nav-el-svg-wrapper">
           <FontAwesomeIcon icon={faUserGroup} className="icon" />
+          {notifications?.pendingRequests > 0 && (
+            <div className="alert-badge">
+              {notifications.pendingRequests > 9
+                ? "9+"
+                : notifications.pendingRequests}
+            </div>
+          )}
         </div>
         <span>Friends</span>
       </NavLink>
@@ -116,6 +140,15 @@ export default function Nav() {
         </div>
         <span>Create</span>
       </NavLink>
+
+      {auth.userData?.role === "admin" && (
+        <NavLink to="/reports" className="nav-el nav-el-expanded">
+          <div className="nav-el-svg-wrapper">
+            <FontAwesomeIcon icon={faFlag} className="icon" />
+          </div>
+          <span>Reports</span>
+        </NavLink>
+      )}
 
       {auth.isLoggedIn ? (
         <div className="nav-el nav-el-expanded" onClick={() => logout(auth)}>

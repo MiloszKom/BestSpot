@@ -14,7 +14,6 @@ export default function SidePannel() {
     refetchInterval: 10000,
   });
 
-  console.log(data);
   const spots = data?.data;
   return (
     <div className="side-pannel-container">

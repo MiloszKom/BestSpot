@@ -47,6 +47,12 @@ router.get(
 );
 
 router.get(
+  "/global-notifications",
+  authController.protect,
+  userController.getGlobalNotifications
+);
+
+router.get(
   "/notifications",
   authController.protect,
   userController.getNotifications

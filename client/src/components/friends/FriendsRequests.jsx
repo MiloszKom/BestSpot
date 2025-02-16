@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import LoadingWave from "../common/LoadingWave";
 import { useQuery } from "@tanstack/react-query";
 import { getFriendRequests } from "../api/friendsApis";
@@ -26,7 +27,11 @@ export default function FriendsRequests() {
           </span>
           {requests.map((request) => {
             return (
-              <div className="friend-request-el" key={request._id}>
+              <Link
+                to={`/${request.handle}`}
+                className="friend-request-el"
+                key={request._id}
+              >
                 <div
                   className="friend-request-el-img"
                   style={{
@@ -40,18 +45,24 @@ export default function FriendsRequests() {
                 <div className="friend-request-el-options">
                   <button
                     className="accept"
-                    onClick={() => acceptRequestMutation.mutate(request._id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      acceptRequestMutation.mutate(request._id);
+                    }}
                   >
                     Accept
                   </button>
                   <button
                     className="delete"
-                    onClick={() => deleteRequestMutation.mutate(request._id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      deleteRequestMutation.mutate(request._id);
+                    }}
                   >
                     Delete
                   </button>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
