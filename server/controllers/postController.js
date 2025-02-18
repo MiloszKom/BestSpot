@@ -36,13 +36,16 @@ exports.getPosts = catchAsync(async (req, res, next) => {
 
   if (req.query.filter === "friends") {
     const user = await User.findById(userId).select("friends");
-    if (!user) {
-      return res
-        .status(404)
-        .json({ status: "fail", message: "User not found" });
-    }
-
     filter = { author: { $in: user.friends } };
+  } else {
+    const user = userId ? await User.findById(userId).select("friends") : null;
+    const friends = user?.friends || [];
+
+    filter.$or = [
+      { visibility: "public" },
+      { visibility: "friends", author: { $in: friends } },
+      { visibility: "friends", author: userId },
+    ];
   }
 
   const posts = await Post.find(filter)
@@ -354,7 +357,7 @@ exports.getPost = catchAsync(async (req, res, next) => {
   const userId = req.user?._id;
 
   const post = await Post.findById(req.params.id)
-    .populate("author", "_id name photo handle")
+    .populate("author", "_id name photo handle friends")
     .populate("spots", "_id name photo city country ")
     .populate("spotlists", "_id name cover visibility spots")
     .populate("comments.user", "name handle photo")
@@ -362,7 +365,30 @@ exports.getPost = catchAsync(async (req, res, next) => {
     .lean();
 
   if (!post) {
-    return next(new AppError("Post not found", 404));
+    return next(new AppError("The post you're looking for doesn't exist", 404));
+  }
+
+  if (post.visibility === "friends") {
+    if (!userId) {
+      return next(
+        new AppError("You do not have permission to view this post", 403)
+      );
+    }
+
+    const isFriend = post.author.friends.some(
+      (friend) => friend._id.toString() === userId.toString()
+    );
+
+    const isUserAuthor = userId.toString() === post.author._id.toString();
+
+    console.log("isFriend :", isFriend);
+    console.log("isUserAuthor :", isUserAuthor);
+
+    if (!isFriend && !isUserAuthor) {
+      return next(
+        new AppError("You do not have permission to view this post", 403)
+      );
+    }
   }
 
   if (userId) {

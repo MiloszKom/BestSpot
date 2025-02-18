@@ -4,11 +4,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSpotlistsMutations } from "../../hooks/useSpotlistsMutations";
 
-export default function EditSpotlist({
-  setData,
-  editingSpotlist,
-  setEditingSpotlist,
-}) {
+import Spinner from "../../common/Spinner";
+
+export default function EditSpotlist({ editingSpotlist, setEditingSpotlist }) {
   const [name, setName] = useState(editingSpotlist.name);
   const [visibility, setVisibility] = useState(editingSpotlist.visibility);
   const [description, setDescription] = useState(editingSpotlist.description);
@@ -20,16 +18,21 @@ export default function EditSpotlist({
   };
 
   const saveChanges = async () => {
-    console.log(editingSpotlist);
-    editSpotlistMutation.mutate({
-      spotlistId: editingSpotlist.id,
-      nameIsChanged: editingSpotlist.name !== name,
-      newName: name,
-      newVisibility: visibility,
-      newDescription: description,
-      key: editingSpotlist.key,
-    });
-    setEditingSpotlist(false);
+    editSpotlistMutation.mutate(
+      {
+        spotlistId: editingSpotlist.id,
+        nameIsChanged: editingSpotlist.name !== name,
+        newName: name,
+        newVisibility: visibility,
+        newDescription: description,
+        key: editingSpotlist.key,
+      },
+      {
+        onSettled: () => {
+          setEditingSpotlist(false);
+        },
+      }
+    );
   };
 
   return (
@@ -77,15 +80,22 @@ export default function EditSpotlist({
 
       <button
         className={`spotlist-create-btn ${
-          name === editingSpotlist.name &&
-          visibility === editingSpotlist.visibility &&
-          description === editingSpotlist.description
+          (name === editingSpotlist.name &&
+            visibility === editingSpotlist.visibility &&
+            description === editingSpotlist.description) ||
+          editSpotlistMutation.isPending
             ? "disabled"
             : ""
         }`}
         onClick={saveChanges}
+        disabled={
+          (name === editingSpotlist.name &&
+            visibility === editingSpotlist.visibility &&
+            description === editingSpotlist.description) ||
+          editSpotlistMutation.isPending
+        }
       >
-        Save
+        {editSpotlistMutation.isPending ? <Spinner /> : "Save"}
       </button>
     </div>
   );

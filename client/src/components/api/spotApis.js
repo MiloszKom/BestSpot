@@ -9,12 +9,19 @@ export const getSpot = async (spotId) => {
   return res.data;
 };
 
+export const createSpot = async (data) => {
+  const res = await axios({
+    method: "POST",
+    data,
+    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots`,
+    withCredentials: true,
+  });
+  return res.data;
+};
+
 export const editSpot = async ({ spotId, data }) => {
   const res = await axios({
     method: "PATCH",
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
     data,
     url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots/${spotId}`,
     withCredentials: true,

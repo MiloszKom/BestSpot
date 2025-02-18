@@ -1,8 +1,5 @@
-import React, { useContext } from "react";
+import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-
-import { AuthContext } from "../context/AuthContext";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -24,22 +21,20 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 
 import { logout } from "../utils/helperFunctions";
-import { getGlobalNotifications } from "../api/notificationsApis";
 
-export default function Nav() {
-  const auth = useContext(AuthContext);
+export default function Nav({ notifications, auth }) {
   const location = useLocation();
-
-  const { data } = useQuery({
-    queryKey: ["globalNotifications"],
-    queryFn: getGlobalNotifications,
-  });
-
-  const notifications = data?.data;
 
   return (
     <div className="nav">
-      <NavLink to="/" className="nav-el">
+      <NavLink
+        to="/"
+        className={({ isActive }) =>
+          isActive || location.pathname === "/create-post"
+            ? "nav-el active"
+            : "nav-el"
+        }
+      >
         <div className="nav-el-svg-wrapper">
           <FontAwesomeIcon icon={faHouse} className="icon" />
         </div>
@@ -134,7 +129,7 @@ export default function Nav() {
         <span>Profile</span>
       </NavLink>
 
-      <NavLink to="/create" className="nav-el nav-el-expanded create">
+      <NavLink to="/create-spot" className="nav-el nav-el-expanded create">
         <div className="nav-el-svg-wrapper create">
           <FontAwesomeIcon icon={faCirclePlus} className="icon" />
         </div>

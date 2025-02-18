@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthMutations } from "../hooks/useAuthMutations";
+import Spinner from "../common/Spinner";
 
 export default function Signup() {
   const [name, setName] = useState("test");
@@ -76,8 +77,19 @@ export default function Signup() {
               placeholder="Enter your password"
             />
           </div>
-          <button type="submit" className="login-button">
-            Sign Up
+          <button
+            type="submit"
+            className={`login-button ${
+              signUpMutation.isPending || signUpMutation.isSuccess
+                ? "disabled"
+                : ""
+            }`}
+          >
+            {signUpMutation.isPending || signUpMutation.isSuccess ? (
+              <Spinner />
+            ) : (
+              "Sign up"
+            )}
           </button>
         </form>
         <div className="form-footer">

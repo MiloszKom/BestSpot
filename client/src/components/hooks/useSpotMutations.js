@@ -5,6 +5,7 @@ import { AlertContext } from "../context/AlertContext";
 import { AuthContext } from "../context/AuthContext";
 import {
   createInsight,
+  createSpot,
   deleteInsight,
   deleteSpot,
   editNote,
@@ -20,6 +21,17 @@ export const useSpotMutations = () => {
   const { showAlert } = useContext(AlertContext);
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const createSpotMutation = useMutation({
+    mutationFn: createSpot,
+    onError: (error) => {
+      showAlert(error.response.data.message, error.response.data.status);
+    },
+    onSuccess: (data) => {
+      showAlert(data.message, data.status);
+      navigate("/");
+    },
+  });
 
   const editSpotMutation = useMutation({
     mutationFn: editSpot,
@@ -172,6 +184,7 @@ export const useSpotMutations = () => {
   });
 
   return {
+    createSpotMutation,
     editSpotMutation,
     deleteSpotMutation,
     editNoteMutation,

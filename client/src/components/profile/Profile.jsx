@@ -25,6 +25,7 @@ import { FriendActionButton } from "./components/FriendActionButton";
 import useScrollPosition from "../hooks/useScrollPosition";
 import { getProfile } from "../api/profileApis";
 import { useProfileMutations } from "../hooks/useProfileMutations";
+import ErrorPage from "../pages/ErrorPage";
 
 export default function Profile() {
   const [options, setOptions] = useState(false);
@@ -51,15 +52,8 @@ export default function Profile() {
   });
 
   if (isProfileLoading) return <div className="loader" />;
-  if (isProfileError) {
-    return (
-      <div>
-        {profileError.response?.data?.message && (
-          <span>{profileError.response.data.message}</span>
-        )}
-      </div>
-    );
-  }
+  if (isProfileError) return <ErrorPage error={profileError} />;
+
   const user = profileData.data.viewedUser;
   const inviteStatus = profileData.data.inviteStatus;
 

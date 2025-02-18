@@ -347,7 +347,7 @@ exports.deleteAnInsight = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    message: "Your insight has been deleted",
+    message: "Insight deleted successfully",
   });
 });
 

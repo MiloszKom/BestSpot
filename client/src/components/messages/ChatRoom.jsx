@@ -12,6 +12,7 @@ import {
   faPaperPlane,
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
+import ErrorPage from "../pages/ErrorPage";
 
 export default function ChatRoom() {
   const [chatIsApproved, setChatIsApproved] = useState({});
@@ -20,6 +21,8 @@ export default function ChatRoom() {
   const [chattingWithUser, setChattingWithUser] = useState(null);
   const [room, setRoom] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
+
+  const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
 
@@ -42,41 +45,13 @@ export default function ChatRoom() {
           withCredentials: true,
         });
 
-        console.log("Data :", res);
         setChattingWithUser(res.data.user);
         setMessages(res.data.chat.messages);
         setRoom(res.data.chat._id);
         setChatIsApproved(res.data.chat.isApproved);
-
-        if (res.status !== 200) {
-          createNewChat();
-        }
       } catch (err) {
         console.log(err);
-        createNewChat();
-      }
-    };
-
-    const createNewChat = async () => {
-      try {
-        const res = await axios({
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/chats`,
-          data: {
-            id: params.id,
-          },
-          withCredentials: true,
-        });
-
-        console.log("data :", res);
-        setChattingWithUser(res.data.data.user);
-        setRoom(res.data.data.newChat._id);
-        setChatIsApproved(res.data.data.newChat.isApproved);
-      } catch (err) {
-        console.log(err);
+        setError(err);
       }
     };
 
@@ -274,7 +249,9 @@ export default function ChatRoom() {
     });
   };
 
-  if (!chattingWithUser) return <div className="loader"></div>;
+  if (error) return <ErrorPage error={error} />;
+
+  if (!chattingWithUser) return <div className="loader big" />;
 
   return (
     <div className="chat-container">

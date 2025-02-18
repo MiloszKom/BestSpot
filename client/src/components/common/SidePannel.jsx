@@ -8,20 +8,26 @@ import LoadingWave from "./LoadingWave";
 import { formatTimeAgo } from "../utils/helperFunctions";
 
 export default function SidePannel() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["latestSpots"],
     queryFn: getLatestSpots,
     refetchInterval: 10000,
   });
 
   const spots = data?.data;
+
+  console.log(error);
   return (
     <div className="side-pannel-container">
       <div className="side-pannel-content">
         <div className="side-pannel-header">Recently added</div>
         {isLoading ? (
           <LoadingWave />
-        ) : spots.length > 0 ? (
+        ) : isError ? (
+          <div className="general-error">
+            {error.response?.data?.message || "An unexpected error occurred"}
+          </div>
+        ) : spots?.length > 0 ? (
           <div className="side-pannel-body">
             {spots?.map((spot) => {
               return (

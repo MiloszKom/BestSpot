@@ -6,6 +6,7 @@ import { faArrowLeft, faCamera } from "@fortawesome/free-solid-svg-icons";
 import { AlertContext } from "../context/AlertContext";
 
 import { useAuthMutations } from "../hooks/useAuthMutations";
+import Spinner from "../common/Spinner";
 
 export default function Settings() {
   const auth = useContext(AuthContext);
@@ -127,13 +128,24 @@ export default function Settings() {
           </div>
           <button
             className={`btn ${
-              name === user.name && email === user.email && !selectedPhoto
+              (name === user.name && email === user.email && !selectedPhoto) ||
+              updateInfoMutation.isPending ||
+              updateInfoMutation.isSuccess
                 ? "disabled"
                 : ""
             }`}
             onClick={saveSettings}
+            disabled={
+              (name === user.name && email === user.email && !selectedPhoto) ||
+              updateInfoMutation.isPending ||
+              updateInfoMutation.isSuccess
+            }
           >
-            Save Settings
+            {updateInfoMutation.isPending || updateInfoMutation.isSuccess ? (
+              <Spinner />
+            ) : (
+              "Save Settings"
+            )}
           </button>
         </form>
 
@@ -167,13 +179,29 @@ export default function Settings() {
           </div>
           <button
             className={`btn ${
-              !passwordCurrent || !password || !passwordConfirm
+              !passwordCurrent ||
+              !password ||
+              !passwordConfirm ||
+              updatePasswordMutation.isPending ||
+              updatePasswordMutation.isSuccess
                 ? "disabled"
                 : ""
             }`}
             onClick={savePassword}
+            disabled={
+              !passwordCurrent ||
+              !password ||
+              !passwordConfirm ||
+              updatePasswordMutation.isPending ||
+              updatePasswordMutation.isSuccess
+            }
           >
-            Save Password
+            {updatePasswordMutation.isPending ||
+            updatePasswordMutation.isSuccess ? (
+              <Spinner />
+            ) : (
+              "Save Password"
+            )}
           </button>
         </form>
       </div>

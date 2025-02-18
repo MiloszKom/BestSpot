@@ -3,9 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMap } from "@vis.gl/react-google-maps";
 
 import axios from "axios";
-import React, { useContext } from "react";
+import React, { useState, useContext } from "react";
 
 import { AlertContext } from "../../context/AlertContext";
+import Spinner from "../../common/Spinner";
 
 export default function ConfirmButton({
   setVisibleMap,
@@ -16,6 +17,7 @@ export default function ConfirmButton({
 }) {
   const map = useMap();
   const { showAlert } = useContext(AlertContext);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getLatLng = async () => {
     const center = map.getCenter();
@@ -23,6 +25,7 @@ export default function ConfirmButton({
     const lng = center.lng().toFixed(6);
 
     try {
+      setIsLoading(true);
       const res = await axios({
         method: "GET",
         headers: {
@@ -51,16 +54,24 @@ export default function ConfirmButton({
         lat: locationData.geometry.location.lat,
         lng: locationData.geometry.location.lng,
       });
-      setVisibleMap(false);
     } catch (err) {
-      setVisibleMap(false);
       console.log(err);
+      showAlert(err.response.data.message, "fail");
+    } finally {
+      setIsLoading(false);
+      setVisibleMap(false);
     }
   };
 
   return (
-    <button className="confirm" onClick={getLatLng}>
-      <FontAwesomeIcon icon={faCheck} /> Confirm
+    <button className="confirm" onClick={getLatLng} disabled={isLoading}>
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <>
+          <FontAwesomeIcon icon={faCheck} /> Confirm
+        </>
+      )}
     </button>
   );
 }

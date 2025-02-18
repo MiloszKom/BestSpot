@@ -4,7 +4,7 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
 const validateName = (name) => {
-  if (!/^[a-zA-Z\s-]+$/.test(name)) {
+  if (!/^[a-zA-Z0-9\s-]+$/.test(name)) {
     return false;
   }
 
@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator: validateName,
-      message: "Name can only contain letters, spaces, and hyphens",
+      message: "Username can only contain letters, spaces, numbers and hyphens",
     },
   },
   handle: {

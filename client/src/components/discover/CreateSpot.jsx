@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { AlertContext } from "../context/AlertContext";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import { useLoadScript } from "@react-google-maps/api";
@@ -7,9 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faImage } from "@fortawesome/free-regular-svg-icons";
 import ConfirmButton from "./components/ConfirmButton";
+import Spinner from "../common/Spinner";
 
 import { fetchUserLocation, convertCategory } from "../utils/helperFunctions";
-import axios from "axios";
+import { useSpotMutations } from "../hooks/useSpotMutations";
 
 export default function CreateSpotPage() {
   const [spotName, setSpotName] = useState("");
@@ -24,10 +24,11 @@ export default function CreateSpotPage() {
   const [addressDetails, setAddressDetails] = useState(null);
 
   const { showAlert } = useContext(AlertContext);
-  const navigate = useNavigate();
 
   const libraries = useMemo(() => ["places"], []);
   const [userLocation, setUserLocation] = useState(null);
+
+  const { createSpotMutation } = useSpotMutations();
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_API_KEY,
@@ -96,61 +97,47 @@ export default function CreateSpotPage() {
   };
 
   const addSpot = async () => {
-    try {
-      const formData = new FormData();
+    const formData = new FormData();
 
-      let city = null;
-      let country = null;
+    let city = null;
+    let country = null;
 
-      if (!addressDetails) {
-        showAlert("Choose location on the map", "fail");
-        return;
-      }
-      addressDetails.address_components.forEach((component) => {
-        if (component.types.includes("locality")) {
-          city = component.long_name;
-        }
-        if (component.types.includes("country")) {
-          country = component.long_name;
-        }
-      });
-
-      const geometry = {
-        lat: spotLocation.lat,
-        lng: spotLocation.lng,
-      };
-
-      formData.append("name", spotName);
-      formData.append("overview", spotOverview);
-      formData.append("category", convertCategory(spotCategory));
-      formData.append("address", spotAddress);
-      formData.append("lat", geometry.lat);
-      formData.append("lng", geometry.lng);
-      formData.append("city", city);
-      formData.append("country", country);
-
-      if (spotCover) {
-        formData.append("photo", spotCover);
-      } else {
-        formData.append("photo", "no-img-found.jpg");
-      }
-
-      const res = await axios({
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        data: formData,
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spots`,
-        withCredentials: true,
-      });
-      console.log(res);
-      showAlert(res.data.message, res.data.status);
-      navigate("/discover");
-    } catch (err) {
-      console.log(err);
-      showAlert(err.response.data.message, err.response.data.status);
+    if (!addressDetails) {
+      showAlert("Choose location on the map", "fail");
+      return;
     }
+
+    console.log("addressDetails :", addressDetails);
+    addressDetails.address_components.forEach((component) => {
+      if (component.types.includes("locality")) {
+        city = component.long_name;
+      }
+      if (component.types.includes("country")) {
+        country = component.long_name;
+      }
+    });
+
+    const geometry = {
+      lat: spotLocation.lat,
+      lng: spotLocation.lng,
+    };
+
+    formData.append("name", spotName);
+    formData.append("overview", spotOverview);
+    formData.append("category", convertCategory(spotCategory));
+    formData.append("address", spotAddress);
+    formData.append("lat", geometry.lat);
+    formData.append("lng", geometry.lng);
+    formData.append("city", city);
+    formData.append("country", country);
+
+    if (spotCover) {
+      formData.append("photo", spotCover);
+    } else {
+      formData.append("photo", "no-img-found.jpg");
+    }
+
+    createSpotMutation.mutate(formData);
   };
 
   if (!isLoaded || !userLocation) return <div className="loader" />;
@@ -159,10 +146,7 @@ export default function CreateSpotPage() {
     <APIProvider apiKey={process.env.REACT_APP_API_KEY}>
       <div className="create-spot-container">
         <div className="create-spot-form">
-          <div className="create-spot-header">
-            <h3>Spot details</h3>
-            <p>Provide some information about your spot</p>
-          </div>
+          <div className="create-spot-header">Create Spot</div>
           <div className="create-spot-body">
             <div>
               <label>Name</label>
@@ -266,8 +250,14 @@ export default function CreateSpotPage() {
                 </button>
               </div>
             )}
-            <button className="submit" onClick={addSpot}>
-              Submit
+            <button
+              className={`create-spot-btn ${
+                createSpotMutation.isPending ? "disabled" : ""
+              }`}
+              onClick={addSpot}
+              disabled={createSpotMutation.isPending}
+            >
+              {createSpotMutation.isPending ? <Spinner /> : "Submit"}
             </button>
           </div>
         </div>
@@ -286,7 +276,6 @@ export default function CreateSpotPage() {
           <ConfirmButton
             setVisibleMap={setVisibleMap}
             setSpotAddress={setSpotAddress}
-            spotLocation={spotLocation}
             setSpotLocation={setSpotLocation}
             setAddressDetails={setAddressDetails}
           />

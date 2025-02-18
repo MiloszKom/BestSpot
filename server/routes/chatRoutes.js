@@ -5,8 +5,6 @@ const router = express.Router();
 
 router.get("/", authController.protect, chatController.getChat);
 
-router.post("/", authController.protect, chatController.createChat);
-
 router.get("/approved-chats", authController.protect, chatController.getChats);
 
 router.get(

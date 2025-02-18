@@ -20,6 +20,7 @@ import { useSpotlistsMutations } from "../hooks/useSpotlistsMutations";
 import Spot from "../spot/Spot";
 
 import { useProtectedAction } from "../auth/useProtectedAction";
+import ErrorPage from "../pages/ErrorPage";
 
 export default function SpotlistContent() {
   const [editingSpotlist, setEditingSpotlist] = useState(false);
@@ -41,7 +42,6 @@ export default function SpotlistContent() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["spotlistContent", params.id],
     queryFn: () => getSpotsInSpotlist(params.id),
-    retry: 1,
   });
 
   const spotlistData = data?.data;
@@ -64,13 +64,7 @@ export default function SpotlistContent() {
     setOptions(false);
   };
 
-  if (isError)
-    return (
-      <div className="spotlist-detail-error">
-        {error.response.data.message}{" "}
-        <button onClick={() => navigate(-1)}> Return </button>
-      </div>
-    );
+  if (isError) return <ErrorPage error={error} />;
 
   return (
     <div className="spotlist-detail-container">

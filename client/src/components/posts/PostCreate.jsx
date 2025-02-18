@@ -23,6 +23,7 @@ import PostAddSpotlists from "./components/PostAddSpotlists";
 
 import ShowOptions from "../common/ShowOptions";
 import { usePostsMutations } from "../hooks/usePostsMutations";
+import Spinner from "../common/Spinner";
 
 export default function PostCreate({ setCreatingPost }) {
   const [postContent, setPostContent] = useState("");
@@ -244,10 +245,13 @@ export default function PostCreate({ setCreatingPost }) {
         </div>
       </div>
       <button
-        className={`post-create-btn ${postContent ? "" : "disabled"}`}
+        className={`post-create-btn ${
+          !postContent || createPostMutation.isPending ? "disabled" : ""
+        }`}
         onClick={createPost}
+        disabled={!postContent || createPostMutation.isPending}
       >
-        Create Post
+        {createPostMutation.isPending ? <Spinner /> : "Create Post"}
       </button>
 
       {isAddingSpotlists &&

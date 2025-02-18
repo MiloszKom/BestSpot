@@ -27,7 +27,7 @@ export default function HomePage() {
     }, 1);
   }, [postType, queryClient]);
 
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
     useInfiniteQuery({
       queryKey: ["posts"],
       queryFn: postType === "all" ? getAllPosts : getFriendsPosts,
@@ -81,8 +81,8 @@ export default function HomePage() {
         {isLoading ? (
           <LoadingWave />
         ) : isError ? (
-          <div className="error-message">
-            Failed to load posts. Try again later.
+          <div className="general-error">
+            {error.response?.data?.message || "An unexpected error occurred"}
           </div>
         ) : posts.length > 0 ? (
           <Posts

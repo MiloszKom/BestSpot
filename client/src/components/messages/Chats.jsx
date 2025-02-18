@@ -143,7 +143,8 @@ export default function Chats() {
   }, [socket.socket]);
 
   const todayDate = formatTime(new Date());
-  if (!auth.userData || !recentChats) return <div className="loader"></div>;
+  if (!auth.userData || !recentChats) return <div className="loader big"></div>;
+
   return (
     <div className="messages-and-chat-container">
       <div

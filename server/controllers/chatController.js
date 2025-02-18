@@ -3,37 +3,31 @@ const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 
-exports.getChat = catchAsync(async (req, res) => {
-  const user1 = req.query.user1;
+exports.getChat = catchAsync(async (req, res, next) => {
+  const user1 = await User.findById(req.query.user1);
   const user2 = await User.findById(req.query.user2).select(
-    "_id name isOnline photo handle"
+    "_id name isOnline photo handle chatsJoined"
   );
 
+  if (!user2) {
+    return next(new AppError("This user doesn't exist", 400));
+  }
+
+  if (user1._id.toString() === user2._id.toString()) {
+    return next(new AppError("You can't message yourself", 403));
+  }
+
   const chat = await Chat.findOne({
-    participants: { $all: [user1, user2._id] },
+    participants: { $all: [user1._id, user2._id] },
   });
 
   if (chat) {
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       message: "Chat found",
       chat: chat,
       user: user2,
     });
-  } else {
-    res.status(404).json({
-      status: "failure",
-      message: "Chat not found",
-    });
-  }
-});
-
-exports.createChat = catchAsync(async (req, res) => {
-  const user1 = await User.findById(req.user._id);
-  const user2 = await User.findById(req.body.id);
-
-  if (!user2) {
-    return next(new AppError("The user doesn't exist", 400));
   }
 
   const isApproved = user1.friends.includes(user2._id.toString());
@@ -51,11 +45,9 @@ exports.createChat = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    message: "chatroom created",
-    data: {
-      newChat,
-      user: user2,
-    },
+    message: "Chat created",
+    chat: newChat,
+    user: user2,
   });
 });
 

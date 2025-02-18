@@ -39,6 +39,7 @@ import { getPost } from "../api/postsApis";
 
 import { useProtectedAction } from "../auth/useProtectedAction";
 import Report from "../common/Report";
+import ErrorPage from "../pages/ErrorPage";
 
 export default function PostDetail() {
   const { isLoggedIn, userData } = useContext(AuthContext);
@@ -98,7 +99,7 @@ export default function PostDetail() {
     }));
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["post", params.postId],
     queryFn: () => getPost(params.postId),
   });
@@ -213,6 +214,8 @@ export default function PostDetail() {
   };
 
   if (isLoading) return <div className="loader" />;
+
+  if (isError) return <ErrorPage error={error} />;
 
   const postOptions =
     post.author._id === userData?._id ? ["delete"] : ["report"];

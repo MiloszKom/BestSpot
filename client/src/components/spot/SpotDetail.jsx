@@ -34,6 +34,7 @@ import { getSpot } from "../api/spotApis";
 import { useSpotMutations } from "../hooks/useSpotMutations";
 import { useProtectedAction } from "../auth/useProtectedAction";
 import Report from "../common/Report";
+import ErrorPage from "../pages/ErrorPage";
 
 export default function SpotDetail() {
   const [addingNote, setAddingNote] = useState(false);
@@ -56,7 +57,7 @@ export default function SpotDetail() {
 
   const highlightedInsightId = location.state?.highlightedInsightId;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["spot", params.id],
     queryFn: () => getSpot(params.id),
   });
@@ -86,6 +87,8 @@ export default function SpotDetail() {
   };
 
   if (isLoading) return <div className="loader" />;
+
+  if (isError) return <ErrorPage error={error} />;
 
   const spotOptions =
     spot.author._id === userData?._id ? ["delete", "edit"] : ["report"];
@@ -293,12 +296,13 @@ export default function SpotDetail() {
                         <ShowOptions
                           options={options}
                           setOptions={setOptions}
-                          deleteInsight={() =>
+                          deleteInsight={() => {
                             deleteInsightMutation.mutate({
                               spotId: spot._id,
                               insightId: options.insightId,
-                            })
-                          }
+                            });
+                            setOptions(false);
+                          }}
                           report={report}
                         />
                       )}

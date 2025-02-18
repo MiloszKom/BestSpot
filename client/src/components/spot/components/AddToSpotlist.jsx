@@ -6,6 +6,7 @@ import { getVisibilityIcon } from "../../utils/helperFunctions";
 import { useQuery } from "@tanstack/react-query";
 import { getUserSpotlists } from "../../api/spotlistsApis";
 import LoadingWave from "../../common/LoadingWave";
+import Spinner from "../../common/Spinner";
 
 import { useSpotMutations } from "../../hooks/useSpotMutations";
 
@@ -77,11 +78,11 @@ export default function AddToSpotlist({
       spotlistsRemoved,
     };
 
-    manageSpotlistsMutation.mutate(data);
-
-    // setIsFavourite(res.data.isSavedInAnySpotlist);
-
-    setAddingToSpotlist(false);
+    manageSpotlistsMutation.mutate(data, {
+      onSettled: () => {
+        setAddingToSpotlist(false);
+      },
+    });
   };
 
   const isSpotlistChecked = (id) => {
@@ -138,12 +139,18 @@ export default function AddToSpotlist({
       </button>
       <button
         className={`spotlist-btn spotlist-add-to-btn ${
-          spotlistsChecked.some((item) => item.isChanged) > 0 ? "" : "disabled"
+          !spotlistsChecked.some((item) => item.isChanged) > 0 ||
+          manageSpotlistsMutation.isPending
+            ? "disabled"
+            : ""
         }`}
-        disabled={!spotlistsChecked.some((item) => item.isChanged) > 0}
+        disabled={
+          !spotlistsChecked.some((item) => item.isChanged) > 0 ||
+          manageSpotlistsMutation.isPending
+        }
         onClick={manageSpotlists}
       >
-        Save
+        {manageSpotlistsMutation.isPending ? <Spinner /> : "Save"}
       </button>
     </div>
   );

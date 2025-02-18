@@ -1,7 +1,7 @@
 const AppError = require("./../utils/appError");
 
 const handleCastErrorDB = (err) => {
-  const message = `Invalid ${err.path}: ${err.value}.`;
+  const message = `Invalid request. Please check the URL and try again.`;
   return new AppError(message, 400);
 };
 
@@ -37,6 +37,13 @@ const handleValidationErrorDB = (err) => {
 
 const handlePhotoLimit = () => {
   return new AppError("Too many files uploaded", 400);
+};
+
+const handleNetworkError = (err) => {
+  return new AppError(
+    "Network error. Please check your internet connection and try again.",
+    503
+  );
 };
 
 const handleJWTError = () =>
@@ -79,12 +86,16 @@ module.exports = (err, req, res, next) => {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
     let error = err;
+    console.log(err);
     if (err.name === "CastError") error = handleCastErrorDB(error);
     if (err.code === 11000) error = handleDuplicateFieldsDB(error);
     if (err.name === "ValidationError") error = handleValidationErrorDB(error);
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleJWTExpired();
     if (err.code === "LIMIT_UNEXPECTED_FILE") error = handlePhotoLimit();
+    if (err.code === "ERR_NETWORK" || err.message.includes("Network Error")) {
+      error = handleNetworkError(error);
+    }
 
     sendErrorProd(error, res);
   }

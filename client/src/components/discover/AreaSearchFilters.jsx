@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect, useContext } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertContext } from "../context/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { APIProvider } from "@vis.gl/react-google-maps";
 
@@ -20,8 +20,6 @@ export default function AreaSearchFilters() {
   const [location, setLocation] = useState("");
   const [sliderValue, setSliderValue] = useState(50);
 
-  const [clearData, setClearData] = useState(false);
-
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_API_KEY,
     libraries,
@@ -34,11 +32,6 @@ export default function AreaSearchFilters() {
   const handleSliderChange = (e) => {
     setSliderValue(Number(e.target.value));
   };
-
-  useEffect(() => {
-    setSliderValue(50);
-    setLocation("");
-  }, [clearData]);
 
   const handleCategoryChange = (event) => {
     setCategory(event.target.value);
@@ -64,71 +57,68 @@ export default function AreaSearchFilters() {
 
   return (
     <APIProvider apiKey={process.env.REACT_APP_API_KEY}>
-      <div className="search-filters">
-        <div className="filter-header">
-          <FontAwesomeIcon
-            icon={faAngleLeft}
-            className="icon"
-            onClick={() => navigate("/discover")}
-          />
-          <p onClick={() => setClearData((prevData) => !prevData)}>
-            Clear Filters
-          </p>
-        </div>
-
-        <div className="category">
-          <label>Category</label>
-          <select
-            value={category}
-            onChange={handleCategoryChange}
-            className="category-box"
-          >
-            <option value="All">All</option>
-            <option value="Food & Drink">Food & Drink</option>
-            <option value="Nature & Outdoors">Nature & Outdoors</option>
-            <option value="Arts & Culture">Arts & Culture</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Nightlife">Nightlife</option>
-            <option value="Relaxation">Relaxation</option>
-            <option value="Adventure">Adventure</option>
-            <option value="Hidden Gems">Hidden Gems</option>
-            <option value="Historical">Historical</option>
-            <option value="Photography Spots">Photography Spots</option>
-            <option value="Wellness">Wellness</option>
-            <option value="Events & Festivals">Events & Festivals</option>
-            <option value="Miscellaneous">Miscellaneous</option>
-          </select>
-        </div>
-
-        <div className="category">
-          <label>Location</label>
-          <PlacesAutoComplete setLocation={setLocation} clearData={clearData} />
-        </div>
-
-        <div className="slideContainer">
-          <label>Search Radius</label>
-          <div className="slider-values">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              className="slider"
-              onChange={handleSliderChange}
-              value={sliderValue}
-              style={{
-                background: getSliderBackground(sliderValue),
-              }}
-            />
+      <div className="area-search-container">
+        <div className="area-search-header">
+          <div className="svg-wrapper" onClick={() => navigate(-1)}>
+            <FontAwesomeIcon icon={faArrowLeft} />
           </div>
-          <div className="slider-values-label">
-            <p>0 km</p>
-            <p>10 km</p>
-          </div>
-          <span>Value: {sliderValue / 10} km</span>
+          <span>Area Search</span>
         </div>
-        <button onClick={search} className="search-spots-btn">
-          Search Spots
-        </button>
+        <div className="area-search-body">
+          <div className="category">
+            <label>Category</label>
+            <select
+              value={category}
+              onChange={handleCategoryChange}
+              className="category-box"
+            >
+              <option value="All">All</option>
+              <option value="Food & Drink">Food & Drink</option>
+              <option value="Nature & Outdoors">Nature & Outdoors</option>
+              <option value="Arts & Culture">Arts & Culture</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Nightlife">Nightlife</option>
+              <option value="Relaxation">Relaxation</option>
+              <option value="Adventure">Adventure</option>
+              <option value="Hidden Gems">Hidden Gems</option>
+              <option value="Historical">Historical</option>
+              <option value="Photography Spots">Photography Spots</option>
+              <option value="Wellness">Wellness</option>
+              <option value="Events & Festivals">Events & Festivals</option>
+              <option value="Miscellaneous">Miscellaneous</option>
+            </select>
+          </div>
+
+          <div className="category">
+            <label>Location</label>
+            <PlacesAutoComplete setLocation={setLocation} />
+          </div>
+
+          <div className="slideContainer">
+            <label>Search Radius</label>
+            <div className="slider-values">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                className="slider"
+                onChange={handleSliderChange}
+                value={sliderValue}
+                style={{
+                  background: getSliderBackground(sliderValue),
+                }}
+              />
+            </div>
+            <div className="slider-values-label">
+              <p>0 km</p>
+              <p>10 km</p>
+            </div>
+            <span>Value: {sliderValue / 10} km</span>
+          </div>
+          <button onClick={search} className="search-spots-btn">
+            Search Spots
+          </button>
+        </div>
       </div>
     </APIProvider>
   );

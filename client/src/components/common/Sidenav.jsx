@@ -1,8 +1,6 @@
-import React, { useContext } from "react";
-import { NavLink } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import React from "react";
 
-import { AuthContext } from "../context/AuthContext";
+import { NavLink } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -15,18 +13,8 @@ import {
 import { faBookmark } from "@fortawesome/free-regular-svg-icons";
 
 import { logout } from "../utils/helperFunctions";
-import { getGlobalNotifications } from "../api/notificationsApis";
 
-export default function Sidenav({ setShowMenu }) {
-  const auth = useContext(AuthContext);
-
-  const { data } = useQuery({
-    queryKey: ["globalNotificationsSidenav"],
-    queryFn: getGlobalNotifications,
-  });
-
-  const notifications = data?.data;
-
+export default function Sidenav({ setShowMenu, notifications, auth }) {
   return (
     <div className="sidebar-nav">
       <NavLink
@@ -60,7 +48,7 @@ export default function Sidenav({ setShowMenu }) {
         <span>Friends</span>
       </NavLink>
       <NavLink
-        to="/create"
+        to="/create-spot"
         className="sidebar-el create"
         onClick={() => setShowMenu(false)}
       >

@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { useSpotMutations } from "../../hooks/useSpotMutations";
+import Spinner from "../../common/Spinner";
 
 export default function EditSpot({ spot, setEditingSpot }) {
   const [name, setName] = useState(spot.name);
@@ -51,12 +52,14 @@ export default function EditSpot({ spot, setEditingSpot }) {
       formData.append("photo", selectedPhoto);
     }
 
-    editSpotMutation.mutate({
-      spotId: spot._id,
-      data: formData,
-    });
-
-    setEditingSpot(false);
+    editSpotMutation.mutate(
+      { data: formData, spotId: spot._id },
+      {
+        onSettled: () => {
+          setEditingSpot(false);
+        },
+      }
+    );
   };
 
   return (
@@ -112,12 +115,21 @@ export default function EditSpot({ spot, setEditingSpot }) {
       <button
         onClick={saveChanges}
         className={`spotlist-create-btn ${
-          name === spot.name && overview === spot.overview && !selectedPhoto
+          (name === spot.name &&
+            overview === spot.overview &&
+            !selectedPhoto) ||
+          editSpotMutation.isPending
             ? "disabled"
             : ""
         }`}
+        disabled={
+          (name === spot.name &&
+            overview === spot.overview &&
+            !selectedPhoto) ||
+          editSpotMutation.isPending
+        }
       >
-        Save
+        {editSpotMutation.isPending ? <Spinner /> : "Save"}
       </button>
     </div>
   );

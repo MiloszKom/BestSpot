@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { useSpotMutations } from "../../hooks/useSpotMutations";
+import Spinner from "../../common/Spinner";
 
 export default function CreateNewSpotlist({ setCreatingNewSpotlist, spotId }) {
   const [title, setTitle] = useState("");
@@ -19,12 +20,14 @@ export default function CreateNewSpotlist({ setCreatingNewSpotlist, spotId }) {
       description,
     };
 
-    createSpotlistMutation.mutate({
-      data,
-      spotId,
-    });
-
-    setCreatingNewSpotlist(false);
+    createSpotlistMutation.mutate(
+      { data, spotId },
+      {
+        onSettled: () => {
+          setCreatingNewSpotlist(false);
+        },
+      }
+    );
   };
 
   return (
@@ -75,10 +78,13 @@ export default function CreateNewSpotlist({ setCreatingNewSpotlist, spotId }) {
       </div>
 
       <button
-        className={`spotlist-create-btn ${title ? "" : "disabled"}`}
+        className={`spotlist-create-btn ${
+          !title || createSpotlistMutation.isPending ? "disabled" : ""
+        }`}
         onClick={createSpotlist}
+        disabled={createSpotlistMutation.isPending}
       >
-        Create
+        {createSpotlistMutation.isPending ? <Spinner /> : "Create"}
       </button>
     </div>
   );
