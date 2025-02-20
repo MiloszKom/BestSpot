@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { AlertContext } from "../context/AlertContext";
@@ -25,6 +25,9 @@ import ShowOptions from "../common/ShowOptions";
 import { usePostsMutations } from "../hooks/usePostsMutations";
 import Spinner from "../common/Spinner";
 
+import * as nsfwjs from "nsfwjs";
+import { imageValidator } from "../utils/imageValidator";
+
 export default function PostCreate({ setCreatingPost }) {
   const [postContent, setPostContent] = useState("");
   const [postVisibility, setPostVisibility] = useState("Public");
@@ -42,9 +45,17 @@ export default function PostCreate({ setCreatingPost }) {
 
   const [options, setOptions] = useState(null);
 
+  const [model, setModel] = useState(null);
+
   const { showAlert } = useContext(AlertContext);
   const { userData } = useContext(AuthContext);
   const { createPostMutation } = usePostsMutations();
+
+  useEffect(() => {
+    nsfwjs.load().then((loadedModel) => {
+      setModel(loadedModel);
+    });
+  }, []);
 
   const handleInputChange = (e) => {
     const content = e.target.value;
@@ -71,8 +82,7 @@ export default function PostCreate({ setCreatingPost }) {
     setTaggedWord(handle);
     setIsTagging(false);
   };
-
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const files = Array.from(event.target.files);
     const totalPhotos = selectedPhotos.length + files.length;
 
@@ -81,12 +91,35 @@ export default function PostCreate({ setCreatingPost }) {
       return;
     }
 
+    if (!model) {
+      showAlert("Model not loaded yet. Please try again.", "fail");
+      return;
+    }
+
+    const validationResults = await Promise.all(
+      files.map(async (file) => {
+        const isSafe = await imageValidator(model, file);
+        return { file, isSafe };
+      })
+    );
+
+    const safeFiles = validationResults
+      .filter((result) => result.isSafe)
+      .map((result) => result.file);
+
+    if (safeFiles.length < files.length) {
+      showAlert(
+        "Some images are inappropriate and cannot be uploaded.",
+        "fail"
+      );
+    }
+
     setSelectedPhotos((prevSelectedPhotos) => [
       ...prevSelectedPhotos,
-      ...files,
+      ...safeFiles,
     ]);
 
-    files.forEach((file) => {
+    safeFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoPreviews((prevPreviews) => [...prevPreviews, reader.result]);

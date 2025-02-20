@@ -23,7 +23,7 @@ export default function CreateNewSpotlist({ setCreatingNewSpotlist, spotId }) {
     createSpotlistMutation.mutate(
       { data, spotId },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setCreatingNewSpotlist(false);
         },
       }

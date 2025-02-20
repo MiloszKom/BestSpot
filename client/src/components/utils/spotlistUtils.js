@@ -26,7 +26,6 @@ export const toggleSpotlistLike = async (
       withCredentials: true,
     });
   } catch (err) {
-    console.log(err);
     const errorMessage = err.response?.data?.message || "An error occurred.";
     showAlert(errorMessage, "error");
   }

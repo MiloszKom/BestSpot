@@ -55,8 +55,11 @@ export default function ConfirmButton({
         lng: locationData.geometry.location.lng,
       });
     } catch (err) {
-      console.log(err);
-      showAlert(err.response.data.message, "fail");
+      if (err.code === "ERR_NETWORK") {
+        showAlert("Too many requests. Try again later.", "fail");
+      } else {
+        showAlert(err.response.data.message, "fail");
+      }
     } finally {
       setIsLoading(false);
       setVisibleMap(false);

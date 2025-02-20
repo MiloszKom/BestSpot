@@ -7,6 +7,7 @@ export default function ErrorPage({ error }) {
     401: "Unauthorized",
     403: "Forbidden",
     404: "Not Found",
+    429: "Too Many Requests",
   };
 
   console.log(error);

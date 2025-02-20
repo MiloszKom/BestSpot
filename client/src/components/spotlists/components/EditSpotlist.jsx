@@ -28,7 +28,7 @@ export default function EditSpotlist({ editingSpotlist, setEditingSpotlist }) {
         key: editingSpotlist.key,
       },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setEditingSpotlist(false);
         },
       }

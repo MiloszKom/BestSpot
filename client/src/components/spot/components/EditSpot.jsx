@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import { AlertContext } from "../../context/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -6,15 +6,25 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSpotMutations } from "../../hooks/useSpotMutations";
 import Spinner from "../../common/Spinner";
 
+import * as nsfwjs from "nsfwjs";
+import { imageValidator } from "../../utils/imageValidator";
+
 export default function EditSpot({ spot, setEditingSpot }) {
   const [name, setName] = useState(spot.name);
   const [overview, setOverview] = useState(spot.overview);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [model, setModel] = useState(null);
 
   const fileInputRef = useRef(null);
   const { showAlert } = useContext(AlertContext);
   const { editSpotMutation } = useSpotMutations();
+
+  useEffect(() => {
+    nsfwjs.load().then((loadedModel) => {
+      setModel(loadedModel);
+    });
+  }, []);
 
   const handleImageClick = () => {
     if (fileInputRef.current) {
@@ -22,7 +32,7 @@ export default function EditSpot({ spot, setEditingSpot }) {
     }
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const files = event.target.files;
     if (files.length > 1) {
       showAlert("Upload only 1 image", "fail");
@@ -30,6 +40,21 @@ export default function EditSpot({ spot, setEditingSpot }) {
     }
 
     const file = files[0];
+
+    if (!model) {
+      showAlert("Model not loaded yet. Please try again.", "fail");
+      return;
+    }
+
+    const isSafe = await imageValidator(model, file);
+
+    if (!isSafe) {
+      showAlert(
+        "The profile image is inappropriate and cannot be uploaded.",
+        "fail"
+      );
+      return;
+    }
 
     setSelectedPhoto(file);
 

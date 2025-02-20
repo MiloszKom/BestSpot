@@ -22,11 +22,8 @@ const handleDuplicateFieldsDB = (err) => {
 
 const handleValidationErrorDB = (err) => {
   for (const el of Object.values(err.errors)) {
-    if (el.path === "password") {
-      return new AppError("Password must be at least 8 characters long.", 400);
-    }
-    if (el.path === "passwordConfirm") {
-      return new AppError("Passwords do not match.", 400);
+    if (el.message) {
+      return new AppError(el.message, 400);
     }
     return new AppError(
       `${el.path.charAt(0).toUpperCase() + el.path.slice(1)}: ${el.message}`,
@@ -86,7 +83,6 @@ module.exports = (err, req, res, next) => {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
     let error = err;
-    console.log(err);
     if (err.name === "CastError") error = handleCastErrorDB(error);
     if (err.code === 11000) error = handleDuplicateFieldsDB(error);
     if (err.name === "ValidationError") error = handleValidationErrorDB(error);

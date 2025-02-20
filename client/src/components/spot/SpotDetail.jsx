@@ -35,6 +35,7 @@ import { useSpotMutations } from "../hooks/useSpotMutations";
 import { useProtectedAction } from "../auth/useProtectedAction";
 import Report from "../common/Report";
 import ErrorPage from "../pages/ErrorPage";
+import Spinner from "../common/Spinner";
 
 export default function SpotDetail() {
   const [addingNote, setAddingNote] = useState(false);
@@ -91,7 +92,11 @@ export default function SpotDetail() {
   if (isError) return <ErrorPage error={error} />;
 
   const spotOptions =
-    spot.author._id === userData?._id ? ["delete", "edit"] : ["report"];
+    (spot.author._id === userData.role) === "admin"
+      ? ["delete"]
+      : userData?._id
+      ? ["delete", "edit"]
+      : ["report"];
 
   const isInsightCreated = spot.insights.some(
     (insight) => insight.user._id === userData?._id
@@ -182,7 +187,7 @@ export default function SpotDetail() {
                     >
                       Edit Note
                     </div>
-                    <div>{spot.spotNote}</div>
+                    <div className="note-content">{spot.spotNote}</div>
                   </div>
                 ) : (
                   <div className="note">
@@ -198,7 +203,9 @@ export default function SpotDetail() {
             )}
           </div>
           <div className="spot-detail-insights">
-            <div className="insights-header">User insights (0)</div>
+            <div className="insights-header">
+              User insights ({spot.insights.length})
+            </div>
             {!isInsightCreated &&
               spot.author._id !== userData?._id &&
               isLoggedIn && (
@@ -218,13 +225,18 @@ export default function SpotDetail() {
                   {insight && (
                     <button
                       onClick={() =>
-                        createInsightMutation.mutate({
-                          comment: insight,
-                          spotId: spot._id,
-                        })
+                        createInsightMutation.mutate(
+                          { comment: insight, spotId: spot._id },
+                          {
+                            onSuccess: () => {
+                              setInsight("");
+                            },
+                          }
+                        )
                       }
+                      disabled={createInsightMutation.isPending}
                     >
-                      Post
+                      {createInsightMutation.isPending ? <Spinner /> : "Post"}
                     </button>
                   )}
                 </div>
@@ -232,7 +244,8 @@ export default function SpotDetail() {
             <div className="spot-insights">
               {spot.insights.map((insight) => {
                 const insightOptions =
-                  insight.user._id === userData?._id
+                  insight.user._id === userData?._id ||
+                  userData.role === "admin"
                     ? ["delete"]
                     : spot.author._id === userData?._id
                     ? ["delete", "report"]

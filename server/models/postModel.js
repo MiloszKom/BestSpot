@@ -15,6 +15,7 @@ const postSchema = new mongoose.Schema(
     content: {
       type: String,
       required: [true, "Post cannot be empty"],
+      maxlength: [1000, "Post cannot exceed 1000 characters"],
     },
     spots: [
       {
@@ -55,7 +56,11 @@ const postSchema = new mongoose.Schema(
           ref: "User",
           required: true,
         },
-        comment: { type: String, required: true },
+        comment: {
+          type: String,
+          required: true,
+          maxlength: [500, "A comment cannot exceed 500 characters"],
+        },
         likes: [
           {
             _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -73,7 +78,11 @@ const postSchema = new mongoose.Schema(
               ref: "User",
               required: true,
             },
-            comment: { type: String, required: true },
+            comment: {
+              type: String,
+              required: true,
+              maxlength: [500, "A reply cannot exceed 500 characters"],
+            },
             likes: [
               {
                 _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

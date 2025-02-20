@@ -9,6 +9,10 @@ const spotSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "A spot must have a name"],
+      maxlength: [
+        45,
+        "Your spot name is too long. Please keep it under 80 characters",
+      ],
     },
     overview: {
       type: String,
@@ -61,6 +65,10 @@ const spotSchema = new mongoose.Schema(
         note: {
           type: String,
           default: "",
+          maxlength: [
+            300,
+            "Your note is too long. Please reduce it to 300 characters or less",
+          ],
         },
         _id: false,
       },
@@ -72,7 +80,11 @@ const spotSchema = new mongoose.Schema(
           ref: "User",
           required: true,
         },
-        content: { type: String, required: true },
+        content: {
+          type: String,
+          required: true,
+          maxlength: [500, "An insight cannot exceed 500 characters"],
+        },
         likes: [
           {
             _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

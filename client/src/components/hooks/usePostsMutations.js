@@ -80,8 +80,23 @@ export const usePostsMutations = () => {
         previousAllProfilePostsData,
       };
     },
-    onError: (error) => {
-      showAlert(error.response.data.message, error.response.data.status);
+    onError: (error, _variables, context) => {
+      if (context.previousAllPostsData) {
+        queryClient.setQueryData(["posts"], context.previousAllPostsData);
+      }
+      if (context.previousAllBookmarksData) {
+        queryClient.setQueryData(
+          ["bookmarks"],
+          context.previousAllBookmarksData
+        );
+      }
+      if (context.previousAllProfilePostsData) {
+        queryClient.setQueryData(
+          ["profilePosts", lastViewedProfile],
+          context.previousAllProfilePostsData
+        );
+      }
+      showAlert(error.response?.data?.message, error.response?.data?.status);
     },
     onSettled: (data) => {
       showAlert(data.message, data.status);

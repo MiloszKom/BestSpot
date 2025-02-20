@@ -24,11 +24,40 @@ exports.getSpotlists = catchAsync(async (req, res) => {
   });
 });
 
-exports.createSpotlist = catchAsync(async (req, res) => {
+exports.createSpotlist = catchAsync(async (req, res, next) => {
   const { name, visibility, description, spotId } = req.body;
 
   const user = await findUser(req.user.id);
   const spot = await findSpot(spotId);
+
+  const MAX_TOTAL_SPOTLISTS = 100;
+
+  const totalSpotlistCount = await Spotlist.countDocuments({
+    author: user._id,
+  });
+
+  if (totalSpotlistCount >= MAX_TOTAL_SPOTLISTS) {
+    return next(
+      new AppError("You've reached the maximum limit of 100 spotlists.", 403)
+    );
+  }
+
+  const MAX_SPOTLISTS_PER_HOUR = 10;
+
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const spotlistCount = await Spotlist.countDocuments({
+    author: user._id,
+    createdAt: { $gte: oneHourAgo },
+  });
+
+  if (spotlistCount >= MAX_SPOTLISTS_PER_HOUR) {
+    return next(
+      new AppError(
+        "You've reached the limit for creating spotlists. Try again later.",
+        429
+      )
+    );
+  }
 
   checkDuplicateSpotlistName(user, name);
 

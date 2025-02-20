@@ -89,7 +89,9 @@ export function Posts({
     <div className="posts-wrapper">
       {posts.map((post) => {
         const postOptions =
-          post.author._id === userData?._id ? ["delete"] : ["report"];
+          post.author._id === userData?._id || userData.role === "admin"
+            ? ["delete"]
+            : ["report"];
 
         return (
           <Link
@@ -195,7 +197,7 @@ export function Posts({
                   <button className="svg-wrapper">
                     <FontAwesomeIcon icon={faComment} />
                   </button>
-                  <span>{post.comments.length}</span>
+                  <span>{post.totalComments}</span>
                 </div>
                 <div
                   className="footer-el bookmark"

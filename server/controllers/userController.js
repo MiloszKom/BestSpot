@@ -150,12 +150,19 @@ exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
         bookmark.isLikeActive
     );
 
+    const totalComments =
+      post.comments?.reduce(
+        (total, comment) => total + 1 + (comment.replies?.length || 0),
+        0
+      ) || 0;
+
     return {
       ...post.toObject(),
       likeCount,
       isLiked,
       bookmarkCount,
       isBookmarked,
+      totalComments,
     };
   });
 

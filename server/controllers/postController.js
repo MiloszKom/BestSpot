@@ -70,6 +70,11 @@ exports.getPosts = catchAsync(async (req, res, next) => {
       (bookmark) =>
         bookmark._id.toString() === userId?.toString() && bookmark.isLikeActive
     );
+    const totalComments =
+      post.comments?.reduce(
+        (total, comment) => total + 1 + (comment.replies?.length || 0),
+        0
+      ) || 0;
 
     return {
       ...post.toObject(),
@@ -77,6 +82,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
       isLiked,
       bookmarkCount,
       isBookmarked,
+      totalComments,
     };
   });
 
@@ -91,8 +97,16 @@ exports.createPost = catchAsync(async (req, res, next) => {
 
   const { visibility, content, spots, spotlists, photos } = req.body;
 
-  if (!user) {
-    return next(new AppError("No user found", 404));
+  const MAX_POSTS_PER_HOUR = 10;
+
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const postCount = await Post.countDocuments({
+    author: user._id,
+    createdAt: { $gte: oneHourAgo },
+  });
+
+  if (postCount >= MAX_POSTS_PER_HOUR) {
+    return next(new AppError("Post limit reached. Try again later.", 429));
   }
 
   const fields = [spots, spotlists, photos];
@@ -191,8 +205,10 @@ exports.deletePost = catchAsync(async (req, res, next) => {
     return next(new AppError("Post not found", 404));
   }
 
-  if (!post.author.equals(user._id)) {
-    return next(new AppError("Not authorized to delete this post", 404));
+  if (!post.author.equals(user._id) && user.role !== "admin") {
+    return next(
+      new AppError("You are not authorized to delete this post", 403)
+    );
   }
 
   user.posts.pull(post._id);
@@ -275,12 +291,19 @@ exports.getUserBookmarks = catchAsync(async (req, res, next) => {
         bookmark._id.toString() === user._id.toString() && bookmark.isLikeActive
     );
 
+    const totalComments =
+      post.comments?.reduce(
+        (total, comment) => total + 1 + (comment.replies?.length || 0),
+        0
+      ) || 0;
+
     return {
       ...post.toObject(),
       likeCount,
       isLiked,
       bookmarkCount,
       isBookmarked,
+      totalComments,
     };
   });
 
@@ -381,9 +404,6 @@ exports.getPost = catchAsync(async (req, res, next) => {
 
     const isUserAuthor = userId.toString() === post.author._id.toString();
 
-    console.log("isFriend :", isFriend);
-    console.log("isUserAuthor :", isUserAuthor);
-
     if (!isFriend && !isUserAuthor) {
       return next(
         new AppError("You do not have permission to view this post", 403)
@@ -436,6 +456,21 @@ exports.getPost = catchAsync(async (req, res, next) => {
 exports.addPostComment = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).select("name _id");
   const post = await Post.findById(req.params.postId);
+
+  const MAX_COMMENTS_PER_POST = 5;
+
+  const userComments = post.comments.filter(
+    (c) => c.user.toString() === user._id.toString()
+  );
+
+  if (userComments.length >= MAX_COMMENTS_PER_POST) {
+    return next(
+      new AppError(
+        "You’ve reached the comment limit for this post. Engage with other posts instead!",
+        429
+      )
+    );
+  }
 
   const { comment } = req.body;
 
@@ -549,7 +584,7 @@ exports.editPostComment = catchAsync(async (req, res, next) => {
 });
 
 exports.deletePostComment = catchAsync(async (req, res, next) => {
-  const user = req.user._id;
+  const user = await User.findById(req.user._id);
   const post = await Post.findById(req.params.postId);
 
   if (!post) {
@@ -566,7 +601,8 @@ exports.deletePostComment = catchAsync(async (req, res, next) => {
 
   if (
     comment.user.toString() !== user._id.toString() &&
-    post.author.toString() !== user._id.toString()
+    post.author.toString() !== user._id.toString() &&
+    user.role !== "admin"
   ) {
     return next(
       new AppError("You are not authorized to delete this comment", 403)
@@ -701,6 +737,18 @@ exports.addReply = catchAsync(async (req, res, next) => {
     return next(new AppError("Comment not found", 404));
   }
 
+  const MAX_REPLIES_PER_COMMENT = 5;
+
+  const userReplies = comment.replies.filter(
+    (reply) => reply.user.toString() === user._id.toString()
+  );
+
+  if (userReplies.length >= MAX_REPLIES_PER_COMMENT) {
+    return next(
+      new AppError("You can only reply up to 5 times to a single comment.", 429)
+    );
+  }
+
   const newReply = {
     user: user._id,
     comment: req.body.comment,
@@ -801,6 +849,7 @@ exports.editReply = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteReply = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
   const { postId, commentId, replyId } = req.params;
 
   const { post, comment, reply } = await getPostCommentReply(
@@ -811,7 +860,8 @@ exports.deleteReply = catchAsync(async (req, res, next) => {
 
   if (
     !reply.user.equals(req.user._id) &&
-    req.user._id.toString() !== post.author.toString()
+    req.user._id.toString() !== post.author.toString() &&
+    user.role !== "admin"
   ) {
     return next(
       new AppError("You are not authorized to delete this reply", 403)

@@ -6,7 +6,10 @@ const ReportSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  description: { type: String },
+  description: {
+    type: String,
+    maxlength: [500, "Your report description is too long."],
+  },
   reportedEntity: {
     postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
     commentId: { type: String },

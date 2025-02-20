@@ -181,6 +181,7 @@ export default function Chats() {
           <LoadingWave />
         ) : recentChats.length > 0 ? (
           <div className="messages-chats">
+            {console.log(recentChats)}
             {recentChats
               .slice()
               .sort(

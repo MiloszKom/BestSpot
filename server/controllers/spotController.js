@@ -85,8 +85,22 @@ exports.getSpot = catchAsync(async (req, res, next) => {
 
 exports.createSpot = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id);
-  if (!user) {
-    return next(new AppError("You have to be logged in to create a spot", 404));
+
+  const MAX_SPOTS_PER_HOUR = 10;
+
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const spotCount = await Spot.countDocuments({
+    author: user._id,
+    createdAt: { $gte: oneHourAgo },
+  });
+
+  if (spotCount >= MAX_SPOTS_PER_HOUR) {
+    return next(
+      new AppError(
+        "You've reached the limit for adding spots. Try again later.",
+        429
+      )
+    );
   }
 
   const { name, overview, category, city, country, photo, address, lat, lng } =
@@ -172,7 +186,7 @@ exports.deleteSpot = catchAsync(async (req, res, next) => {
     return next(new AppError("Spot not found", 404));
   }
 
-  if (!spot.author.equals(user._id)) {
+  if (!spot.author.equals(user._id) && user.role !== "admin") {
     return next(new AppError("Not authorized to delete this spot", 404));
   }
 
@@ -335,7 +349,8 @@ exports.deleteAnInsight = catchAsync(async (req, res, next) => {
 
   if (
     user._id.toString() !== spot.author.toString() &&
-    user._id.toString() !== insight.user._id.toString()
+    user._id.toString() !== insight.user._id.toString() &&
+    user.role !== "admin"
   ) {
     return next(
       new AppError("You are not authorized to delete this insight", 404)

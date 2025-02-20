@@ -16,7 +16,6 @@ export default function SidePannel() {
 
   const spots = data?.data;
 
-  console.log(error);
   return (
     <div className="side-pannel-container">
       <div className="side-pannel-content">

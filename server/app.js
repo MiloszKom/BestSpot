@@ -24,6 +24,14 @@ const limiter = rateLimit({
 
 app.use("/api", limiter);
 
+const mapsRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 60 * 1000,
+  max: 20,
+  message: "Too many requests, please try again later.",
+});
+
+app.use("/api/v1/maps/getLocation", mapsRateLimiter);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(bodyParser.json());
 app.use(cookieParser());

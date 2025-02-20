@@ -11,6 +11,9 @@ import Spinner from "../common/Spinner";
 import { fetchUserLocation, convertCategory } from "../utils/helperFunctions";
 import { useSpotMutations } from "../hooks/useSpotMutations";
 
+import * as nsfwjs from "nsfwjs";
+import { imageValidator } from "../utils/imageValidator";
+
 export default function CreateSpotPage() {
   const [spotName, setSpotName] = useState("");
   const [spotOverview, setSpotOverview] = useState("");
@@ -20,6 +23,7 @@ export default function CreateSpotPage() {
   const [spotCategory, setSpotCategory] = useState("Food & Drink");
   const [photoPreview, setPhotoPreview] = useState(null);
   const [visibleMap, setVisibleMap] = useState(false);
+  const [model, setModel] = useState(null);
 
   const [addressDetails, setAddressDetails] = useState(null);
 
@@ -27,6 +31,12 @@ export default function CreateSpotPage() {
 
   const libraries = useMemo(() => ["places"], []);
   const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    nsfwjs.load().then((loadedModel) => {
+      setModel(loadedModel);
+    });
+  }, []);
 
   const { createSpotMutation } = useSpotMutations();
 
@@ -74,12 +84,27 @@ export default function CreateSpotPage() {
     []
   );
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const handleFileChange = async (event) => {
+    const files = event.target.files;
+    if (files.length > 1) {
+      showAlert("Upload only 1 image", "fail");
+      return;
+    }
 
-    if (spotCover) {
-      showAlert("You can upload only one image.", "error");
+    const file = files[0];
+
+    if (!model) {
+      showAlert("Model not loaded yet. Please try again.", "fail");
+      return;
+    }
+
+    const isSafe = await imageValidator(model, file);
+
+    if (!isSafe) {
+      showAlert(
+        "The profile image is inappropriate and cannot be uploaded.",
+        "fail"
+      );
       return;
     }
 
@@ -257,7 +282,7 @@ export default function CreateSpotPage() {
               onClick={addSpot}
               disabled={createSpotMutation.isPending}
             >
-              {createSpotMutation.isPending ? <Spinner /> : "Submit"}
+              {createSpotMutation.isPending ? <Spinner /> : "Create"}
             </button>
           </div>
         </div>

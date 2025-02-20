@@ -10,11 +10,17 @@ export default function AddNote({ setAddingNote, spotNote, spotId }) {
   const { editNoteMutation } = useSpotMutations();
 
   const saveNote = async () => {
-    editNoteMutation.mutate({
-      note,
-      spotId,
-    });
-    setAddingNote(false);
+    editNoteMutation.mutate(
+      {
+        note,
+        spotId,
+      },
+      {
+        onSuccess: () => {
+          setAddingNote(false);
+        },
+      }
+    );
   };
 
   return (

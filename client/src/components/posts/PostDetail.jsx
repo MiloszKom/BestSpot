@@ -40,6 +40,7 @@ import { getPost } from "../api/postsApis";
 import { useProtectedAction } from "../auth/useProtectedAction";
 import Report from "../common/Report";
 import ErrorPage from "../pages/ErrorPage";
+import Spinner from "../common/Spinner";
 
 export default function PostDetail() {
   const { isLoggedIn, userData } = useContext(AuthContext);
@@ -147,22 +148,31 @@ export default function PostDetail() {
   };
 
   const addPostComment = () => {
-    addPostCommentMutation.mutate({
-      comment,
-      postId: post._id,
-    });
-    setComment("");
+    addPostCommentMutation.mutate(
+      { comment, postId: post._id },
+      {
+        onSuccess: () => {
+          setComment("");
+        },
+      }
+    );
   };
 
   const editPostComment = () => {
-    editPostCommentMutation.mutate({
-      comment,
-      postId: post._id,
-      commentId: isEditing.commentId,
-      replyId: isEditing.replyId,
-    });
-    setIsEditing(false);
-    setComment("");
+    editPostCommentMutation.mutate(
+      {
+        comment,
+        postId: post._id,
+        commentId: isEditing.commentId,
+        replyId: isEditing.replyId,
+      },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+          setComment("");
+        },
+      }
+    );
   };
 
   const deletePostComment = () => {
@@ -186,13 +196,15 @@ export default function PostDetail() {
   };
 
   const addPostReply = () => {
-    addPostReplyMutation.mutate({
-      comment,
-      postId: post._id,
-      commentId: isReplying,
-    });
-    setComment("");
-    setIsReplying(null);
+    addPostReplyMutation.mutate(
+      { comment, postId: post._id, commentId: isReplying },
+      {
+        onSuccess: () => {
+          setComment("");
+          setIsReplying(null);
+        },
+      }
+    );
   };
 
   const deletePostReply = () => {
@@ -218,7 +230,9 @@ export default function PostDetail() {
   if (isError) return <ErrorPage error={error} />;
 
   const postOptions =
-    post.author._id === userData?._id ? ["delete"] : ["report"];
+    post.author._id === userData?._id || userData.role === "admin"
+      ? ["delete"]
+      : ["report"];
 
   return (
     <div className="post-detail-container">
@@ -347,7 +361,7 @@ export default function PostDetail() {
           const commentOptions =
             comment.user._id === userData?._id
               ? ["delete", "edit"]
-              : post.author._id === userData?._id
+              : post.author._id === userData?._id || userData.role === "admin"
               ? ["delete", "report"]
               : ["report"];
 
@@ -465,7 +479,8 @@ export default function PostDetail() {
                     const replyOptions =
                       reply.user._id === userData?._id
                         ? ["delete", "edit"]
-                        : post.author._id === userData?._id
+                        : post.author._id === userData?._id ||
+                          userData.role === "admin"
                         ? ["delete", "report"]
                         : ["report"];
 
@@ -625,7 +640,11 @@ export default function PostDetail() {
             />
             <button
               className={`post-comment-btn ${
-                !comment || isEditing?.messageContent === comment
+                addPostCommentMutation.isPending ||
+                editPostCommentMutation.isPending ||
+                addPostReplyMutation.isPending ||
+                !comment ||
+                isEditing?.messageContent === comment
                   ? "disabled"
                   : ""
               }`}
@@ -636,8 +655,25 @@ export default function PostDetail() {
                   ? addPostReply
                   : addPostComment
               }
+              disabled={
+                addPostCommentMutation.isPending ||
+                editPostCommentMutation.isPending ||
+                addPostReplyMutation.isPending ||
+                !comment ||
+                isEditing?.messageContent === comment
+              }
             >
-              {isEditing ? "Edit" : isReplying ? "Reply" : "Post"}
+              {addPostCommentMutation.isPending ||
+              editPostCommentMutation.isPending ||
+              addPostReplyMutation.isPending ? (
+                <Spinner />
+              ) : isEditing ? (
+                "Edit"
+              ) : isReplying ? (
+                "Reply"
+              ) : (
+                "Post"
+              )}
             </button>
           </div>
         </div>

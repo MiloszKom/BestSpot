@@ -1,12 +1,13 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCamera } from "@fortawesome/free-solid-svg-icons";
 import { AlertContext } from "../context/AlertContext";
-
 import { useAuthMutations } from "../hooks/useAuthMutations";
 import Spinner from "../common/Spinner";
+import * as nsfwjs from "nsfwjs";
+import { imageValidator } from "../utils/imageValidator";
 
 export default function Settings() {
   const auth = useContext(AuthContext);
@@ -16,15 +17,21 @@ export default function Settings() {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
-
   const [passwordCurrent, setPasswordCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [model, setModel] = useState(null);
 
   const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
   const { showAlert } = useContext(AlertContext);
+
+  useEffect(() => {
+    nsfwjs.load().then((loadedModel) => {
+      setModel(loadedModel);
+    });
+  }, []);
 
   const handleImageClick = () => {
     if (fileInputRef.current) {
@@ -32,7 +39,7 @@ export default function Settings() {
     }
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const files = event.target.files;
     if (files.length > 1) {
       showAlert("Upload only 1 image", "fail");
@@ -41,16 +48,28 @@ export default function Settings() {
 
     const file = files[0];
 
+    if (!model) {
+      showAlert("Model not loaded yet. Please try again.", "fail");
+      return;
+    }
+
+    const isSafe = await imageValidator(model, file);
+
+    if (!isSafe) {
+      showAlert(
+        "The profile image is inappropriate and cannot be uploaded.",
+        "fail"
+      );
+      return;
+    }
+
     setSelectedPhoto(file);
 
     const reader = new FileReader();
     reader.onloadend = () => {
       setPhotoPreview(reader.result);
     };
-
-    if (file) {
-      reader.readAsDataURL(file);
-    }
+    reader.readAsDataURL(file);
   };
 
   const { updatePasswordMutation, updateInfoMutation } = useAuthMutations();
