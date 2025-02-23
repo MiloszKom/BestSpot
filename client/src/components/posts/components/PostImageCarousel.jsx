@@ -52,9 +52,7 @@ export default function PostImageCarousel({
         style={{ transform: `translateX(-${imgOffset}%)` }}
       >
         {photoPreviews.map((preview, index) => {
-          const photoUrl = setSelectedPhotos
-            ? preview
-            : `http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${preview}`;
+          const photoUrl = setSelectedPhotos ? preview : `${preview}`;
 
           return (
             <div key={index} className="image-previews-el">

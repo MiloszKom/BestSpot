@@ -41,6 +41,7 @@ import { useProtectedAction } from "../auth/useProtectedAction";
 import Report from "../common/Report";
 import ErrorPage from "../pages/ErrorPage";
 import Spinner from "../common/Spinner";
+import { useValidateUserContent } from "../hooks/useValidateUserContent";
 
 export default function PostDetail() {
   const { isLoggedIn, userData } = useContext(AuthContext);
@@ -66,6 +67,7 @@ export default function PostDetail() {
   const [options, setOptions] = useState(false);
 
   const protectedAction = useProtectedAction();
+  const { textValidator } = useValidateUserContent();
 
   const handleInputChange = (e) => {
     const content = e.target.value;
@@ -148,6 +150,7 @@ export default function PostDetail() {
   };
 
   const addPostComment = () => {
+    if (!textValidator([comment])) return;
     addPostCommentMutation.mutate(
       { comment, postId: post._id },
       {
@@ -159,6 +162,7 @@ export default function PostDetail() {
   };
 
   const editPostComment = () => {
+    if (!textValidator([comment])) return;
     editPostCommentMutation.mutate(
       {
         comment,
@@ -196,6 +200,7 @@ export default function PostDetail() {
   };
 
   const addPostReply = () => {
+    if (!textValidator([comment])) return;
     addPostReplyMutation.mutate(
       { comment, postId: post._id, commentId: isReplying },
       {
@@ -230,7 +235,7 @@ export default function PostDetail() {
   if (isError) return <ErrorPage error={error} />;
 
   const postOptions =
-    post.author._id === userData?._id || userData.role === "admin"
+    post.author._id === userData?._id || userData?.role === "admin"
       ? ["delete"]
       : ["report"];
 
@@ -248,7 +253,7 @@ export default function PostDetail() {
             to={`/${post.author.handle}`}
             className="profile-icon"
             style={{
-              backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${post.author.photo})`,
+              backgroundImage: `url(${post.author.photo})`,
             }}
           ></Link>
           <div className="post-detail-author-info">
@@ -341,256 +346,268 @@ export default function PostDetail() {
             <span>{post.bookmarkCount}</span>
           </div>
         </div>
+        {post.comments.length > 0 ? (
+          post.comments.map((comment) => {
+            const commentLikeCount = comment.likes.filter(
+              (like) => like.isLikeActive === true
+            ).length;
 
-        {post.comments.map((comment) => {
-          const commentLikeCount = comment.likes.filter(
-            (like) => like.isLikeActive === true
-          ).length;
+            const isCommentLiked = comment.likes.some(
+              (like) => like._id === userData?._id && like.isLikeActive
+            );
 
-          const isCommentLiked = comment.likes.some(
-            (like) => like._id === userData?._id && like.isLikeActive
-          );
+            const isHighlightedComment = highlightedCommentId === comment._id;
+            const hasHighlightedReply =
+              isHighlightedComment && highlightedReplyId;
 
-          const isHighlightedComment = highlightedCommentId === comment._id;
-          const hasHighlightedReply =
-            isHighlightedComment && highlightedReplyId;
+            let isRepliesVisible =
+              hasHighlightedReply || visibleReplies[comment._id];
 
-          let isRepliesVisible =
-            hasHighlightedReply || visibleReplies[comment._id];
+            const commentOptions =
+              comment.user._id === userData?._id
+                ? ["delete", "edit"]
+                : post.author._id === userData?._id ||
+                  userData?.role === "admin"
+                ? ["delete", "report"]
+                : ["report"];
 
-          const commentOptions =
-            comment.user._id === userData?._id
-              ? ["delete", "edit"]
-              : post.author._id === userData?._id || userData.role === "admin"
-              ? ["delete", "report"]
-              : ["report"];
+            const isHighlighted =
+              highlightedCommentId === comment._id && !highlightedReplyId;
 
-          const isHighlighted =
-            highlightedCommentId === comment._id && !highlightedReplyId;
-
-          return (
-            <div
-              className={`post-detail-comment ${isHighlighted ? "active" : ""}`}
-              key={comment._id}
-            >
-              <Link
-                to={`/${comment.user.handle}`}
-                className="profile-icon"
-                style={{
-                  backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${comment.user.photo})`,
-                }}
-              ></Link>
-              <div className="comment-header">
-                <Link to={`/${comment.user.handle}`} className="user-name">
-                  {comment.user.name}
-                </Link>
-                <span className="user-handle">@{comment.user.handle}</span>
-                <span className="timestamp">
-                  · {formatTimeAgo(comment.timestamp)}
-                </span>
-                {comment.isEdited && (
-                  <span className="is-edited">(edited)</span>
-                )}
-              </div>
-              <div className="post-options">
-                <button
-                  className="options svg-wrapper"
-                  onClick={() =>
-                    protectedAction(() =>
-                      setOptions({
-                        postId: post._id,
-                        commentId: comment._id,
-                        aviableOptions: commentOptions,
-                        entity: "comment",
-                        message: comment.comment,
-                      })
-                    )
-                  }
-                >
-                  <FontAwesomeIcon icon={faEllipsisVertical} />
-                </button>
-                {options.commentId === comment._id && !options.replyId && (
-                  <ShowOptions
-                    options={options}
-                    setOptions={setOptions}
-                    setIsEditing={setIsEditing}
-                    setComment={setComment}
-                    deletePostComment={deletePostComment}
-                    report={report}
-                  />
-                )}
-              </div>
-              <div className="comment-content">
-                {highlightHandles(comment.comment)}
-              </div>
-              <div className="comment-options">
-                <div
-                  className="comment-option-like"
-                  onClick={() => toggleCommentLike(isCommentLiked, comment._id)}
-                >
-                  {isCommentLiked ? (
-                    <div className="svg-wrapper liked">
-                      <FontAwesomeIcon icon={solidHeart} />
-                    </div>
-                  ) : (
-                    <div className="svg-wrapper">
-                      <FontAwesomeIcon icon={regularHeart} />
-                    </div>
-                  )}
-                  <span>{commentLikeCount}</span>
-                </div>
-                <div
-                  className="comment-option-reply"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setIsReplying(comment._id);
-                    setReplyingToHandle(comment.user.handle);
-                    setComment(`@${comment.user.handle} `);
+            return (
+              <div
+                className={`post-detail-comment ${
+                  isHighlighted ? "active" : ""
+                }`}
+                key={comment._id}
+              >
+                <Link
+                  to={`/${comment.user.handle}`}
+                  className="profile-icon"
+                  style={{
+                    backgroundImage: `url(${comment.user.photo})`,
                   }}
-                >
-                  Reply
-                </div>
-              </div>
-              {comment.replies.length > 0 && (
-                <div
-                  className="view-comment-replies"
-                  onClick={() => toggleReplies(comment._id)}
-                >
-                  <span>
-                    {`${isRepliesVisible ? "Hide" : "View"} ${
-                      comment.replies.length
-                    } replies`}
+                ></Link>
+                <div className="comment-header">
+                  <Link to={`/${comment.user.handle}`} className="user-name">
+                    {comment.user.name}
+                  </Link>
+                  <span className="user-handle">@{comment.user.handle}</span>
+                  <span className="timestamp">
+                    · {formatTimeAgo(comment.timestamp)}
                   </span>
-                  <FontAwesomeIcon
-                    icon={isRepliesVisible ? faChevronUp : faChevronDown}
-                  />
+                  {comment.isEdited && (
+                    <span className="is-edited">(edited)</span>
+                  )}
                 </div>
-              )}
-              {isRepliesVisible && (
-                <div className="post-detail-comment-replies">
-                  {comment.replies.map((reply) => {
-                    const replyLikeCount = reply.likes.filter(
-                      (like) => like.isLikeActive === true
-                    ).length;
-                    const isReplyLiked = reply.likes.some(
-                      (like) => like._id === userData?._id && like.isLikeActive
-                    );
+                <div className="post-options">
+                  <button
+                    className="options svg-wrapper"
+                    onClick={() =>
+                      protectedAction(() =>
+                        setOptions({
+                          postId: post._id,
+                          commentId: comment._id,
+                          aviableOptions: commentOptions,
+                          entity: "comment",
+                          message: comment.comment,
+                        })
+                      )
+                    }
+                  >
+                    <FontAwesomeIcon icon={faEllipsisVertical} />
+                  </button>
+                  {options.commentId === comment._id && !options.replyId && (
+                    <ShowOptions
+                      options={options}
+                      setOptions={setOptions}
+                      setIsEditing={setIsEditing}
+                      setComment={setComment}
+                      deletePostComment={deletePostComment}
+                      report={report}
+                    />
+                  )}
+                </div>
+                <div className="comment-content">
+                  {highlightHandles(comment.comment)}
+                </div>
+                <div className="comment-options">
+                  <div
+                    className="comment-option-like"
+                    onClick={() =>
+                      toggleCommentLike(isCommentLiked, comment._id)
+                    }
+                  >
+                    {isCommentLiked ? (
+                      <div className="svg-wrapper liked">
+                        <FontAwesomeIcon icon={solidHeart} />
+                      </div>
+                    ) : (
+                      <div className="svg-wrapper">
+                        <FontAwesomeIcon icon={regularHeart} />
+                      </div>
+                    )}
+                    <span>{commentLikeCount}</span>
+                  </div>
+                  <div
+                    className="comment-option-reply"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setIsReplying(comment._id);
+                      setReplyingToHandle(comment.user.handle);
+                      setComment(`@${comment.user.handle} `);
+                    }}
+                  >
+                    Reply
+                  </div>
+                </div>
+                {comment.replies.length > 0 && (
+                  <div
+                    className="view-comment-replies"
+                    onClick={() => toggleReplies(comment._id)}
+                  >
+                    <span>
+                      {`${isRepliesVisible ? "Hide" : "View"} ${
+                        comment.replies.length
+                      } replies`}
+                    </span>
+                    <FontAwesomeIcon
+                      icon={isRepliesVisible ? faChevronUp : faChevronDown}
+                    />
+                  </div>
+                )}
+                {isRepliesVisible && (
+                  <div className="post-detail-comment-replies">
+                    {comment.replies.map((reply) => {
+                      const replyLikeCount = reply.likes.filter(
+                        (like) => like.isLikeActive === true
+                      ).length;
+                      const isReplyLiked = reply.likes.some(
+                        (like) =>
+                          like._id === userData?._id && like.isLikeActive
+                      );
 
-                    const replyOptions =
-                      reply.user._id === userData?._id
-                        ? ["delete", "edit"]
-                        : post.author._id === userData?._id ||
-                          userData.role === "admin"
-                        ? ["delete", "report"]
-                        : ["report"];
+                      const replyOptions =
+                        reply.user._id === userData?._id
+                          ? ["delete", "edit"]
+                          : post.author._id === userData?._id ||
+                            userData?.role === "admin"
+                          ? ["delete", "report"]
+                          : ["report"];
 
-                    const isHiglighted = reply._id === highlightedReplyId;
+                      const isHiglighted = reply._id === highlightedReplyId;
 
-                    return (
-                      <div
-                        className={`post-detail-comment ${
-                          isHiglighted ? "active" : ""
-                        }`}
-                        key={reply._id}
-                      >
-                        <Link
-                          to={`/${reply.user.handle}`}
-                          className="profile-icon"
-                          style={{
-                            backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${reply.user.photo})`,
-                          }}
-                        ></Link>
-                        <div className="comment-header">
+                      return (
+                        <div
+                          className={`post-detail-comment ${
+                            isHiglighted ? "active" : ""
+                          }`}
+                          key={reply._id}
+                        >
                           <Link
                             to={`/${reply.user.handle}`}
-                            className="user-name"
-                          >
-                            {reply.user.name}
-                          </Link>
-                          <span className="user-handle">
-                            @{reply.user.handle}
-                          </span>
-                          <span className="timestamp">
-                            · {formatTimeAgo(reply.timestamp)}
-                          </span>
-                          {reply.isEdited && (
-                            <span className="is-edited">(edited)</span>
-                          )}
-                        </div>
-                        <div className="post-options">
-                          <div
-                            className="options svg-wrapper"
-                            onClick={() =>
-                              protectedAction(() =>
-                                setOptions({
-                                  postId: post._id,
-                                  commentId: comment._id,
-                                  replyId: reply._id,
-                                  aviableOptions: replyOptions,
-                                  entity: "reply",
-                                  message: reply.comment,
-                                })
-                              )
-                            }
-                          >
-                            <FontAwesomeIcon icon={faEllipsisVertical} />
-                          </div>
-                          {options.replyId === reply._id && (
-                            <ShowOptions
-                              options={options}
-                              setOptions={setOptions}
-                              setIsEditing={setIsEditing}
-                              setComment={setComment}
-                              deletePostReply={deletePostReply}
-                              report={report}
-                            />
-                          )}
-                        </div>
-                        <div className="comment-content">
-                          {highlightHandles(reply.comment)}
-                        </div>
-                        <div className="comment-options">
-                          <div
-                            className="comment-option-like"
-                            onClick={() =>
-                              toggleCommentLike(
-                                isReplyLiked,
-                                comment._id,
-                                reply._id
-                              )
-                            }
-                          >
-                            {isReplyLiked ? (
-                              <div className="svg-wrapper liked">
-                                <FontAwesomeIcon icon={solidHeart} />
-                              </div>
-                            ) : (
-                              <div className="svg-wrapper">
-                                <FontAwesomeIcon icon={regularHeart} />
-                              </div>
-                            )}
-                            <span>{replyLikeCount}</span>
-                          </div>
-                          <div
-                            className="comment-option-reply"
-                            onClick={() => {
-                              setIsEditing(false);
-                              setIsReplying(comment._id);
-                              setReplyingToHandle(reply.user.handle);
-                              setComment(`@${reply.user.handle} `);
+                            className="profile-icon"
+                            style={{
+                              backgroundImage: `url(${reply.user.photo})`,
                             }}
-                          >
-                            Reply
+                          ></Link>
+                          <div className="comment-header">
+                            <Link
+                              to={`/${reply.user.handle}`}
+                              className="user-name"
+                            >
+                              {reply.user.name}
+                            </Link>
+                            <span className="user-handle">
+                              @{reply.user.handle}
+                            </span>
+                            <span className="timestamp">
+                              · {formatTimeAgo(reply.timestamp)}
+                            </span>
+                            {reply.isEdited && (
+                              <span className="is-edited">(edited)</span>
+                            )}
+                          </div>
+                          <div className="post-options">
+                            <div
+                              className="options svg-wrapper"
+                              onClick={() =>
+                                protectedAction(() =>
+                                  setOptions({
+                                    postId: post._id,
+                                    commentId: comment._id,
+                                    replyId: reply._id,
+                                    aviableOptions: replyOptions,
+                                    entity: "reply",
+                                    message: reply.comment,
+                                  })
+                                )
+                              }
+                            >
+                              <FontAwesomeIcon icon={faEllipsisVertical} />
+                            </div>
+                            {options.replyId === reply._id && (
+                              <ShowOptions
+                                options={options}
+                                setOptions={setOptions}
+                                setIsEditing={setIsEditing}
+                                setComment={setComment}
+                                deletePostReply={deletePostReply}
+                                report={report}
+                              />
+                            )}
+                          </div>
+                          <div className="comment-content">
+                            {highlightHandles(reply.comment)}
+                          </div>
+                          <div className="comment-options">
+                            <div
+                              className="comment-option-like"
+                              onClick={() =>
+                                toggleCommentLike(
+                                  isReplyLiked,
+                                  comment._id,
+                                  reply._id
+                                )
+                              }
+                            >
+                              {isReplyLiked ? (
+                                <div className="svg-wrapper liked">
+                                  <FontAwesomeIcon icon={solidHeart} />
+                                </div>
+                              ) : (
+                                <div className="svg-wrapper">
+                                  <FontAwesomeIcon icon={regularHeart} />
+                                </div>
+                              )}
+                              <span>{replyLikeCount}</span>
+                            </div>
+                            <div
+                              className="comment-option-reply"
+                              onClick={() => {
+                                setIsEditing(false);
+                                setIsReplying(comment._id);
+                                setReplyingToHandle(reply.user.handle);
+                                setComment(`@${reply.user.handle} `);
+                              }}
+                            >
+                              Reply
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <div className="post-detail-comments-empty">
+            <FontAwesomeIcon icon={faComment} />
+            Be the first to comment on this post
+          </div>
+        )}
       </div>
 
       {isLoggedIn && (
@@ -630,7 +647,7 @@ export default function PostDetail() {
             <div
               className="profile-icon"
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData?.photo})`,
+                backgroundImage: `url(${userData?.photo})`,
               }}
             ></div>
             <textarea

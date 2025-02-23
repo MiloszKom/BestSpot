@@ -11,7 +11,6 @@ export const useProfileMutations = () => {
   const sendInviteMutation = useMutation({
     mutationFn: sendInvite,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data) => {
@@ -23,7 +22,6 @@ export const useProfileMutations = () => {
   const cancelInviteMutation = useMutation({
     mutationFn: cancelInvite,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data) => {
@@ -35,7 +33,6 @@ export const useProfileMutations = () => {
   const unfriendMutation = useMutation({
     mutationFn: unfriend,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data) => {

@@ -55,10 +55,9 @@ export const checkCookies = async () => {
       withCredentials: true,
     });
 
-    console.log(res.data);
     if (res.data.status === "success") return res.data;
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 };
 
@@ -139,60 +138,9 @@ export const logout = async (auth) => {
     auth.logout();
     if ((res.data.status = "success")) window.location.href = "/login";
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 };
-
-export const data = [
-  {
-    business_status: "OPERATIONAL",
-    geometry: {
-      location: {
-        lat: 51.0495551,
-        lng: 16.8797253,
-      },
-    },
-    icon: "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png",
-    icon_background_color: "#FF9E67",
-    icon_mask_base_uri:
-      "https://maps.gstatic.com/mapfiles/place_api/icons/v2/restaurant_pinlet",
-    name: "Oven Door Pizza Truck",
-    opening_hours: {
-      open_now: false,
-    },
-    place_id: "ChIJp8sjE3DBD0cR0gKU7dx_UBU",
-    price_level: 2,
-    rating: 4.8,
-    reference: "ChIJp8sjE3DBD0cR0gKU7dx_UBU",
-    scope: "GOOGLE",
-    user_ratings_total: 310,
-    vicinity: "Przemysłowa 2, Pietrzykowice",
-  },
-  {
-    business_status: "OPERATIONAL",
-    geometry: {
-      location: {
-        lat: 51.0547188,
-        lng: 16.8809286,
-      },
-    },
-    icon: "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png",
-    icon_background_color: "#FF9E67",
-    icon_mask_base_uri:
-      "https://maps.gstatic.com/mapfiles/place_api/icons/v2/restaurant_pinlet",
-    name: "Żabka | Prosto z pieca",
-    opening_hours: {
-      open_now: true,
-    },
-    place_id: "ChIJNZP7FCTBD0cR1ZoWY77-m_Q",
-    price_level: 2,
-    rating: 4.3,
-    reference: "ChIJNZP7FCTBD0cR1ZoWY77-m_Q",
-    scope: "GOOGLE",
-    user_ratings_total: 134,
-    vicinity: "Główna 7, Pietrzykowice",
-  },
-];
 
 export const fetchUserLocation = async () => {
   try {
@@ -200,7 +148,6 @@ export const fetchUserLocation = async () => {
       "https://geolocation-db.com/json/2ed7dd60-d220-11ef-82fe-157c1da7bc7e"
     );
     const data = await response.json();
-    console.log(data);
     return {
       lat: data.latitude,
       lng: data.longitude,

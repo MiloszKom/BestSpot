@@ -16,7 +16,7 @@ export default function UserSearch() {
   const navigate = useNavigate();
 
   const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ["searchResults", chatSearch],
+    queryKey: ["userSearchResults", chatSearch],
     queryFn: () => searchUsers(chatSearch),
     enabled: chatSearch.length > 0,
   });
@@ -42,7 +42,7 @@ export default function UserSearch() {
               <div
                 className="chat-search-results-el-img"
                 style={{
-                  backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${el.photo})`,
+                  backgroundImage: `url(${el.photo})`,
                 }}
               ></div>
               <div className="chat-search-results-el-info">

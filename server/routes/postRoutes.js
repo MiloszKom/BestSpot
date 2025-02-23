@@ -1,71 +1,66 @@
 const express = require("express");
 
 const postController = require("../controllers/postController");
-const authController = require("../controllers/authController");
+const { protect, softAuth } = require("./../controllers/authController");
 
 const router = express.Router();
 
-const { uploadPostPhotos, resizePostPhotos } = require("../utils/multerConfig");
+const {
+  uploadPostPhotos,
+  initializePostPhotos,
+} = require("../utils/multerConfig");
 
 router
   .route("/")
-  .get(authController.softAuth, postController.getPosts)
+  .get(softAuth, postController.getPosts)
   .post(
-    authController.protect,
+    protect,
     uploadPostPhotos,
-    resizePostPhotos,
+    initializePostPhotos,
     postController.createPost
   );
 
-router.get(
-  "/bookmarks",
-  authController.protect,
-  postController.getUserBookmarks
-);
+router.get("/bookmarks", protect, postController.getUserBookmarks);
 
-router.get("/:id", authController.softAuth, postController.getPost);
-router.delete("/:id", authController.protect, postController.deletePost);
+router.get("/:id", softAuth, postController.getPost);
+router.delete("/:id", protect, postController.deletePost);
 
 router
   .route("/:id/like")
-  .post(authController.protect, postController.likePost)
-  .delete(authController.protect, postController.unlikePost);
+  .post(protect, postController.likePost)
+  .delete(protect, postController.unlikePost);
 
 router
   .route("/:id/bookmark")
-  .post(authController.protect, postController.bookmarkPost)
-  .delete(authController.protect, postController.unbookmarkPost);
+  .post(protect, postController.bookmarkPost)
+  .delete(protect, postController.unbookmarkPost);
 
-router.post(
-  "/:postId/comment",
-  authController.protect,
-  postController.addPostComment
-);
+router.post("/:postId/comment", protect, postController.addPostComment);
 
 router
   .route("/:postId/comments/:commentId")
-  .patch(authController.protect, postController.editPostComment)
-  .delete(authController.protect, postController.deletePostComment);
+  .patch(protect, postController.editPostComment)
+  .delete(protect, postController.deletePostComment);
 
 router
   .route("/:postId/comments/:commentId/like")
-  .post(authController.protect, postController.likeComment)
-  .delete(authController.protect, postController.unlikeComment);
+  .post(protect, postController.likeComment)
+  .delete(protect, postController.unlikeComment);
 
 router.post(
   "/:postId/comments/:commentId/replies",
-  authController.protect,
+  protect,
   postController.addReply
 );
 
 router
   .route("/:postId/comments/:commentId/replies/:replyId")
-  .patch(authController.protect, postController.editReply)
-  .delete(authController.protect, postController.deleteReply);
+  .patch(protect, postController.editReply)
+  .delete(protect, postController.deleteReply);
 
 router
   .route("/:postId/comments/:commentId/replies/:replyId/like")
-  .post(authController.protect, postController.likeReply)
-  .delete(authController.protect, postController.unlikeReply);
+  .post(protect, postController.likeReply)
+  .delete(protect, postController.unlikeReply);
 
 module.exports = router;

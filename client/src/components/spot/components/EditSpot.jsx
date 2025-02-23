@@ -5,9 +5,8 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { useSpotMutations } from "../../hooks/useSpotMutations";
 import Spinner from "../../common/Spinner";
-
 import * as nsfwjs from "nsfwjs";
-import { imageValidator } from "../../utils/imageValidator";
+import { useValidateUserContent } from "../../hooks/useValidateUserContent";
 
 export default function EditSpot({ spot, setEditingSpot }) {
   const [name, setName] = useState(spot.name);
@@ -19,6 +18,7 @@ export default function EditSpot({ spot, setEditingSpot }) {
   const fileInputRef = useRef(null);
   const { showAlert } = useContext(AlertContext);
   const { editSpotMutation } = useSpotMutations();
+  const { textValidator, imageValidator } = useValidateUserContent();
 
   useEffect(() => {
     nsfwjs.load().then((loadedModel) => {
@@ -41,20 +41,9 @@ export default function EditSpot({ spot, setEditingSpot }) {
 
     const file = files[0];
 
-    if (!model) {
-      showAlert("Model not loaded yet. Please try again.", "fail");
-      return;
-    }
+    const isSafe = await imageValidator(file, model);
 
-    const isSafe = await imageValidator(model, file);
-
-    if (!isSafe) {
-      showAlert(
-        "The profile image is inappropriate and cannot be uploaded.",
-        "fail"
-      );
-      return;
-    }
+    if (!isSafe) return;
 
     setSelectedPhoto(file);
 
@@ -70,6 +59,7 @@ export default function EditSpot({ spot, setEditingSpot }) {
 
   const saveChanges = async () => {
     const formData = new FormData();
+    if (!textValidator([name, overview])) return;
 
     formData.append("name", name);
     formData.append("overview", overview);
@@ -80,7 +70,7 @@ export default function EditSpot({ spot, setEditingSpot }) {
     editSpotMutation.mutate(
       { data: formData, spotId: spot._id },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setEditingSpot(false);
         },
       }
@@ -123,7 +113,7 @@ export default function EditSpot({ spot, setEditingSpot }) {
           style={{
             backgroundImage: photoPreview
               ? `url(${photoPreview})`
-              : `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
+              : `url(${spot.photo})`,
           }}
           onClick={handleImageClick}
         />

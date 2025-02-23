@@ -75,7 +75,7 @@ export default function SpotlistContent() {
         <div
           className="spotlist-detail-header-cover"
           style={{
-            backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlistData.cover})`,
+            backgroundImage: `url(${spotlistData.cover})`,
           }}
         />
         <div className="spotlist-detail-info">
@@ -87,7 +87,7 @@ export default function SpotlistContent() {
             <div
               className="image"
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlistData.author?.photo})`,
+                backgroundImage: `url(${spotlistData.author?.photo})`,
               }}
             />
             <span>{spotlistData.author?.name}</span>
@@ -155,18 +155,24 @@ export default function SpotlistContent() {
         </div>
       </div>
       <div className="spotlist-detail-spots">
-        {spotlistData.spots?.map((spot) => {
-          return (
-            <Spot
-              key={spot._id}
-              spot={spot}
-              spotlistData={spotlistData}
-              options={options}
-              setOptions={setOptions}
-              deleteSpotFromSpotlist={deleteSpotFromSpotlist}
-            />
-          );
-        })}
+        {spotlistData.spots.length > 0 ? (
+          spotlistData.spots?.map((spot) => {
+            return (
+              <Spot
+                key={spot._id}
+                spot={spot}
+                spotlistData={spotlistData}
+                options={options}
+                setOptions={setOptions}
+                deleteSpotFromSpotlist={deleteSpotFromSpotlist}
+              />
+            );
+          })
+        ) : (
+          <div className="spotlist-detail-empty">
+            This spotlist is currently empty
+          </div>
+        )}
       </div>
       {options && (
         <div className="options-overlay" onClick={() => setOptions(false)} />

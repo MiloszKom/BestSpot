@@ -31,7 +31,7 @@ export default function FriendsList() {
                 <div
                   className="friend-el-img"
                   style={{
-                    backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${friend.photo})`,
+                    backgroundImage: `url(${friend.photo})`,
                   }}
                 >
                   <div
@@ -51,8 +51,8 @@ export default function FriendsList() {
         </div>
       ) : (
         <div className="friends-container-empty">
-          Your friend list is empty. Start connecting with others to see them
-          here!
+          Your friend list is empty.
+          <br /> Start connecting with others to see them here!
         </div>
       )}
     </div>

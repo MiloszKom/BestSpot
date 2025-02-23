@@ -19,6 +19,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@vis.gl/react-google-maps": "^1.2.0",
     "axios": "^1.7.5",
+    "bad-words": "^4.0.0",
     "buffer": "^6.0.3",
     "dotenv": "^16.4.5",
     "nsfwjs": "^4.2.1",

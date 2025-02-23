@@ -8,12 +8,12 @@ import LoadingWave from "../common/LoadingWave";
 export default function SpotlistsPage() {
   const [options, setOptions] = useState(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userSpotlists"],
     queryFn: getUserSpotlists,
   });
 
-  const spotlists = data?.data;
+  const spotlists = data?.data || [];
 
   return (
     <div className="spotlists">
@@ -21,6 +21,10 @@ export default function SpotlistsPage() {
       <div className="spotlists-body">
         {isLoading ? (
           <LoadingWave />
+        ) : isError ? (
+          <div className="general-error">
+            {error.response?.data?.message || "An unexpected error occurred"}
+          </div>
         ) : spotlists.length > 0 ? (
           <div className="spotlists-wrapper">
             <Spotlists

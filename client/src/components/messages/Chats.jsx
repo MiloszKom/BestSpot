@@ -36,7 +36,6 @@ export default function Chats() {
         });
         setRecentChats(res.data.data);
       } catch (err) {
-        console.log(err);
       } finally {
         setIsLoading(false);
       }
@@ -83,7 +82,6 @@ export default function Chats() {
     });
 
     socket.socket.on("user-is-typing", (userId) => {
-      console.log("user-is-typing");
       setRecentChats((prevChats) => {
         return prevChats.map((chat) => {
           if (chat.otherParticipantData._id === userId) {
@@ -181,7 +179,6 @@ export default function Chats() {
           <LoadingWave />
         ) : recentChats.length > 0 ? (
           <div className="messages-chats">
-            {console.log(recentChats)}
             {recentChats
               .slice()
               .sort(
@@ -226,7 +223,7 @@ export default function Chats() {
                     <div
                       className="messages-chats-el-img"
                       style={{
-                        backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${chat.otherParticipantData.photo})`,
+                        backgroundImage: `url(${chat.otherParticipantData.photo})`,
                       }}
                     >
                       {chat.isApproved &&

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AlertContext } from "../context/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -59,9 +59,9 @@ export default function AreaSearchFilters() {
     <APIProvider apiKey={process.env.REACT_APP_API_KEY}>
       <div className="area-search-container">
         <div className="area-search-header">
-          <div className="svg-wrapper" onClick={() => navigate(-1)}>
+          <Link to="/discover" className="svg-wrapper">
             <FontAwesomeIcon icon={faArrowLeft} />
-          </div>
+          </Link>
           <span>Area Search</span>
         </div>
         <div className="area-search-body">

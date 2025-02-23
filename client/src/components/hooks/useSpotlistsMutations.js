@@ -20,7 +20,6 @@ export const useSpotlistsMutations = () => {
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data, variables) => {
-      console.log(variables);
       showAlert(data.message, data.status);
       queryClient.invalidateQueries({ queryKey: ["userSpotlists"] });
       if (variables.shouldNavigate) {
@@ -35,7 +34,6 @@ export const useSpotlistsMutations = () => {
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data, variables) => {
-      console.log(variables);
       queryClient.invalidateQueries({ queryKey: [variables.key] });
       showAlert(data.message, data.status);
     },
@@ -55,9 +53,6 @@ export const useSpotlistsMutations = () => {
   const toggleSpotlistLikeMutation = useMutation({
     mutationFn: toggleLikeSpotlist,
     onMutate: async ({ spotlistId, isLiked }) => {
-      console.log(spotlistId);
-      console.log(isLiked);
-
       const previousSpotlistData = queryClient.getQueryData([
         "spotlistContent",
         spotlistId,

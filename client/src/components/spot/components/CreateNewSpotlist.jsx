@@ -4,6 +4,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { useSpotMutations } from "../../hooks/useSpotMutations";
 import Spinner from "../../common/Spinner";
+import { useValidateUserContent } from "../../hooks/useValidateUserContent";
 
 export default function CreateNewSpotlist({ setCreatingNewSpotlist, spotId }) {
   const [title, setTitle] = useState("");
@@ -11,8 +12,11 @@ export default function CreateNewSpotlist({ setCreatingNewSpotlist, spotId }) {
   const [description, setDescription] = useState("");
 
   const { createSpotlistMutation } = useSpotMutations();
+  const { textValidator } = useValidateUserContent();
 
   const createSpotlist = async () => {
+    if (!textValidator([title, description])) return;
+
     const data = {
       name: title,
       spotId,

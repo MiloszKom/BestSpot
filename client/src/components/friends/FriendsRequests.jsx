@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import LoadingWave from "../common/LoadingWave";
 import { useQuery } from "@tanstack/react-query";
 import { getFriendRequests } from "../api/friendsApis";
 import { useFriendsMutations } from "../hooks/useFriendsMutations";
+import Spinner from "../common/Spinner";
 
 export default function FriendsRequests() {
   const { data, isLoading } = useQuery({
@@ -16,6 +17,8 @@ export default function FriendsRequests() {
   const { acceptRequestMutation, deleteRequestMutation } =
     useFriendsMutations();
 
+  const [pendingRequestId, setPendingRequestId] = useState(null);
+
   return (
     <div className="friends-body">
       {isLoading ? (
@@ -26,6 +29,13 @@ export default function FriendsRequests() {
             Friend Requests ({requests.length})
           </span>
           {requests.map((request) => {
+            const isAccepting =
+              pendingRequestId === request._id &&
+              acceptRequestMutation.isPending;
+            const isDeleting =
+              pendingRequestId === request._id &&
+              deleteRequestMutation.isPending;
+
             return (
               <Link
                 to={`/${request.handle}`}
@@ -35,7 +45,7 @@ export default function FriendsRequests() {
                 <div
                   className="friend-request-el-img"
                   style={{
-                    backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${request.photo})`,
+                    backgroundImage: `url(${request.photo})`,
                   }}
                 />
                 <div className="friend-request-el-info">
@@ -47,19 +57,27 @@ export default function FriendsRequests() {
                     className="accept"
                     onClick={(e) => {
                       e.preventDefault();
-                      acceptRequestMutation.mutate(request._id);
+                      setPendingRequestId(request._id);
+                      acceptRequestMutation.mutate(request._id, {
+                        onSettled: () => setPendingRequestId(null),
+                      });
                     }}
+                    disabled={isAccepting || isDeleting}
                   >
-                    Accept
+                    {isAccepting ? <Spinner /> : "Accept"}
                   </button>
                   <button
                     className="delete"
                     onClick={(e) => {
                       e.preventDefault();
-                      deleteRequestMutation.mutate(request._id);
+                      setPendingRequestId(request._id);
+                      deleteRequestMutation.mutate(request._id, {
+                        onSettled: () => setPendingRequestId(null),
+                      });
                     }}
+                    disabled={isAccepting || isDeleting}
                   >
-                    Delete
+                    {isDeleting ? <Spinner /> : "Delete"}
                   </button>
                 </div>
               </Link>
@@ -68,8 +86,8 @@ export default function FriendsRequests() {
         </div>
       ) : (
         <div className="friends-container-empty">
-          You have no new friend requests at the moment. Check back later to see
-          who wants to connect!
+          You have no new friend requests at the moment.
+          <br /> Check back later to see who wants to connect!
         </div>
       )}
     </div>

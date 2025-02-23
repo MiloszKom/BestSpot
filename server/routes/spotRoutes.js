@@ -1,59 +1,50 @@
 const express = require("express");
 const router = express.Router();
 const spotController = require("./../controllers/spotController");
-const authController = require("../controllers/authController");
 
-const { uploadSpotPhoto, adjustPhoto } = require("../utils/multerConfig");
+const { protect, softAuth } = require("./../controllers/authController");
+
+const {
+  uploadSpotPhoto,
+  initializeSpotPhoto,
+} = require("../utils/multerConfig");
 
 router
   .route("/")
-  .get(authController.protect, spotController.getAllUserSpot)
+  .get(protect, spotController.getAllUserSpot)
   .post(
-    authController.protect,
+    protect,
     uploadSpotPhoto,
-    adjustPhoto,
+    initializeSpotPhoto,
     spotController.createSpot
   );
 
-router
-  .route("/liblary")
-  .get(authController.softAuth, spotController.getSpotLiblary);
+router.route("/liblary").get(softAuth, spotController.getSpotLiblary);
 
-router
-  .route("/latest-5")
-  .get(authController.softAuth, spotController.getLatestSpots);
+router.route("/latest-5").get(softAuth, spotController.getLatestSpots);
 
 router
   .route("/:id")
-  .get(authController.softAuth, spotController.getSpot)
-  .patch(
-    authController.protect,
-    uploadSpotPhoto,
-    adjustPhoto,
-    spotController.editSpot
-  )
-  .delete(authController.protect, spotController.deleteSpot);
+  .get(softAuth, spotController.getSpot)
+  .patch(protect, uploadSpotPhoto, initializeSpotPhoto, spotController.editSpot)
+  .delete(protect, spotController.deleteSpot);
 
-router
-  .route("/:id/note")
-  .patch(authController.protect, spotController.editNote);
+router.route("/:id/note").patch(protect, spotController.editNote);
 
 router
   .route("/:id/like")
-  .post(authController.protect, spotController.likeSpot)
-  .delete(authController.protect, spotController.unlikeSpot);
+  .post(protect, spotController.likeSpot)
+  .delete(protect, spotController.unlikeSpot);
 
-router
-  .route("/:id/insight")
-  .post(authController.protect, spotController.createAnInsight);
+router.route("/:id/insight").post(protect, spotController.createAnInsight);
 
 router
   .route("/:id/insight/:insightId")
-  .delete(authController.protect, spotController.deleteAnInsight);
+  .delete(protect, spotController.deleteAnInsight);
 
 router
   .route("/:id/insight/:insightId/like")
-  .post(authController.protect, spotController.likeInsight)
-  .delete(authController.protect, spotController.unlikeInsight);
+  .post(protect, spotController.likeInsight)
+  .delete(protect, spotController.unlikeInsight);
 
 module.exports = router;

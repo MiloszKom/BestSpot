@@ -37,6 +37,7 @@ export default function PostAddSpotlists({
           visibility: spotlist.visibility,
           cover: spotlist.cover,
           spotCount: spotlist.spots.length,
+          description: spotlist.description,
         },
       ];
     });
@@ -59,7 +60,7 @@ export default function PostAddSpotlists({
 
         setSpotlists(filteredSpotlists);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
     };
 
@@ -81,51 +82,62 @@ export default function PostAddSpotlists({
         <div className="counter">Spotlists {pickedSpotlists.length}/3</div>
       </div>
       <div className="post-add-spotlists-body">
-        {spotlists.map((spotlist) => {
-          const isSpotlistSelected = pickedSpotlists.some(
-            (s) => s._id === spotlist._id
-          );
-
-          console.log(spotlist);
-          return (
-            <label
-              className={`post-spotlist-el ${
-                pickedSpotlists.length >= 3 && !isSpotlistSelected
-                  ? "disabled"
-                  : ""
-              }`}
-              key={spotlist._id}
-            >
-              <div
-                className="post-spotlist-img"
-                style={{
-                  backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlist.cover}`,
-                }}
+        {spotlists.length > 0 ? (
+          spotlists.map((spotlist) => {
+            const isSpotlistSelected = pickedSpotlists.some(
+              (s) => s._id === spotlist._id
+            );
+            return (
+              <label
+                className={`post-spotlist-el ${
+                  pickedSpotlists.length >= 3 && !isSpotlistSelected
+                    ? "disabled"
+                    : ""
+                }`}
+                key={spotlist._id}
               >
-                <span className="spotlists-spot-count">
-                  {spotlist.spots.length} spots
-                </span>
-              </div>
-              <div className="post-spotlist-info">
-                <div className="post-spotlist-title">{spotlist.name}</div>
-                <div className="post-spotlist-visibility">
-                  {getVisibilityDisplayName(spotlist.visibility)}
+                <div
+                  className="post-spotlist-img"
+                  style={{
+                    backgroundImage: `url(${spotlist.cover}`,
+                  }}
+                >
+                  <span className="spotlists-spot-count">
+                    {spotlist.spots.length}{" "}
+                    {spotlist.spots.length === 1 ? "spot" : "spots"}
+                  </span>
                 </div>
-                <div className="post-spotlist-description">
-                  {spotlist.description}
+                <div className="post-spotlist-info">
+                  <div className="post-spotlist-title">{spotlist.name}</div>
+                  <div className="post-spotlist-visibility">
+                    {getVisibilityDisplayName(spotlist.visibility)}
+                  </div>
+                  <div className="post-spotlist-description">
+                    {spotlist.description}
+                  </div>
                 </div>
-              </div>
-              <div className="post-spotlist-check">
-                <input
-                  type="checkbox"
-                  checked={pickedSpotlists.some((s) => s._id === spotlist._id)}
-                  onChange={() => handleSpotlistSelection(spotlist)}
-                  disabled={!isSpotlistSelected && pickedSpotlists.length >= 3}
-                />
-              </div>
-            </label>
-          );
-        })}
+                <div className="post-spotlist-check">
+                  <input
+                    type="checkbox"
+                    checked={pickedSpotlists.some(
+                      (s) => s._id === spotlist._id
+                    )}
+                    onChange={() => handleSpotlistSelection(spotlist)}
+                    disabled={
+                      !isSpotlistSelected && pickedSpotlists.length >= 3
+                    }
+                  />
+                </div>
+              </label>
+            );
+          })
+        ) : (
+          <div className="post-add-empty">
+            Looks like you don’t have any spotlists yet.
+            <br />
+            Create one now to attach it to your post!
+          </div>
+        )}
       </div>
       <div className="post-add-spotlists-footer">
         <button

@@ -89,7 +89,7 @@ export function Posts({
     <div className="posts-wrapper">
       {posts.map((post) => {
         const postOptions =
-          post.author._id === userData?._id || userData.role === "admin"
+          post.author._id === userData?._id || userData?.role === "admin"
             ? ["delete"]
             : ["report"];
 
@@ -102,7 +102,7 @@ export function Posts({
             <div
               className="profile-icon"
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${post.author.photo})`,
+                backgroundImage: `url(${post.author.photo})`,
               }}
               onClick={(e) => {
                 e.preventDefault();

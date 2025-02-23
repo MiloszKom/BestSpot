@@ -33,7 +33,7 @@ export default function PostTagging({ taggedWord, handleTagCompletion }) {
             <div
               className="profile-icon"
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${user.photo})`,
+                backgroundImage: `url(${user.photo})`,
               }}
             ></div>
             <div className="post-tag-name">{user.name}</div>

@@ -21,17 +21,18 @@ export default function SpotLiblary() {
   const containerRef = useRef();
   useScrollPosition(containerRef, "scrolledHeightSpotLiblary");
 
-  const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    queryKey: ["spotLiblary", order],
-    queryFn: ({ pageParam = 1 }) =>
-      getSpotLiblary({ pageParam, sortOption: order }),
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.data.length === 20) {
-        return allPages.length + 1;
-      }
-      return undefined;
-    },
-  });
+  const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: ["spotLiblary", order],
+      queryFn: ({ pageParam = 1 }) =>
+        getSpotLiblary({ pageParam, sortOption: order }),
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.data.length === 20) {
+          return allPages.length + 1;
+        }
+        return undefined;
+      },
+    });
 
   const { ref, inView } = useInView();
 
@@ -66,15 +67,21 @@ export default function SpotLiblary() {
       <div className="spotlists-hub-body">
         {isLoading ? (
           <LoadingWave />
+        ) : isError ? (
+          <div className="general-error">
+            {error.response?.data?.message || "An unexpected error occurred"}
+          </div>
         ) : (
-          <div className="spot-liblary-spots">
-            {spots.map((spot) => {
-              return <Spot key={spot._id} spot={spot} />;
-            })}
+          <>
+            <div className="spot-liblary-spots">
+              {spots.map((spot) => {
+                return <Spot key={spot._id} spot={spot} />;
+              })}
+            </div>
             <div className="post-fetch-info" ref={ref}>
               {hasNextPage ? <LoadingWave /> : "Every spot has been displayed"}
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

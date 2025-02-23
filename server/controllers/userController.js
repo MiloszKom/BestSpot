@@ -4,6 +4,8 @@ const Spotlist = require("./../models/spotlistModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 
+const { uploadImageToS3 } = require("../utils/multerConfig");
+
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
 
@@ -17,16 +19,19 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  const { name, email } = req.body;
+  const { name, email, photo } = req.body;
 
   const user = await User.findById(req.user.id);
   if (!user) return next(new AppError("User not found.", 404));
 
   if (name) user.name = name;
   if (email) user.email = email;
-  if (req.file) user.photo = req.file.filename;
-
+  if (photo) {
+    user.photo = photo;
+  }
   await user.save();
+
+  await uploadImageToS3(req.body.photoParams);
 
   res.status(200).json({
     status: "success",
@@ -118,53 +123,28 @@ exports.getUserProfilePosts = catchAsync(async (req, res, next) => {
 
   const posts = await Post.find(postQuery)
     .populate([
-      {
-        path: "author",
-        select: "_id name photo handle",
-      },
-      {
-        path: "spots",
-        select: "_id google_id name photo city country",
-      },
+      { path: "author", select: "_id name photo handle" },
       {
         path: "spotlists",
-        select: "_id name cover visibility spots",
+        select: "_id name cover visibility spots author",
+        populate: { path: "author", select: "handle" },
       },
+      { path: "spots", select: "_id name photo city country" },
     ])
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
-  const formattedPosts = posts.map((post) => {
-    const likeCount = post.likes.filter((like) => like.isLikeActive).length;
-    const isLiked = post.likes.some(
-      (like) =>
-        like._id.toString() === currentUser?._id.toString() && like.isLikeActive
-    );
-    const bookmarkCount = post.bookmarks.filter(
-      (bookmark) => bookmark.isLikeActive
-    ).length;
-    const isBookmarked = post.bookmarks.some(
-      (bookmark) =>
-        bookmark._id.toString() === currentUser?._id.toString() &&
-        bookmark.isLikeActive
-    );
-
-    const totalComments =
-      post.comments?.reduce(
-        (total, comment) => total + 1 + (comment.replies?.length || 0),
-        0
-      ) || 0;
-
-    return {
-      ...post.toObject(),
-      likeCount,
-      isLiked,
-      bookmarkCount,
-      isBookmarked,
-      totalComments,
-    };
-  });
+  const formattedPosts = await Promise.all(
+    posts.map(async (post) => {
+      const postObj = post.toObject();
+      return {
+        ...postObj,
+        isLiked: post.isLiked(currentUser),
+        isBookmarked: post.isBookmarked(currentUser),
+      };
+    })
+  );
 
   res.status(200).json({
     status: "success",
@@ -400,7 +380,9 @@ exports.searchUsers = catchAsync(async (req, res) => {
     const users = await User.find({
       name: { $regex: searchTerm, $options: "i" },
       _id: { $ne: req.user._id },
-    }).select("name _id photo handle friends");
+    })
+      .select("name _id photo handle friends")
+      .limit(5);
 
     res.json(users);
   } catch (error) {
@@ -413,7 +395,9 @@ exports.searchHandles = catchAsync(async (req, res) => {
   const users = await User.find({
     handle: { $regex: searchTerm, $options: "i" },
     _id: { $ne: req.user._id },
-  }).select("name _id photo handle");
+  })
+    .select("name _id photo handle")
+    .limit(5);
 
   res.status(200).json({
     status: "success",

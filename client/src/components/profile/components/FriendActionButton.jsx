@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Spinner from "../../common/Spinner";
 
 export const FriendActionButton = ({
   icon,
@@ -10,15 +11,19 @@ export const FriendActionButton = ({
   if (mutation.isPending || isFetching) {
     return (
       <div className="action-el friend">
-        <span>Loading...</span>
+        <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="action-el friend" onClick={() => mutation.mutate(userId)}>
+    <button
+      className="action-el friend"
+      onClick={() => mutation.mutate(userId)}
+      disabled={mutation.isPending || mutation.isFetching}
+    >
       <FontAwesomeIcon icon={icon} />
       <span>{label}</span>
-    </div>
+    </button>
   );
 };

@@ -108,8 +108,42 @@ const postSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+postSchema.virtual("likeCount").get(function () {
+  return this.likes.filter((like) => like.isLikeActive).length;
+});
+
+postSchema.virtual("bookmarkCount").get(function () {
+  return this.bookmarks.filter((bookmark) => bookmark.isLikeActive).length;
+});
+
+postSchema.virtual("totalComments").get(function () {
+  return this.comments.reduce(
+    (total, comment) => total + 1 + (comment.replies?.length || 0),
+    0
+  );
+});
+
+postSchema.virtual("isLiked").get(function () {
+  return function (userId) {
+    return this.likes.some(
+      (like) => like._id.toString() === userId?.toString() && like.isLikeActive
+    );
+  };
+});
+
+postSchema.virtual("isBookmarked").get(function () {
+  return function (userId) {
+    return this.bookmarks.some(
+      (bookmark) =>
+        bookmark._id.toString() === userId?.toString() && bookmark.isLikeActive
+    );
+  };
+});
 
 const Post = mongoose.model("Post", postSchema);
 

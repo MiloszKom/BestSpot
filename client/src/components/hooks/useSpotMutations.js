@@ -39,7 +39,6 @@ export const useSpotMutations = () => {
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data, variables) => {
-      console.log(variables);
       showAlert(data.message, data.status);
       queryClient.invalidateQueries({ queryKey: ["spot", variables.spotId] });
     },
@@ -63,8 +62,6 @@ export const useSpotMutations = () => {
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data, variables) => {
-      console.log(variables);
-      console.log(data);
       showAlert(data.message, data.status);
       queryClient.invalidateQueries({ queryKey: ["spot", variables.spotId] });
     },
@@ -104,7 +101,6 @@ export const useSpotMutations = () => {
     },
     onSuccess: (data, variables) => {
       showAlert(data.message, data.status);
-      console.log(variables);
       queryClient.invalidateQueries({
         queryKey: ["spot", variables.spotId],
       });
@@ -178,7 +174,6 @@ export const useSpotMutations = () => {
       return { previousSpotData };
     },
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
   });

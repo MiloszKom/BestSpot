@@ -3,6 +3,11 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
+require("dotenv").config();
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+
 const validateName = (name) => {
   if (!/^[a-zA-Z0-9\s-]+$/.test(name)) {
     return false;
@@ -60,7 +65,7 @@ const userSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: "default.jpg",
+    default: `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/defaults/avatar.jpg`,
   },
   role: {
     type: String,
@@ -83,8 +88,6 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
   active: {
     type: Boolean,
     default: true,
@@ -190,25 +193,9 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
       this.passwordChangedAt.getTime() / 1000,
       10
     );
-
-    console.log(this.passwordChangedAt, JWTTimestamp);
     return JWTTimestamp < changedTimestamp;
   }
   return false;
-};
-
-userSchema.methods.createPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(32).toString("hex");
-
-  this.passwordResetToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
-
-  console.log({ resetToken }, this.passwordResetToken);
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-
-  return resetToken;
 };
 
 const User = mongoose.model("User", userSchema);

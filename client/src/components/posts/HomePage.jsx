@@ -64,13 +64,12 @@ export default function HomePage() {
           <span>Friends' Posts</span>
         </div>
       </div>
-
       {isLoggedIn && (
         <Link to="create-post" className="post-add-box">
           <div
             className="profile-icon"
             style={{
-              backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData.photo})`,
+              backgroundImage: `url(${userData.photo})`,
             }}
           ></div>
           <div className="post-add-div">Add a post here</div>

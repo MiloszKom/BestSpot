@@ -1,15 +1,9 @@
 const mongoose = require("mongoose");
 const app = require("./app");
-const http = require("http"); // Import HTTP module
-const { Server } = require("socket.io"); // Import Socket.IO
+const http = require("http");
+const { Server } = require("socket.io");
 const Chat = require("./models/chatModel");
 const User = require("./models/userModel");
-
-process.on("uncaughtException", (err) => {
-  console.log("UNCAUGHT EXCEPTION! 💣💣 Shutting down...");
-  console.log(err.name, err.message);
-  process.exit(1);
-});
 
 const DB = process.env.DATABASE.replace(
   "<PASSWORD>",
@@ -17,7 +11,7 @@ const DB = process.env.DATABASE.replace(
 );
 
 mongoose.connect(DB).then(() => {
-  console.log("DB connection successful!");
+  ("DB connection successful!");
 });
 
 const port = process.env.PORT;
@@ -155,7 +149,7 @@ server.listen(port, hostname, () => {
 
 process.on("unhandledRejection", (err) => {
   console.log("UNHANDLED REJECTION! 💣💣 Shutting down...");
-  console.log(err.name, err.message);
+  // console.log(err.name, err.message);
   server.close(() => {
     process.exit(1);
   });

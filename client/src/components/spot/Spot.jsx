@@ -16,7 +16,7 @@ export default function Spot({
   setOptions,
   deleteSpotFromSpotlist,
 }) {
-  const { userData } = useContext(AuthContext);
+  const { userData, isLoggedIn } = useContext(AuthContext);
   const likeCount = spot.likes.filter(
     (like) => like.isLikeActive === true
   ).length;
@@ -24,7 +24,6 @@ export default function Spot({
   const isSpotlistLiked = spot.likes.some(
     (like) => like._id === userData?._id && like.isLikeActive
   );
-  console.log(spot);
 
   return (
     <Link
@@ -35,7 +34,7 @@ export default function Spot({
       <div
         className="image"
         style={{
-          backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
+          backgroundImage: `url(${spot.photo})`,
         }}
       >
         <span
@@ -51,7 +50,7 @@ export default function Spot({
           {spot.city}, {spot.country}
         </div>
       </div>
-      {userData?._id === spotlistData?.author._id && (
+      {isLoggedIn && userData?._id === spotlistData?.author._id && (
         <div className="menu" onClick={(e) => e.preventDefault()}>
           <button
             className="options"

@@ -11,7 +11,6 @@ export const useAuthMutations = () => {
   const navigate = useNavigate();
 
   const handleError = (error) => {
-    console.log(error);
     const message =
       error.response?.data?.message || "An unexpected error occurred";
     const status = error.response?.data?.status || "error";

@@ -37,17 +37,16 @@ import Report from "../common/Report";
 import ErrorPage from "../pages/ErrorPage";
 import Spinner from "../common/Spinner";
 
+import { useValidateUserContent } from "../hooks/useValidateUserContent";
+
 export default function SpotDetail() {
   const [addingNote, setAddingNote] = useState(false);
   const [addingToSpotlist, setAddingToSpotlist] = useState(false);
   const [creatingNewSpotlist, setCreatingNewSpotlist] = useState(false);
 
   const [options, setOptions] = useState(null);
-
   const [editingSpot, setEditingSpot] = useState(false);
-
   const [insight, setInsight] = useState("");
-
   const [isReporting, setIsReporting] = useState(false);
 
   const params = useParams();
@@ -55,6 +54,7 @@ export default function SpotDetail() {
   const location = useLocation();
 
   const { isLoggedIn, userData } = useContext(AuthContext);
+  const { textValidator } = useValidateUserContent();
 
   const highlightedInsightId = location.state?.highlightedInsightId;
 
@@ -92,10 +92,10 @@ export default function SpotDetail() {
   if (isError) return <ErrorPage error={error} />;
 
   const spotOptions =
-    (spot.author._id === userData.role) === "admin"
-      ? ["delete"]
-      : userData?._id
+    spot.author._id === userData?._id
       ? ["delete", "edit"]
+      : userData?.role === "admin"
+      ? ["delete"]
       : ["report"];
 
   const isInsightCreated = spot.insights.some(
@@ -109,7 +109,7 @@ export default function SpotDetail() {
           <div
             className="spot-detail-photo"
             style={{
-              backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
+              backgroundImage: `url(${spot.photo})`,
             }}
           >
             <button className="back-btn" onClick={() => navigate(-1)}>
@@ -151,7 +151,7 @@ export default function SpotDetail() {
               <div
                 className="image"
                 style={{
-                  backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.author.photo})`,
+                  backgroundImage: `url(${spot.author.photo})`,
                 }}
               />
               <span>{spot.author.name}</span>
@@ -213,7 +213,7 @@ export default function SpotDetail() {
                   <div
                     className="photo"
                     style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData?.photo})`,
+                      backgroundImage: `url(${userData?.photo})`,
                     }}
                   />
                   <textarea
@@ -224,7 +224,8 @@ export default function SpotDetail() {
                   />
                   {insight && (
                     <button
-                      onClick={() =>
+                      onClick={() => {
+                        if (!textValidator([insight])) return;
                         createInsightMutation.mutate(
                           { comment: insight, spotId: spot._id },
                           {
@@ -232,8 +233,8 @@ export default function SpotDetail() {
                               setInsight("");
                             },
                           }
-                        )
-                      }
+                        );
+                      }}
                       disabled={createInsightMutation.isPending}
                     >
                       {createInsightMutation.isPending ? <Spinner /> : "Post"}
@@ -245,7 +246,7 @@ export default function SpotDetail() {
               {spot.insights.map((insight) => {
                 const insightOptions =
                   insight.user._id === userData?._id ||
-                  userData.role === "admin"
+                  userData?.role === "admin"
                     ? ["delete"]
                     : spot.author._id === userData?._id
                     ? ["delete", "report"]
@@ -272,7 +273,7 @@ export default function SpotDetail() {
                       to={`/${insight.user.handle}`}
                       className="profile-icon"
                       style={{
-                        backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${insight.user.photo})`,
+                        backgroundImage: `url(${insight.user.photo})`,
                       }}
                     ></Link>
                     <div className="comment-header">

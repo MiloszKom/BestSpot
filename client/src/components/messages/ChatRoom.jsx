@@ -50,7 +50,6 @@ export default function ChatRoom() {
         setRoom(res.data.chat._id);
         setChatIsApproved(res.data.chat.isApproved);
       } catch (err) {
-        console.log(err);
         setError(err);
       }
     };
@@ -69,7 +68,6 @@ export default function ChatRoom() {
     socket.socket.emit("enter-chat-room", room);
 
     socket.socket.on("receive-message", (message, approvedStatus) => {
-      console.log("recieve-message");
       setMessages((prevMessages) => {
         return [message, ...prevMessages.filter((msg) => !msg.typingBubble)];
       });
@@ -80,7 +78,6 @@ export default function ChatRoom() {
     });
 
     socket.socket.on("reciever-online", () => {
-      console.log("reciever-online");
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         updatedMessages[0].isRead = true;
@@ -89,17 +86,14 @@ export default function ChatRoom() {
     });
 
     socket.socket.on("update-read-state", (newMessages) => {
-      console.log("update-read-state");
       setMessages(newMessages);
     });
 
     socket.socket.on("user-is-typing", () => {
-      console.log("user-is-typing");
       setIsTyping(true);
     });
 
     socket.socket.on("user-no-longer-typing", () => {
-      console.log("user-no-longer-typing");
       setIsTyping(false);
     });
 
@@ -265,7 +259,7 @@ export default function ChatRoom() {
           to={`/${chattingWithUser.handle}`}
           className="chat-header-img"
           style={{
-            backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${chattingWithUser.photo})`,
+            backgroundImage: `url(${chattingWithUser.photo})`,
           }}
         >
           {chatIsApproved && chattingWithUser.isOnline && (

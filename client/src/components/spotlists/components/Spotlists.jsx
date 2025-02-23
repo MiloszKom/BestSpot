@@ -52,11 +52,7 @@ export function Spotlists({
             <div
               className="spotlists-thumbnail"
               style={{
-                backgroundImage: `url(http://${
-                  process.env.REACT_APP_SERVER
-                }:5000/uploads/images/${
-                  spotlist.cover === "s" ? "no-img-found.jpg" : spotlist.cover
-                })`,
+                backgroundImage: `url(${spotlist.cover})`,
               }}
             >
               <span

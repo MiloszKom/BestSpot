@@ -65,16 +65,12 @@ export const getPost = async (postId) => {
 };
 
 export const getBookmarks = async ({ pageParam = 1 }) => {
-  try {
-    const res = await axios({
-      method: "GET",
-      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/bookmarks?page=${pageParam}&limit=10`,
-      withCredentials: true,
-    });
-    return res.data;
-  } catch (err) {
-    console.log(err);
-  }
+  const res = await axios({
+    method: "GET",
+    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/posts/bookmarks?page=${pageParam}&limit=10`,
+    withCredentials: true,
+  });
+  return res.data;
 };
 
 export const addPostComment = async ({ comment, postId }) => {

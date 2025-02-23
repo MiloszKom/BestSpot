@@ -1,115 +1,97 @@
 const express = require("express");
 const userController = require("./../controllers/userController");
-const authController = require("./../controllers/authController");
+const {
+  signup,
+  login,
+  logout,
+  checkCookies,
+  protect,
+  softAuth,
+  updatePassword,
+} = require("./../controllers/authController");
 
-const { uploadUserPhoto, resizeUserPhoto } = require("../utils/multerConfig");
+const {
+  uploadUserPhoto,
+  initializeUserPhoto,
+} = require("../utils/multerConfig");
 
 const router = express.Router();
 
-router.post("/signup", authController.signup);
-router.post("/login", authController.login);
-router.get("/logout", authController.logout);
+router.post("/signup", signup);
+router.post("/login", login);
+router.get("/logout", logout);
 
-router.get("/checkCookies", authController.checkCookies);
+router.get("/checkCookies", checkCookies);
 
-router.post("/forgotPassword", authController.forgotPassword);
-router.patch("/resetPassword/:token", authController.resetPassword);
-
-router.patch(
-  "/updateMyPassword",
-  authController.protect,
-  authController.updatePassword
-);
+router.patch("/updateMyPassword", protect, updatePassword);
 
 router.patch(
   "/updateMe",
-  authController.protect,
+  protect,
   uploadUserPhoto,
-  resizeUserPhoto,
+  initializeUserPhoto,
   userController.updateMe
 );
-router.delete("/deleteMe", authController.protect, userController.deleteMe);
+router.delete("/deleteMe", protect, userController.deleteMe);
 
-router.get("/searchUsers", authController.protect, userController.searchUsers);
+router.get("/searchUsers", protect, userController.searchUsers);
 
-router.get(
-  "/searchHandles",
-  authController.protect,
-  userController.searchHandles
-);
+router.get("/searchHandles", protect, userController.searchHandles);
 
-router.get("/friends", authController.protect, userController.getFriends);
+router.get("/friends", protect, userController.getFriends);
 
-router.get(
-  "/friends/requests",
-  authController.protect,
-  userController.getRequests
-);
+router.get("/friends/requests", protect, userController.getRequests);
 
 router.get(
   "/global-notifications",
-  authController.protect,
+  protect,
   userController.getGlobalNotifications
 );
 
-router.get(
-  "/notifications",
-  authController.protect,
-  userController.getNotifications
-);
+router.get("/notifications", protect, userController.getNotifications);
 
-router.delete(
-  "/notifications/:id",
-  authController.protect,
-  userController.deleteNotification
-);
+router.delete("/notifications/:id", protect, userController.deleteNotification);
 
 router.route("/").get(userController.getAllUsers);
 
-router
-  .route("/:handle")
-  .get(authController.softAuth, userController.getUserProfile);
+router.route("/:handle").get(softAuth, userController.getUserProfile);
 
 router
   .route("/:handle/posts")
-  .get(authController.softAuth, userController.getUserProfilePosts);
+  .get(softAuth, userController.getUserProfilePosts);
 
 router
   .route("/:handle/spotlists")
-  .get(authController.softAuth, userController.getUserProfileSpotlists);
+  .get(softAuth, userController.getUserProfileSpotlists);
 
 router
   .route("/:handle/spots")
-  .get(authController.softAuth, userController.getUserProfileSpots);
+  .get(softAuth, userController.getUserProfileSpots);
 
 router.post(
   "/sendFriendRequest/:id",
-  authController.protect,
+  protect,
   userController.sendFriendRequest
 );
 
 router.delete(
   "/cancelFriendRequest/:id",
-  authController.protect,
+  protect,
   userController.cancelFriendRequest
 );
 
 router.post(
   "/acceptFriendRequest/:id",
-  authController.protect,
+  protect,
   userController.acceptFriendRequest
 );
 
 router.delete(
   "/rejectFriendRequest/:id",
-  authController.protect,
+  protect,
   userController.rejectFriendRequest
 );
 
-router.delete(
-  "/deleteFriend/:id",
-  authController.protect,
-  userController.deleteFriend
-);
+router.delete("/deleteFriend/:id", protect, userController.deleteFriend);
 
 module.exports = router;

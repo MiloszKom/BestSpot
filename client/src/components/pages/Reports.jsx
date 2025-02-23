@@ -50,10 +50,9 @@ export default function Reports() {
           reports.map((report) => {
             const { reporter, description, reportedEntity } = report;
             const entityType = getEntityType(reportedEntity);
-            const linkUrl =
-              entityType === "post" || "comment" || "reply"
-                ? `/${reporter.handle}/${reportedEntity.postId}`
-                : `/spot/${reportedEntity.spotId}`;
+            const linkUrl = ["post", "comment", "reply"].includes(entityType)
+              ? `/${reporter.handle}/${reportedEntity.postId}`
+              : `/spot/${reportedEntity.spotId}`;
 
             return (
               <div className="report-el">

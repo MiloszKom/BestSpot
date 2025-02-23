@@ -19,7 +19,7 @@ export default function PostSpots({ selectedSpots, setSelectedSpots }) {
             to={`/spot/${spot._id}`}
             className="spot-el"
             style={{
-              backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
+              backgroundImage: `url(${spot.photo})`,
             }}
             key={spot._id}
             onClick={(e) => {

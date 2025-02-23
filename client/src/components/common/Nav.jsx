@@ -117,7 +117,7 @@ export default function Nav({ notifications, auth }) {
             <div
               className="nav-photo"
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${auth.userData?.photo})`,
+                backgroundImage: `url(${auth.userData?.photo})`,
               }}
             />
           ) : (

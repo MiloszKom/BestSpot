@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useSpotlistsMutations } from "../../hooks/useSpotlistsMutations";
+import { useValidateUserContent } from "../../hooks/useValidateUserContent";
 
 import Spinner from "../../common/Spinner";
 
@@ -13,11 +14,14 @@ export default function EditSpotlist({ editingSpotlist, setEditingSpotlist }) {
 
   const { editSpotlistMutation } = useSpotlistsMutations();
 
+  const { textValidator } = useValidateUserContent();
+
   const closeEditingSpotlist = () => {
     setEditingSpotlist(false);
   };
 
   const saveChanges = async () => {
+    if (!textValidator([name, description])) return;
     editSpotlistMutation.mutate(
       {
         spotlistId: editingSpotlist.id,

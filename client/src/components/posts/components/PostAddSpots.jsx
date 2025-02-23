@@ -27,9 +27,8 @@ export default function PostAddSpots({
       });
       setSpots(res.data.data.spots);
       setIsSpotlistPicked(true);
-      console.log(res);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
   };
 
@@ -77,7 +76,7 @@ export default function PostAddSpots({
 
         setSpotlists(filteredSpotlists);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
     };
 
@@ -104,75 +103,89 @@ export default function PostAddSpots({
           style={{ transform: `translateX(-${isSpotlistPicked ? 100 : 0}%)` }}
         >
           <div className="pick-spotlist">
-            {spotlists.map((spotlist) => {
-              return (
-                <div
-                  className="spotlist-el"
-                  onClick={() => viewSpotlist(spotlist._id)}
-                >
+            {spotlists.length > 0 ? (
+              spotlists.map((spotlist) => {
+                return (
                   <div
-                    className="photo"
-                    style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlist.cover})`,
-                    }}
+                    className="spotlist-el"
+                    onClick={() => viewSpotlist(spotlist._id)}
+                    key={spotlist._id}
                   >
-                    <span className="spotlists-spot-count">
-                      {spotlist.spots.length} spots
-                    </span>
-                  </div>
-                  <div className="info">
-                    <div className="name no-wrap">{spotlist.name}</div>
-                    <div className="visibility no-wrap">
-                      {getVisibilityDisplayName(spotlist.visibility)}
+                    <div
+                      className="photo"
+                      style={{
+                        backgroundImage: `url(${spotlist.cover})`,
+                      }}
+                    >
+                      <span className="spotlists-spot-count">
+                        {spotlist.spots.length} spots
+                      </span>
                     </div>
-                    <div className="description">{spotlist.description}</div>
+                    <div className="info">
+                      <div className="name no-wrap">{spotlist.name}</div>
+                      <div className="visibility no-wrap">
+                        {getVisibilityDisplayName(spotlist.visibility)}
+                      </div>
+                      <div className="description">{spotlist.description}</div>
+                    </div>
+                    <button className="pick-btn">
+                      <FontAwesomeIcon icon={faChevronRight} />
+                    </button>
                   </div>
-                  <button className="pick-btn">
-                    <FontAwesomeIcon icon={faChevronRight} />
-                  </button>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="post-add-empty">
+                To attach a spot to your post, first save it to a spotlist.
+              </div>
+            )}
           </div>
           <div className="pick-spot">
-            {spots.map((spot) => {
-              const isSpotSelected = pickedSpots.some(
-                (s) => s._id === spot._id
-              );
+            {spots.length > 0 ? (
+              spots.map((spot) => {
+                const isSpotSelected = pickedSpots.some(
+                  (s) => s._id === spot._id
+                );
 
-              return (
-                <label
-                  className={`spot-el ${
-                    pickedSpots.length === 5 && !isSpotSelected
-                      ? "disabled"
-                      : ""
-                  }`}
-                  key={spot._id}
-                >
-                  <div
-                    className="photo"
-                    style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
-                    }}
-                  />
-                  <div className="info">
-                    <div className="name no-wrap">{spot.name}</div>
-                    <div className="address no-wrap">{`${spot.city}, ${spot.country}`}</div>
-                  </div>
-                  <div className="post-spotlist-check">
-                    <input
-                      type="checkbox"
-                      checked={pickedSpots.some((s) => s._id === spot._id)}
-                      onChange={() => handleSpotSelection(spot)}
-                      disabled={
-                        !pickedSpots.some((s) => s._id === spot._id) &&
-                        pickedSpots.length >= 5
-                      }
+                return (
+                  <label
+                    className={`spot-el ${
+                      pickedSpots.length === 5 && !isSpotSelected
+                        ? "disabled"
+                        : ""
+                    }`}
+                    key={spot._id}
+                  >
+                    <div
+                      className="photo"
+                      style={{
+                        backgroundImage: `url(${spot.photo})`,
+                      }}
                     />
-                  </div>
-                </label>
-              );
-            })}
+                    <div className="info">
+                      <div className="name no-wrap">{spot.name}</div>
+                      <div className="address no-wrap">{`${spot.city}, ${spot.country}`}</div>
+                    </div>
+                    <div className="post-spotlist-check">
+                      <input
+                        type="checkbox"
+                        checked={pickedSpots.some((s) => s._id === spot._id)}
+                        onChange={() => handleSpotSelection(spot)}
+                        disabled={
+                          !pickedSpots.some((s) => s._id === spot._id) &&
+                          pickedSpots.length >= 5
+                        }
+                      />
+                    </div>
+                  </label>
+                );
+              })
+            ) : (
+              <div className="pick-spots-empty">
+                This spotlist is empty! Add some spots first to attach them to
+                your post.
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { useAuthMutations } from "../hooks/useAuthMutations";
 import Spinner from "../common/Spinner";
 
 export default function Login() {
-  const [email, setEmail] = useState("test@onet.io");
+  const [email, setEmail] = useState("test@test.pl");
   const [password, setPassword] = useState("milosz123");
   const location = useLocation();
 

@@ -32,7 +32,6 @@ export const usePostsMutations = () => {
   const createPostMutation = useMutation({
     mutationFn: createPost,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data) => {
@@ -161,7 +160,6 @@ export const usePostsMutations = () => {
       };
     },
     onError: (error, variables, context) => {
-      console.log(error);
       queryClient.setQueryData(
         ["post", currentlyViewedPost],
         context.previousPostData
@@ -238,7 +236,6 @@ export const usePostsMutations = () => {
   const addPostCommentMutation = useMutation({
     mutationFn: addPostComment,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data) => {
@@ -250,7 +247,6 @@ export const usePostsMutations = () => {
   const editPostCommentMutation = useMutation({
     mutationFn: editPostComment,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response?.data?.message, error.response?.data?.status);
     },
     onSuccess: (data, variables) => {
@@ -262,7 +258,6 @@ export const usePostsMutations = () => {
   const deletePostCommentMutation = useMutation({
     mutationFn: deletePostComment,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data, variables) => {
@@ -325,7 +320,6 @@ export const usePostsMutations = () => {
       });
     },
     onError: (error) => {
-      console.log(error);
       showAlert(error.response?.data?.message, error.response?.data?.status);
     },
   });
@@ -333,7 +327,6 @@ export const usePostsMutations = () => {
   const addPostReplyMutation = useMutation({
     mutationFn: addPostReply,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data, variables) => {
@@ -345,7 +338,6 @@ export const usePostsMutations = () => {
   const deletePostReplyMutation = useMutation({
     mutationFn: deletePostReply,
     onError: (error) => {
-      console.log(error);
       showAlert(error.response.data.message, error.response.data.status);
     },
     onSuccess: (data, variables) => {

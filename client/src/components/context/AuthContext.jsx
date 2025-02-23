@@ -31,7 +31,6 @@ export const AuthContextProvider = ({ children }) => {
   }, []);
 
   const login = useCallback((data) => {
-    console.log(data);
     setIsLoggedIn(true);
     setUserData(data.data.user);
     setToken(data.token);
@@ -39,9 +38,9 @@ export const AuthContextProvider = ({ children }) => {
   }, []);
 
   const logout = useCallback(() => {
+    setIsDataFetched(false);
     setIsLoggedIn(false);
     setUserData(null);
-    setIsDataFetched(false);
     setToken(null);
   }, []);
 

@@ -23,7 +23,7 @@ export default function Discover() {
         </Link>
 
         <Link to="spot-liblary" className="discover-el">
-          <div className="discover-el-title">User Spots</div>
+          <div className="discover-el-title">Spot Liblary</div>
           <div className="discover-el-description">
             Browse places created by users and explore hidden gems in different
             areas.

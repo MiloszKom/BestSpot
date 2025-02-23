@@ -8,29 +8,12 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const cookieParser = require("cookie-parser");
 const xss = require("xss-clean");
-const path = require("path");
 
 helmet({
   crossOriginResourcePolicy: false,
 });
 
 app.use(morgan("dev"));
-
-const limiter = rateLimit({
-  max: 1000,
-  windowMs: 10 * 10000,
-  message: "Too many requests from this IP, please try again in an hour!",
-});
-
-app.use("/api", limiter);
-
-const mapsRateLimiter = rateLimit({
-  windowMs: 1 * 60 * 60 * 1000,
-  max: 20,
-  message: "Too many requests, please try again later.",
-});
-
-app.use("/api/v1/maps/getLocation", mapsRateLimiter);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(bodyParser.json());
@@ -62,12 +45,25 @@ app.use(
   })
 );
 
-// app.use((req, res, next) => {
-//   console.log("Cookies :", req.cookies);
-//   next();
-// });
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 10 * 1500,
+  handler: (req, res) => {
+    res.status(429).json({
+      message: "Too many requests from this IP, please try again later",
+    });
+  },
+});
 
-app.use("/uploads/images", express.static(path.join("uploads", "images")));
+app.use("/api", limiter);
+
+const mapsRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 60 * 1000,
+  max: 20,
+  message: "Too many requests, please try again later.",
+});
+
+app.use("/api/v1/maps/getLocation", mapsRateLimiter);
 
 app.get("/spoticon.ico", (req, res) => res.status(204).end());
 

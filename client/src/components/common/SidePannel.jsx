@@ -38,7 +38,7 @@ export default function SidePannel() {
                   <div
                     className="photo"
                     style={{
-                      backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spot.photo})`,
+                      backgroundImage: `url(${spot.photo})`,
                     }}
                   />
                   <div className="info">

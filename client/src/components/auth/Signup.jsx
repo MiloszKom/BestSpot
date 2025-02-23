@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthMutations } from "../hooks/useAuthMutations";
 import Spinner from "../common/Spinner";
+import { useValidateUserContent } from "../hooks/useValidateUserContent";
 
 export default function Signup() {
   const [name, setName] = useState("test");
@@ -11,6 +12,7 @@ export default function Signup() {
   const [error, setError] = useState("");
 
   const { signUpMutation } = useAuthMutations();
+  const { textValidator } = useValidateUserContent();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,6 +22,8 @@ export default function Signup() {
       return;
     }
     setError("");
+
+    if (!textValidator([name])) return;
 
     const data = {
       name,

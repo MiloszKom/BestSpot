@@ -10,7 +10,6 @@ export default function ErrorPage({ error }) {
     429: "Too Many Requests",
   };
 
-  console.log(error);
   const errorStatusType = errorStatusMapping[error.status] || "Error";
   const errorMessage =
     error.response?.data?.message || "An unexpected error occurred";

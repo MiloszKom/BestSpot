@@ -13,6 +13,13 @@ const {
   checkDuplicateSpotlistName,
 } = require("../utils/spotlistUtils");
 
+require("dotenv").config();
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+
+const notFoundCover = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/defaults/not-found.jpg`;
+
 exports.getSpotlists = catchAsync(async (req, res) => {
   const user = await findUser(req.user.id);
   const userSpotlists = user.spotlists;
@@ -205,10 +212,7 @@ exports.updateSpotlists = catchAsync(async (req, res) => {
 
       spotlist.spots.push(spot._id);
 
-      if (
-        spotlist.cover === "no-img-found.jpg" ||
-        spotlist.spots.length === 1
-      ) {
+      if (spotlist.cover === notFoundCover || spotlist.spots.length === 1) {
         spotlist.cover = spot.photo;
       }
 
@@ -239,9 +243,9 @@ exports.updateSpotlists = catchAsync(async (req, res) => {
         if (spotlist.spots.length > 0) {
           const newCoverSpotId = spotlist.spots[0];
           const newCoverSpot = await findSpot(newCoverSpotId);
-          spotlist.cover = newCoverSpot.photo || "no-img-found.jpg";
+          spotlist.cover = newCoverSpot.photo || notFoundCover;
         } else {
-          spotlist.cover = "no-img-found.jpg";
+          spotlist.cover = notFoundCover;
         }
       }
 
@@ -349,9 +353,9 @@ exports.removeFromSpotlist = catchAsync(async (req, res) => {
     if (spotlist.spots.length > 0) {
       const newCoverSpotId = spotlist.spots[0];
       const newCoverSpot = await findSpot(newCoverSpotId);
-      spotlist.cover = newCoverSpot.photo || "no-img-found.jpg";
+      spotlist.cover = newCoverSpot.photo || notFoundCover;
     } else {
-      spotlist.cover = "no-img-found.jpg";
+      spotlist.cover = notFoundCover;
     }
   }
 

@@ -7,13 +7,13 @@ import { AlertContext } from "../context/AlertContext";
 import { useAuthMutations } from "../hooks/useAuthMutations";
 import Spinner from "../common/Spinner";
 import * as nsfwjs from "nsfwjs";
-import { imageValidator } from "../utils/imageValidator";
+import { useValidateUserContent } from "../hooks/useValidateUserContent";
 
 export default function Settings() {
   const auth = useContext(AuthContext);
   const user = auth.userData;
 
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState("");
   const [photoPreview, setPhotoPreview] = useState(null);
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -21,11 +21,11 @@ export default function Settings() {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [model, setModel] = useState(null);
-
   const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
   const { showAlert } = useContext(AlertContext);
+  const { textValidator, imageValidator } = useValidateUserContent();
 
   useEffect(() => {
     nsfwjs.load().then((loadedModel) => {
@@ -48,20 +48,9 @@ export default function Settings() {
 
     const file = files[0];
 
-    if (!model) {
-      showAlert("Model not loaded yet. Please try again.", "fail");
-      return;
-    }
+    const isSafe = await imageValidator(file, model);
 
-    const isSafe = await imageValidator(model, file);
-
-    if (!isSafe) {
-      showAlert(
-        "The profile image is inappropriate and cannot be uploaded.",
-        "fail"
-      );
-      return;
-    }
+    if (!isSafe) return;
 
     setSelectedPhoto(file);
 
@@ -76,7 +65,10 @@ export default function Settings() {
 
   const saveSettings = async (e) => {
     e.preventDefault();
+    if (!textValidator([name])) return;
+
     const formData = new FormData();
+
     formData.append("name", name);
     formData.append("email", email);
     formData.append("photo", selectedPhoto);
@@ -110,7 +102,7 @@ export default function Settings() {
               style={{
                 backgroundImage: photoPreview
                   ? `url(${photoPreview})`
-                  : `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${user.photo})`,
+                  : `url(${user.photo})`,
               }}
               onClick={handleImageClick}
             >

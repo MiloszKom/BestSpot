@@ -1,34 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const spotlistController = require("./../controllers/spotlistController");
-const authController = require("../controllers/authController");
+const { protect, softAuth } = require("./../controllers/authController");
 
 router
   .route("/")
-  .get(authController.protect, spotlistController.getSpotlists)
-  .post(authController.protect, spotlistController.createSpotlist);
+  .get(protect, spotlistController.getSpotlists)
+  .post(protect, spotlistController.createSpotlist);
 
-router
-  .route("/manage")
-  .patch(authController.protect, spotlistController.updateSpotlists);
+router.route("/manage").patch(protect, spotlistController.updateSpotlists);
 
-router
-  .route("/hub")
-  .get(authController.softAuth, spotlistController.getHubSpotlists);
+router.route("/hub").get(softAuth, spotlistController.getHubSpotlists);
 
 router
   .route("/:id")
-  .get(authController.softAuth, spotlistController.getSpotsInSpotlist)
-  .delete(authController.protect, spotlistController.deleteSpotlist)
-  .patch(authController.protect, spotlistController.editSpotlist);
+  .get(softAuth, spotlistController.getSpotsInSpotlist)
+  .delete(protect, spotlistController.deleteSpotlist)
+  .patch(protect, spotlistController.editSpotlist);
 
 router
   .route("/:id/like")
-  .post(authController.protect, spotlistController.likeSpotlist)
-  .delete(authController.protect, spotlistController.unlikeSpotlist);
+  .post(protect, spotlistController.likeSpotlist)
+  .delete(protect, spotlistController.unlikeSpotlist);
 
 router
   .route("/:spotlistId/spot/:spotId")
-  .delete(authController.protect, spotlistController.removeFromSpotlist);
+  .delete(protect, spotlistController.removeFromSpotlist);
 
 module.exports = router;

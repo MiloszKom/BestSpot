@@ -10,6 +10,13 @@ const {
   unlikeEntity,
 } = require("../utils/helpers");
 
+require("dotenv").config();
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+
+const { deleteImage, uploadImageToS3 } = require("../utils/multerConfig");
+
 const extractAndValidateHandles = async (content) => {
   const handlePattern = /@([a-zA-Z0-9_]{3,30})/g;
   const handles = [];
@@ -54,37 +61,24 @@ exports.getPosts = catchAsync(async (req, res, next) => {
     .sort({ createdAt: -1 })
     .populate([
       { path: "author", select: "_id name photo handle" },
-      { path: "spotlists", select: "_id name cover visibility spots author" },
+      {
+        path: "spotlists",
+        select: "_id name cover visibility spots author",
+        populate: { path: "author", select: "handle" },
+      },
       { path: "spots", select: "_id name photo city country" },
     ]);
 
-  const formattedPosts = posts.map((post) => {
-    const likeCount = post.likes.filter((like) => like.isLikeActive).length;
-    const isLiked = post.likes.some(
-      (like) => like._id.toString() === userId?.toString() && like.isLikeActive
-    );
-    const bookmarkCount = post.bookmarks.filter(
-      (bookmark) => bookmark.isLikeActive
-    ).length;
-    const isBookmarked = post.bookmarks.some(
-      (bookmark) =>
-        bookmark._id.toString() === userId?.toString() && bookmark.isLikeActive
-    );
-    const totalComments =
-      post.comments?.reduce(
-        (total, comment) => total + 1 + (comment.replies?.length || 0),
-        0
-      ) || 0;
-
-    return {
-      ...post.toObject(),
-      likeCount,
-      isLiked,
-      bookmarkCount,
-      isBookmarked,
-      totalComments,
-    };
-  });
+  const formattedPosts = await Promise.all(
+    posts.map(async (post) => {
+      const postObj = post.toObject();
+      return {
+        ...postObj,
+        isLiked: post.isLiked(userId),
+        isBookmarked: post.isBookmarked(userId),
+      };
+    })
+  );
 
   res.status(200).json({
     status: "success",
@@ -147,6 +141,12 @@ exports.createPost = catchAsync(async (req, res, next) => {
   user.posts.unshift(newPost._id);
   await user.save({ validateBeforeSave: false });
 
+  const uploadPromises = req.body.postPhotosParams.map(async (photoParams) => {
+    await uploadImageToS3(photoParams);
+  });
+
+  await Promise.all(uploadPromises);
+
   const originDetails = {
     author: user._id,
     postId: newPost._id,
@@ -174,7 +174,11 @@ exports.createPost = catchAsync(async (req, res, next) => {
 
   const populatedPost = await Post.findById(newPost._id).populate([
     { path: "author", select: "_id name photo handle" },
-    { path: "spotlists", select: "_id name cover visibility spots author" },
+    {
+      path: "spotlists",
+      select: "_id name cover visibility spots author",
+      populate: { path: "author", select: "handle" },
+    },
     { path: "spots", select: "_id name photo city country" },
   ]);
 
@@ -184,6 +188,7 @@ exports.createPost = catchAsync(async (req, res, next) => {
   responsePost.bookmarkCount = 0;
   responsePost.isLiked = false;
   responsePost.isBookmarked = false;
+  responsePost.totalComments = 0;
 
   res.status(201).json({
     status: "success",
@@ -210,6 +215,15 @@ exports.deletePost = catchAsync(async (req, res, next) => {
       new AppError("You are not authorized to delete this post", 403)
     );
   }
+
+  const imageKeys =
+    post.photos?.map((photoUrl) => {
+      return photoUrl.split(
+        `${bucketName}.s3.${bucketRegion}.amazonaws.com/`
+      )[1];
+    }) || [];
+
+  await Promise.all(imageKeys.map(deleteImage));
 
   user.posts.pull(post._id);
   await user.save({ validateBeforeSave: false });
@@ -269,7 +283,11 @@ exports.getUserBookmarks = catchAsync(async (req, res, next) => {
     options: { skip, limit },
     populate: [
       { path: "author", select: "_id name photo handle" },
-      { path: "spotlists", select: "_id name cover visibility spots author" },
+      {
+        path: "spotlists",
+        select: "_id name cover visibility spots author",
+        populate: { path: "author", select: "handle" },
+      },
       { path: "spots", select: "_id name photo city country" },
     ],
   });
@@ -278,34 +296,16 @@ exports.getUserBookmarks = catchAsync(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
-  const formattedBookmarks = user.bookmarks.map((post) => {
-    const likeCount = post.likes.filter((like) => like.isLikeActive).length;
-    const isLiked = post.likes.some(
-      (like) => like._id.toString() === user._id.toString() && like.isLikeActive
-    );
-    const bookmarkCount = post.bookmarks.filter(
-      (bookmark) => bookmark.isLikeActive
-    ).length;
-    const isBookmarked = post.bookmarks.some(
-      (bookmark) =>
-        bookmark._id.toString() === user._id.toString() && bookmark.isLikeActive
-    );
-
-    const totalComments =
-      post.comments?.reduce(
-        (total, comment) => total + 1 + (comment.replies?.length || 0),
-        0
-      ) || 0;
-
-    return {
-      ...post.toObject(),
-      likeCount,
-      isLiked,
-      bookmarkCount,
-      isBookmarked,
-      totalComments,
-    };
-  });
+  const formattedBookmarks = await Promise.all(
+    user.bookmarks.map(async (post) => {
+      const postObj = post.toObject();
+      return {
+        ...postObj,
+        isLiked: post.isLiked(user._id),
+        isBookmarked: post.isBookmarked(user._id),
+      };
+    })
+  );
 
   res.status(200).json({
     status: "success",
@@ -384,8 +384,7 @@ exports.getPost = catchAsync(async (req, res, next) => {
     .populate("spots", "_id name photo city country ")
     .populate("spotlists", "_id name cover visibility spots")
     .populate("comments.user", "name handle photo")
-    .populate("comments.replies.user", "name handle photo")
-    .lean();
+    .populate("comments.replies.user", "name handle photo");
 
   if (!post) {
     return next(new AppError("The post you're looking for doesn't exist", 404));
@@ -423,32 +422,15 @@ exports.getPost = catchAsync(async (req, res, next) => {
     });
   }
 
-  const totalComments = post.comments.reduce((total, comment) => {
-    return total + 1 + comment.replies.length;
-  }, 0);
-
-  const likeCount = post.likes.filter((like) => like.isLikeActive).length;
-  const isLiked = post.likes.some(
-    (like) => like._id.toString() === userId?.toString() && like.isLikeActive
-  );
-  const bookmarkCount = post.bookmarks.filter(
-    (bookmark) => bookmark.isLikeActive
-  ).length;
-  const isBookmarked = post.bookmarks.some(
-    (bookmark) =>
-      bookmark._id.toString() === userId?.toString() && bookmark.isLikeActive
-  );
+  const postObj = post.toObject();
 
   res.status(200).json({
     status: "success",
     message: "Post data retrieved successfully",
     data: {
-      ...post,
-      totalComments,
-      likeCount,
-      isLiked,
-      bookmarkCount,
-      isBookmarked,
+      ...postObj,
+      isLiked: post.isLiked(userId),
+      isBookmarked: post.isBookmarked(userId),
     },
   });
 });

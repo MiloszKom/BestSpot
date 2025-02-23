@@ -106,7 +106,7 @@ export default function Results() {
                       <div
                         className="image"
                         style={{
-                          backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${result.photo})`,
+                          backgroundImage: `url(${result.photo})`,
                         }}
                         aria-label={`Image of ${result.name}`}
                       />

@@ -21,17 +21,18 @@ export default function SpotlistsHub() {
   const containerRef = useRef();
   useScrollPosition(containerRef, "scrolledHeightSpotlistHub");
 
-  const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    queryKey: ["spotlistHub", order],
-    queryFn: ({ pageParam = 1 }) =>
-      getHubSpotlists({ pageParam, sortOption: order }),
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.data.length === 20) {
-        return allPages.length + 1;
-      }
-      return undefined;
-    },
-  });
+  const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: ["spotlistHub", order],
+      queryFn: ({ pageParam = 1 }) =>
+        getHubSpotlists({ pageParam, sortOption: order }),
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.data.length === 20) {
+          return allPages.length + 1;
+        }
+        return undefined;
+      },
+    });
 
   const { ref, inView } = useInView();
 
@@ -66,6 +67,10 @@ export default function SpotlistsHub() {
       <div className="spotlists-hub-body">
         {isLoading ? (
           <LoadingWave />
+        ) : isError ? (
+          <div className="general-error">
+            {error.response?.data?.message || "An unexpected error occurred"}
+          </div>
         ) : (
           <>
             <div className="spotlists-wrapper">

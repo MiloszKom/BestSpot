@@ -1,4 +1,8 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
 
 const spotlistSchema = new mongoose.Schema(
   {
@@ -20,7 +24,10 @@ const spotlistSchema = new mongoose.Schema(
           "Visibility must be either 'public', 'friends-only', or 'private'.",
       },
     },
-    cover: { type: String, default: "no-img-found.jpg" },
+    cover: {
+      type: String,
+      default: `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/defaults/not-found.jpg`,
+    },
     description: {
       type: String,
       maxlength: [

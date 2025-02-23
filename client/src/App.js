@@ -2,25 +2,39 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Alert from "./components/common/Alert";
 
-import HomePage from "./components/posts/HomePage";
-import PostDetail from "./components/posts/PostDetail";
-import PostCreate from "./components/posts/PostCreate";
+import PrivateRoute from "./components/auth/PrivateRoute";
+import PublicRoute from "./components/auth/PublicRoute";
+import RedirectRoute from "./components/auth/RedirectRoute";
+import AdminRoute from "./components/auth/AdminRoute";
 
-import SpotDetail from "./components/spot/SpotDetail";
-
-import Notifications from "./components/pages/Notifications";
-
-import ChatRoom from "./components/messages/ChatRoom";
-import UserSearch from "./components/common/UserSearch";
-
-import SpotlistsPage from "./components/spotlists/SpotlistsPage";
+import Layout from "./components/common/Layout";
 
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 
+import HomePage from "./components/posts/HomePage";
+import PostDetail from "./components/posts/PostDetail";
+import PostCreate from "./components/posts/PostCreate";
+
+import Discover from "./components/discover/DiscoverPage";
+import SpotlistsHub from "./components/discover/SpotlistsHub";
+import SpotLiblary from "./components/discover/SpotLiblary";
+
+import AreaSearchFilters from "./components/discover/AreaSearchFilters";
+import Results from "./components/discover/Results";
+import ProfileSpots from "./components/profile/ProfileSpots";
+
+import SpotlistsPage from "./components/spotlists/SpotlistsPage";
+import SpotlistContent from "./components/spotlists/SpotlistContent";
+import SpotDetail from "./components/spot/SpotDetail";
+
+import ChatRoom from "./components/messages/ChatRoom";
+import UserSearch from "./components/common/UserSearch";
 import Chats from "./components/messages/Chats";
 
-import SpotlistContent from "./components/spotlists/SpotlistContent";
+import Notifications from "./components/pages/Notifications";
+
+import Bookmarks from "./components/pages/Bookmarks";
 
 import FriendsPage from "./components/friends/FriendsPage";
 import FriendsList from "./components/friends/FriendsList";
@@ -29,26 +43,13 @@ import FriendsRequests from "./components/friends/FriendsRequests";
 import Profile from "./components/profile/Profile";
 import { ProfilePosts } from "./components/profile/ProfilePosts";
 import { ProfileSpotlists } from "./components/profile/ProfileSpotlists";
-
 import Settings from "./components/pages/Settings";
 
-import PrivateRoute from "./components/auth/PrivateRoute";
-import PublicRoute from "./components/auth/PublicRoute";
-import RedirectRoute from "./components/auth/RedirectRoute";
-import Layout from "./components/common/Layout";
-
-import NotFoundPage from "./components/pages/NotFoundPage";
-import Discover from "./components/discover/DiscoverPage";
-import AreaSearchFilters from "./components/discover/AreaSearchFilters";
-import Results from "./components/discover/Results";
 import CreateSpot from "./components/discover/CreateSpot";
-import SpotlistsHub from "./components/discover/SpotlistsHub";
-import Bookmarks from "./components/pages/Bookmarks";
-import ProfileSpots from "./components/profile/ProfileSpots";
-import SpotLiblary from "./components/discover/SpotLiblary";
-import AdminRoute from "./components/auth/AdminRoute";
+
 import Reports from "./components/pages/Reports";
 
+import NotFoundPage from "./components/pages/NotFoundPage";
 function App() {
   return (
     <BrowserRouter>
@@ -72,7 +73,7 @@ function App() {
 
           <Route path="/spot/:id" element={<SpotDetail />} />
 
-          {/* SPOTLISTS  */}
+          {/* Spotlists */}
           <Route
             path="spotlists"
             element={
@@ -107,7 +108,6 @@ function App() {
           />
 
           {/* Friends Section */}
-
           <Route
             element={
               <PrivateRoute message="You need to be logged in to add and accept friend requests" />

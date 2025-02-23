@@ -53,7 +53,7 @@ export default function Notifications() {
                     <div
                       className="image"
                       style={{
-                        backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${notification.sender.photo})`,
+                        backgroundImage: `url(${notification.sender.photo})`,
                       }}
                     />
                   )}

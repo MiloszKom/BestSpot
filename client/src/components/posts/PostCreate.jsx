@@ -26,9 +26,9 @@ import { usePostsMutations } from "../hooks/usePostsMutations";
 import Spinner from "../common/Spinner";
 
 import * as nsfwjs from "nsfwjs";
-import { imageValidator } from "../utils/imageValidator";
+import { useValidateUserContent } from "../hooks/useValidateUserContent";
 
-export default function PostCreate({ setCreatingPost }) {
+export default function PostCreate() {
   const [postContent, setPostContent] = useState("");
   const [postVisibility, setPostVisibility] = useState("Public");
   const [isTagging, setIsTagging] = useState(false);
@@ -50,6 +50,8 @@ export default function PostCreate({ setCreatingPost }) {
   const { showAlert } = useContext(AlertContext);
   const { userData } = useContext(AuthContext);
   const { createPostMutation } = usePostsMutations();
+
+  const { textValidator, imageValidator } = useValidateUserContent();
 
   useEffect(() => {
     nsfwjs.load().then((loadedModel) => {
@@ -91,21 +93,14 @@ export default function PostCreate({ setCreatingPost }) {
       return;
     }
 
-    if (!model) {
-      showAlert("Model not loaded yet. Please try again.", "fail");
-      return;
+    const safeFiles = [];
+
+    for (const file of files) {
+      const isSafe = await imageValidator(file, model);
+      if (isSafe) {
+        safeFiles.push(file);
+      }
     }
-
-    const validationResults = await Promise.all(
-      files.map(async (file) => {
-        const isSafe = await imageValidator(model, file);
-        return { file, isSafe };
-      })
-    );
-
-    const safeFiles = validationResults
-      .filter((result) => result.isSafe)
-      .map((result) => result.file);
 
     if (safeFiles.length < files.length) {
       showAlert(
@@ -134,6 +129,8 @@ export default function PostCreate({ setCreatingPost }) {
     formData.append("visibility", postVisibility.toLowerCase());
     formData.append("content", postContent);
 
+    if (!textValidator([postContent])) return;
+
     selectedPhotos.forEach((photo) => {
       formData.append("photos", photo);
     });
@@ -161,7 +158,7 @@ export default function PostCreate({ setCreatingPost }) {
         <div
           className="profile-icon"
           style={{
-            backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${userData.photo})`,
+            backgroundImage: `url(${userData.photo})`,
           }}
         ></div>
         <span>{userData.name}</span>

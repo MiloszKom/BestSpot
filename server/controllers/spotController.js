@@ -10,6 +10,12 @@ const {
   unlikeEntity,
 } = require("../utils/helpers");
 
+const { deleteImage, uploadImageToS3 } = require("../utils/multerConfig");
+require("dotenv").config();
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+
 exports.getAllUserSpot = catchAsync(async (req, res) => {
   const favs = await Spot.find({ "favouritedBy.userId": req.user.id });
 
@@ -31,13 +37,16 @@ exports.getSpot = catchAsync(async (req, res, next) => {
         path: "user",
         select: "_id handle photo name",
       },
-    })
-    .lean();
+    });
+
+  if (!spot) {
+    return next(new AppError("This spot no longer exists.", 404));
+  }
 
   const user = await User.findById(req.user?._id).populate("spotlists");
 
   if (!spot) {
-    return next(new AppError("No spot found with that ID", 404));
+    return next(new AppError("No spot found with that ID.", 404));
   }
 
   if (user) {
@@ -52,33 +61,18 @@ exports.getSpot = catchAsync(async (req, res, next) => {
     });
   }
 
-  const likeCount = spot.likes.filter((like) => like.isLikeActive).length;
-
-  const isLiked = spot.likes.some((like) => {
-    return like._id.equals(user?._id) && like.isLikeActive;
-  });
-
-  const spotlistData = user?.spotlists.find((spotlist) =>
-    spotlist.spots.some(
-      (spotItem) => spotItem._id.toString() === spot._id.toString()
-    )
-  );
-
-  const isSaved = spotlistData ? true : false;
-
-  const spotNote =
-    spot.favouritedBy.find(
-      (fav) => fav.userId.toString() === user?._id.toString()
-    )?.note || null;
+  const spotObj = spot.toObject();
+  spotObj.isLiked = spot.isLiked(user);
+  spotObj.isSaved = spot.isSaved(user);
+  spotObj.spotNote = spot.spotNote(user);
 
   res.status(200).json({
     status: "success",
     data: {
-      ...spot,
-      likeCount,
-      spotNote,
-      isLiked,
-      isSaved,
+      ...spotObj,
+      isLiked: spot.isLiked(user),
+      isSaved: spot.isSaved(user),
+      spotNote: spot.spotNote(user),
     },
   });
 });
@@ -106,6 +100,14 @@ exports.createSpot = catchAsync(async (req, res, next) => {
   const { name, overview, category, city, country, photo, address, lat, lng } =
     req.body;
 
+  const existingSpot = await Spot.findOne({ author: user._id, name });
+
+  if (existingSpot) {
+    return next(
+      new AppError("You've already added a spot with this name.", 400)
+    );
+  }
+
   const adjustedAdress = address?.split(",").slice(0, -1).join(",");
 
   const spotData = {
@@ -128,6 +130,8 @@ exports.createSpot = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(user._id, {
     $addToSet: { spots: newSpot._id },
   });
+
+  await uploadImageToS3(req.body.photoParams);
 
   res.status(201).json({
     status: "success",
@@ -152,13 +156,35 @@ exports.editSpot = catchAsync(async (req, res, next) => {
   }
 
   const { name, overview, photo } = req.body;
+
+  const existingSpot = await Spot.findOne({ author: user._id, name });
+
+  if (existingSpot) {
+    return next(
+      new AppError("You've already added a spot with this name.", 400)
+    );
+  }
+
+  if (!name) {
+    return next(new AppError("Name cannot be empty.", 400));
+  }
+
   const previousPhoto = spot.photo;
 
   if (name) spot.name = name;
   if (overview !== spot.overview) spot.overview = overview;
   if (photo) spot.photo = photo;
 
+  if (photo && previousPhoto && previousPhoto.includes(bucketName)) {
+    const imageKey = previousPhoto.split(
+      `${bucketName}.s3.${bucketRegion}.amazonaws.com/`
+    )[1];
+    await deleteImage(imageKey);
+  }
+
   await spot.save();
+
+  await uploadImageToS3(req.body.photoParams);
 
   if (photo && previousPhoto !== photo) {
     const spotlists = await Spotlist.find({ cover: previousPhoto });
@@ -190,6 +216,13 @@ exports.deleteSpot = catchAsync(async (req, res, next) => {
     return next(new AppError("Not authorized to delete this spot", 404));
   }
 
+  if (spot.photo && spot.photo.includes(bucketName)) {
+    const imageKey = spot.photo.split(
+      `${bucketName}.s3.${bucketRegion}.amazonaws.com/`
+    )[1];
+    await deleteImage(imageKey);
+  }
+
   await Spot.deleteOne({ _id: req.params.id });
 
   const spotlists = await Spotlist.find({ spots: req.params.id });
@@ -198,7 +231,7 @@ exports.deleteSpot = catchAsync(async (req, res, next) => {
     spotlist.spots.pull(req.params.id);
 
     if (spotlist.cover === spot.photo) {
-      spotlist.cover = "no-img-found.jpg";
+      spotlist.cover = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/defaults/not-found.jpg`;
     }
 
     await spotlist.save();
@@ -503,7 +536,8 @@ exports.getLatestSpots = catchAsync(async (req, res) => {
   const spots = await Spot.find()
     .sort({ createdAt: -1 })
     .select("photo name city country createdAt")
-    .limit(5);
+    .limit(5)
+    .lean();
 
   res.status(200).json({
     status: "success",

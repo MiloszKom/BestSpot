@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 import { getVisibilityDisplayName } from "./../../utils/helperFunctions";
+import { Link } from "react-router-dom";
 
 export default function PostSpotlists({
   selectedSpotlists,
@@ -18,16 +19,28 @@ export default function PostSpotlists({
   return (
     <div className="post-spotlists-container">
       {selectedSpotlists.map((spotlist) => {
+        const spotCount = spotlist.spots?.length
+          ? spotlist.spots.length
+          : spotlist.spotCount
+          ? spotlist.spotCount
+          : 0;
         return (
-          <div className="post-spotlist-el" key={spotlist._id}>
+          <Link
+            to={`/${spotlist.author?.handle}/spotlists/${spotlist._id}`}
+            className="post-spotlist-el"
+            key={spotlist._id}
+            onClick={(e) => {
+              if (setSelectedSpotlists) e.preventDefault();
+            }}
+          >
             <div
               className="post-spotlist-img"
               style={{
-                backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${spotlist.cover}`,
+                backgroundImage: `url(${spotlist.cover}`,
               }}
             >
               <span className="spotlists-spot-count">
-                {spotlist.spotCount ?? spotlist.spots.length} spots
+                {spotCount} {spotCount === 1 ? "spot" : "spots"}
               </span>
             </div>
             <div className="post-spotlist-info">
@@ -35,7 +48,9 @@ export default function PostSpotlists({
               <div className="post-spotlist-visibility">
                 {getVisibilityDisplayName(spotlist.visibility)}
               </div>
-              <div className="post-spotlist-description">No Description</div>
+              <div className="post-spotlist-description">
+                {spotlist.description}
+              </div>
             </div>
             {setSelectedSpotlists && (
               <div
@@ -45,7 +60,7 @@ export default function PostSpotlists({
                 <FontAwesomeIcon icon={faTrashCan} />
               </div>
             )}
-          </div>
+          </Link>
         );
       })}
     </div>

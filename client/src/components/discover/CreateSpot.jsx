@@ -12,7 +12,7 @@ import { fetchUserLocation, convertCategory } from "../utils/helperFunctions";
 import { useSpotMutations } from "../hooks/useSpotMutations";
 
 import * as nsfwjs from "nsfwjs";
-import { imageValidator } from "../utils/imageValidator";
+import { useValidateUserContent } from "../hooks/useValidateUserContent";
 
 export default function CreateSpotPage() {
   const [spotName, setSpotName] = useState("");
@@ -31,6 +31,8 @@ export default function CreateSpotPage() {
 
   const libraries = useMemo(() => ["places"], []);
   const [userLocation, setUserLocation] = useState(null);
+
+  const { textValidator, imageValidator } = useValidateUserContent();
 
   useEffect(() => {
     nsfwjs.load().then((loadedModel) => {
@@ -93,20 +95,9 @@ export default function CreateSpotPage() {
 
     const file = files[0];
 
-    if (!model) {
-      showAlert("Model not loaded yet. Please try again.", "fail");
-      return;
-    }
+    const isSafe = await imageValidator(file, model);
 
-    const isSafe = await imageValidator(model, file);
-
-    if (!isSafe) {
-      showAlert(
-        "The profile image is inappropriate and cannot be uploaded.",
-        "fail"
-      );
-      return;
-    }
+    if (!isSafe) return;
 
     setSpotCover(file);
 
@@ -124,15 +115,14 @@ export default function CreateSpotPage() {
   const addSpot = async () => {
     const formData = new FormData();
 
-    let city = null;
-    let country = null;
+    let city = "Unknown Location";
+    let country = "Unknown Country";
 
     if (!addressDetails) {
       showAlert("Choose location on the map", "fail");
       return;
     }
 
-    console.log("addressDetails :", addressDetails);
     addressDetails.address_components.forEach((component) => {
       if (component.types.includes("locality")) {
         city = component.long_name;
@@ -156,12 +146,11 @@ export default function CreateSpotPage() {
     formData.append("city", city);
     formData.append("country", country);
 
+    if (!textValidator([spotName, spotOverview])) return;
+
     if (spotCover) {
       formData.append("photo", spotCover);
-    } else {
-      formData.append("photo", "no-img-found.jpg");
     }
-
     createSpotMutation.mutate(formData);
   };
 

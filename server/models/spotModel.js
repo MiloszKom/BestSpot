@@ -1,4 +1,8 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
 
 const spotSchema = new mongoose.Schema(
   {
@@ -10,12 +14,16 @@ const spotSchema = new mongoose.Schema(
       type: String,
       required: [true, "A spot must have a name"],
       maxlength: [
-        45,
+        80,
         "Your spot name is too long. Please keep it under 80 characters",
       ],
     },
     overview: {
       type: String,
+      maxlength: [
+        300,
+        "Your spot overview is too long. Please keep it under 300 characters",
+      ],
     },
     category: {
       type: String,
@@ -23,7 +31,7 @@ const spotSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
-      default: "no-img-found.jpg",
+      default: `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/defaults/not-found.jpg`,
     },
     likes: [
       {
@@ -99,8 +107,45 @@ const spotSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+spotSchema.virtual("likeCount").get(function () {
+  if (!this.likes) return 0;
+  return this.likes.filter((like) => like.isLikeActive).length;
+});
+
+spotSchema.virtual("isLiked").get(function () {
+  return function (user) {
+    return this.likes.some(
+      (like) => like._id.equals(user?._id) && like.isLikeActive
+    );
+  };
+});
+
+spotSchema.virtual("isSaved").get(function () {
+  return function (user) {
+    return user?.spotlists.some((spotlist) =>
+      spotlist.spots.some(
+        (spotItem) => spotItem._id.toString() === this._id.toString()
+      )
+    );
+  };
+});
+
+spotSchema.virtual("spotNote").get(function () {
+  return function (user) {
+    return (
+      this.favouritedBy.find(
+        (fav) => fav.userId.toString() === user?._id.toString()
+      )?.note || null
+    );
+  };
+});
 
 const Spot = mongoose.model("Spot", spotSchema);
 

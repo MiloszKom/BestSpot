@@ -69,7 +69,7 @@ export default function Profile() {
         <div
           className="image"
           style={{
-            backgroundImage: `url(http://${process.env.REACT_APP_SERVER}:5000/uploads/images/${user.photo})`,
+            backgroundImage: `url(${user.photo})`,
           }}
         />
         <div className="name">{user.name}</div>
