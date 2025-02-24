@@ -10,7 +10,7 @@ export default function Bookmarks() {
   const containerRef = useRef();
   useScrollPosition(containerRef, "scrolledHeightBookmarks");
 
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
     useInfiniteQuery({
       queryKey: ["bookmarks"],
       queryFn: getBookmarks,
@@ -35,8 +35,8 @@ export default function Bookmarks() {
         {isLoading ? (
           <LoadingWave />
         ) : isError ? (
-          <div className="error-message">
-            Failed to load bookmarks. Try again later.
+          <div className="general-error">
+            {error.response?.data?.message || "An unexpected error occurred"}
           </div>
         ) : bookmarks.length > 0 ? (
           <Posts

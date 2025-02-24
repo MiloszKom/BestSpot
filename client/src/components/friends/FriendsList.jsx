@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getFriends } from "../api/friendsApis";
 
 export default function FriendsList() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
   });
@@ -18,6 +18,10 @@ export default function FriendsList() {
     <div className="friends-body">
       {isLoading ? (
         <LoadingWave />
+      ) : isError ? (
+        <div className="general-error">
+          {error.response?.data?.message || "An unexpected error occurred"}
+        </div>
       ) : friends.length > 0 ? (
         <div className="friends-body-content">
           <span className="friends-count">{friends.length} Friends</span>
