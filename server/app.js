@@ -42,7 +42,6 @@ app.use(
       "https://bestspot.app",
       "https://www.bestspot.app",
       "https://bestspot.netlify.app",
-      "http://192.168.100.24:3001",
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
