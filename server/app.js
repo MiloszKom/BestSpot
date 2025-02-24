@@ -42,6 +42,7 @@ app.use(
       "https://bestspot.app",
       "https://www.bestspot.app",
       "https://bestspot.netlify.app",
+      "http://192.168.100.24:3001",
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
@@ -60,11 +61,6 @@ const limiter = rateLimit({
 });
 
 app.use("/api", limiter);
-
-app.use((req, res, next) => {
-  console.log("Cookies :", req.cookies);
-  next();
-});
 
 const mapsRateLimiter = rateLimit({
   windowMs: 1 * 60 * 60 * 1000,

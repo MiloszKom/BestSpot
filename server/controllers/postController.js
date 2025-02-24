@@ -141,9 +141,10 @@ exports.createPost = catchAsync(async (req, res, next) => {
   user.posts.unshift(newPost._id);
   await user.save({ validateBeforeSave: false });
 
-  const uploadPromises = req.body.postPhotosParams.map(async (photoParams) => {
-    await uploadImageToS3(photoParams);
-  });
+  const uploadPromises =
+    req.body.postPhotosParams?.map(async (photoParams) => {
+      await uploadImageToS3(photoParams);
+    }) || [];
 
   await Promise.all(uploadPromises);
 
