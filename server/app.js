@@ -38,7 +38,11 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: [`http://${process.env.REACT_APP_SERVER}:3001`],
+    origin: [
+      "https://bestspot.app",
+      "https://www.bestspot.app",
+      "https://bestspot.netlify.app",
+    ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],

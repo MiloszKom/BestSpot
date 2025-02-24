@@ -99,9 +99,9 @@ export const editPostComment = async ({
     data: {
       comment: comment,
     },
-    url: `http://${
-      process.env.REACT_APP_SERVER
-    }:5000/api/v1/posts/${postId}/comments/${commentId}${
+    url: `${
+      process.env.REACT_APP_API_URL
+    }/api/v1/posts/${postId}/comments/${commentId}${
       replyId ? `/replies/${replyId}` : ""
     }`,
     withCredentials: true,
@@ -126,9 +126,9 @@ export const toggleCommentLike = async ({
 }) => {
   const res = await axios({
     method: isLiked ? "DELETE" : "POST",
-    url: `http://${
-      process.env.REACT_APP_SERVER
-    }:5000/api/v1/posts/${postId}/comments/${commentId}${
+    url: `${
+      process.env.REACT_APP_API_URL
+    }/api/v1/posts/${postId}/comments/${commentId}${
       replyId ? `/replies/${replyId}` : ""
     }/like`,
     withCredentials: true,
