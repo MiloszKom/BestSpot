@@ -51,7 +51,7 @@ export const checkCookies = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/checkCookies`,
+      url: `${process.env.REACT_APP_API_URL}/api/v1/users/checkCookies`,
       withCredentials: true,
     });
 
@@ -132,7 +132,7 @@ export const logout = async (auth) => {
       headers: {
         "Content-Type": "application/json",
       },
-      url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/logout`,
+      url: `${process.env.REACT_APP_API_URL}/api/v1/users/logout`,
       withCredentials: true,
     });
     auth.logout();

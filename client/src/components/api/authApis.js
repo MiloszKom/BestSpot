@@ -6,7 +6,7 @@ export const login = async (data) => {
     headers: {
       "Content-Type": "application/json",
     },
-    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/login`,
+    url: `${process.env.REACT_APP_API_URL}/api/v1/users/login`,
     data,
     withCredentials: true,
   });
@@ -19,7 +19,7 @@ export const signUp = async (data) => {
     headers: {
       "Content-Type": "application/json",
     },
-    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/signup`,
+    url: `${process.env.REACT_APP_API_URL}/api/v1/users/signup`,
     data,
     withCredentials: true,
   });
@@ -29,7 +29,7 @@ export const signUp = async (data) => {
 export const updateInfo = async (data) => {
   const res = await axios({
     method: "PATCH",
-    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/updateMe`,
+    url: `${process.env.REACT_APP_API_URL}/api/v1/users/updateMe`,
     data,
     withCredentials: true,
   });
@@ -39,7 +39,7 @@ export const updateInfo = async (data) => {
 export const updatePassword = async (data) => {
   const res = await axios({
     method: "PATCH",
-    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/updateMyPassword`,
+    url: `${process.env.REACT_APP_API_URL}/api/v1/users/updateMyPassword`,
     data,
     withCredentials: true,
   });

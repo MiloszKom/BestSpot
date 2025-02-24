@@ -22,7 +22,7 @@ export default function PostAddSpots({
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists/${spotlistId}`,
+        url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/${spotlistId}`,
         withCredentials: true,
       });
       setSpots(res.data.data.spots);
@@ -67,7 +67,7 @@ export default function PostAddSpots({
           headers: {
             "Content-Type": "application/json",
           },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/spotlists`,
+          url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists`,
           withCredentials: true,
         });
         const filteredSpotlists = res.data.data.filter(

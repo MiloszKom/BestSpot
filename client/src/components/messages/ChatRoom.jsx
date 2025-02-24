@@ -41,7 +41,7 @@ export default function ChatRoom() {
           headers: {
             "Content-Type": "application/json",
           },
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/chats?user1=${auth.userData._id}&user2=${params.id}`,
+          url: `${process.env.REACT_APP_API_URL}/api/v1/chats?user1=${auth.userData._id}&user2=${params.id}`,
           withCredentials: true,
         });
 

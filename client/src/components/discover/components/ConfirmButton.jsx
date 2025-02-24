@@ -31,7 +31,7 @@ export default function ConfirmButton({
         headers: {
           "Content-Type": "application/json",
         },
-        url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/maps/getLocation/${lat}/${lng}`,
+        url: `${process.env.REACT_APP_API_URL}/api/v1/maps/getLocation/${lat}/${lng}`,
         withCredentials: true,
       });
 

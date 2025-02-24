@@ -29,7 +29,7 @@ export default function Chats() {
       try {
         const res = await axios({
           method: "GET",
-          url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/chats/${
+          url: `${process.env.REACT_APP_API_URL}/api/v1/chats/${
             pathSegment === "messages" ? "approved" : "request"
           }-chats`,
           withCredentials: true,

@@ -3,7 +3,7 @@ import axios from "axios";
 export const searchUsers = async (chatSearch) => {
   const res = await axios({
     method: "GET",
-    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/searchUsers?q=${chatSearch}`,
+    url: `${process.env.REACT_APP_API_URL}/api/v1/users/searchUsers?q=${chatSearch}`,
     withCredentials: true,
   });
   return res.data;
@@ -12,7 +12,7 @@ export const searchUsers = async (chatSearch) => {
 export const searchUsersByHandle = async (taggedWord) => {
   const res = await axios({
     method: "GET",
-    url: `http://${process.env.REACT_APP_SERVER}:5000/api/v1/users/searchHandles?q=${taggedWord}`,
+    url: `${process.env.REACT_APP_API_URL}/api/v1/users/searchHandles?q=${taggedWord}`,
     withCredentials: true,
   });
   return res.data;

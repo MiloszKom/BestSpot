@@ -18,7 +18,7 @@ export const SocketContextProvider = ({ children }) => {
   useEffect(() => {
     if (!userData) return;
 
-    socketRef.current = io(`http://${process.env.REACT_APP_SERVER}:5000`);
+    socketRef.current = io(`${process.env.REACT_APP_API_URL}`);
 
     socketRef.current.on("connect", () => {
       setSocket(socketRef.current);
