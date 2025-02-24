@@ -5,10 +5,10 @@ import Spinner from "../common/Spinner";
 import { useValidateUserContent } from "../hooks/useValidateUserContent";
 
 export default function Signup() {
-  const [name, setName] = useState("test");
-  const [email, setEmail] = useState("test@test.pl");
-  const [password, setPassword] = useState("milosz123");
-  const [passwordConfirm, setPasswordConfirm] = useState("milosz123");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState("");
 
   const { signUpMutation } = useAuthMutations();
