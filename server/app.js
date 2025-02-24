@@ -61,6 +61,11 @@ const limiter = rateLimit({
 
 app.use("/api", limiter);
 
+app.use((req, res, next) => {
+  console.log("Cookies :", req.cookies);
+  next();
+});
+
 const mapsRateLimiter = rateLimit({
   windowMs: 1 * 60 * 60 * 1000,
   max: 20,
