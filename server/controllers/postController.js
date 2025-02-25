@@ -42,6 +42,10 @@ exports.getPosts = catchAsync(async (req, res, next) => {
   let filter = {};
 
   if (req.query.filter === "friends") {
+    if (!userId)
+      return next(
+        new AppError("You have to be logged in to view your friends posts", 400)
+      );
     const user = await User.findById(userId).select("friends");
     filter = { author: { $in: user.friends } };
   } else {
