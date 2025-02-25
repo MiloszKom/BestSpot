@@ -5,12 +5,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "pm2": "pm2 start pm2.config.js",
-    "pm2:dev": "pm2 start pm2.config.js --env development",
-    "pm2:prod": "pm2 start pm2.config.js --env production",
-    "pm2:stop": "pm2 stop all",
-    "pm2:restart": "pm2 restart all",
-    "pm2:delete": "pm2 delete all",
     "dev": "nodemon server.js"
   },
   "keywords": [],
@@ -41,7 +35,6 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4",
-    "pm2": "^5.4.3"
+    "nodemon": "^3.1.4"
   }
 }
