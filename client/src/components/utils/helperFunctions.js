@@ -1,13 +1,9 @@
 import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLock,
   faEarthAmericas,
   faUsers,
-  faStarHalfStroke,
-  faStar as filledStar,
 } from "@fortawesome/free-solid-svg-icons";
-import { faStar as emptyStar } from "@fortawesome/free-regular-svg-icons";
 
 import axios from "axios";
 
@@ -26,22 +22,6 @@ export function measureDistance(position1, position2) {
   const d = R * c;
 
   return d;
-}
-
-export function starRating(rating) {
-  const stars = [];
-
-  for (let i = 1; i <= 5; i++) {
-    if (rating >= i) {
-      stars.push(<FontAwesomeIcon key={i} icon={filledStar} />);
-    } else if (rating >= i - 0.5) {
-      stars.push(<FontAwesomeIcon key={i} icon={faStarHalfStroke} />);
-    } else {
-      stars.push(<FontAwesomeIcon key={i} icon={emptyStar} />);
-    }
-  }
-
-  return stars;
 }
 
 export const checkCookies = async () => {
@@ -84,7 +64,7 @@ export const compareTime = (date1, date2) => {
 export const formatTimeAgo = (timestamp) => {
   const now = new Date();
   const timeDiff = now - new Date(timestamp);
-  const seconds = Math.floor(timeDiff / 1000);
+  const seconds = Math.max(0, Math.floor(timeDiff / 1000));
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
