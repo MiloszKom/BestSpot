@@ -11,13 +11,15 @@ const DB = process.env.DATABASE.replace(
 );
 
 mongoose.connect(DB).then(() => {
-  ("DB connection successful!");
+  console.log("DB connection successful!");
 });
 
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 const hostname = "0.0.0.0";
 
 const server = http.createServer(app);
+
+app.set("trust proxy", true);
 
 const io = new Server(server, {
   cors: {
