@@ -50,6 +50,7 @@ import CreateSpot from "./components/discover/CreateSpot";
 import Reports from "./components/pages/Reports";
 
 import NotFoundPage from "./components/pages/NotFoundPage";
+
 function App() {
   return (
     <BrowserRouter>

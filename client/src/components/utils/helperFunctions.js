@@ -237,6 +237,17 @@ export const moveHighlightedItemToTop = (data, arrayKey, highlightedId) => {
   }
 };
 
+export const suppressConsoleInfo = () => {
+  const originalConsoleInfo = console.info;
+
+  console.info = (...args) => {
+    const message = args.join(" ");
+    if (!message.includes("By not specifying 'modelOrUrl' parameter")) {
+      originalConsoleInfo.apply(console, args);
+    }
+  };
+};
+
 // Post mutation helper functions
 
 export const updatePostLike = (oldData, postId, isLiked) => {

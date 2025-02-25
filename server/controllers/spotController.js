@@ -157,12 +157,14 @@ exports.editSpot = catchAsync(async (req, res, next) => {
 
   const { name, overview, photo } = req.body;
 
-  const existingSpot = await Spot.findOne({ author: user._id, name });
+  if (spot.name !== name) {
+    const existingSpot = await Spot.findOne({ author: user._id, name });
 
-  if (existingSpot) {
-    return next(
-      new AppError("You've already added a spot with this name.", 400)
-    );
+    if (existingSpot) {
+      return next(
+        new AppError("You've already added a spot with this name.", 400)
+      );
+    }
   }
 
   if (!name) {

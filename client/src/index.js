@@ -9,6 +9,10 @@ import { AuthContextProvider } from "./components/context/AuthContext";
 import { SocketContextProvider } from "./components/context/SocketContext";
 import { AlertContextProvider } from "./components/context/AlertContext";
 
+import { suppressConsoleInfo } from "./components/utils/helperFunctions";
+
+suppressConsoleInfo();
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

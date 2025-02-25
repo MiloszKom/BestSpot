@@ -37,10 +37,18 @@ export default function ConfirmButton({
 
       const results = res.data.googleData.results;
 
-      const locationData =
-        results[0].types && results[0].types.includes("plus_code")
-          ? results[1]
-          : results[0];
+      let locationData;
+
+      for (let result of results) {
+        if (
+          result.types &&
+          (result.types.includes("street_address") ||
+            result.types.includes("route"))
+        ) {
+          locationData = result;
+          break;
+        }
+      }
 
       if (!locationData) {
         showAlert("No valid location data found", "fail");
