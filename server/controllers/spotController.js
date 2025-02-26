@@ -505,7 +505,7 @@ exports.unlikeInsight = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getSpotLiblary = catchAsync(async (req, res) => {
+exports.getSpotLibrary = catchAsync(async (req, res) => {
   const sort = req.query.sort;
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
@@ -529,7 +529,7 @@ exports.getSpotLiblary = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    message: "SpotLiblary retrieved successfully",
+    message: "SpotLibrary retrieved successfully",
     data: spots,
   });
 });

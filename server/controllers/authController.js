@@ -44,7 +44,9 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Please provide email and password", 400));
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }).select(
+    "+password role handle photo _id chatsJoined name"
+  );
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError("Incorrect email or password", 401));
@@ -81,7 +83,9 @@ const getUserFromToken = async (token) => {
 
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-  const currentUser = await User.findById(decoded.id);
+  const currentUser = await User.findById(decoded.id).select(
+    "+password role handle photo _id chatsJoined name"
+  );
   if (!currentUser) return null;
 
   if (currentUser.changedPasswordAfter(decoded.iat)) return null;
@@ -154,7 +158,9 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     );
   }
 
-  const user = await User.findById(req.user.id).select("+password");
+  const user = await User.findById(req.user.id).select(
+    "+password role handle photo _id chatsJoined name"
+  );
   if (!user) {
     return next(new AppError("User not found.", 404));
   }
@@ -190,7 +196,9 @@ exports.checkCookies = catchAsync(async (req, res, next) => {
         process.env.JWT_SECRET
       );
 
-      const currentUser = await User.findById(decoded.id);
+      const currentUser = await User.findById(decoded.id).select(
+        "role handle photo _id chatsJoined name"
+      );
       if (!currentUser) {
         return next(
           new AppError("The user belonging to this token no longer exists", 401)

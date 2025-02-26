@@ -22,8 +22,8 @@ export default function Discover() {
           </div>
         </Link>
 
-        <Link to="spot-liblary" className="discover-el">
-          <div className="discover-el-title">Spot Liblary</div>
+        <Link to="spot-library" className="discover-el">
+          <div className="discover-el-title">Spot Library</div>
           <div className="discover-el-description">
             Browse places created by users and explore hidden gems in different
             areas.

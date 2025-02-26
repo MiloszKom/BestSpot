@@ -19,7 +19,7 @@ router
     spotController.createSpot
   );
 
-router.route("/liblary").get(softAuth, spotController.getSpotLiblary);
+router.route("/library").get(softAuth, spotController.getSpotLibrary);
 
 router.route("/latest-5").get(softAuth, spotController.getLatestSpots);
 

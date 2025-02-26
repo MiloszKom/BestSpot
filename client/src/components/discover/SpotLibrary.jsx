@@ -3,29 +3,29 @@ import React, { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getSpotLiblary } from "../api/spotApis";
+import { getSpotLibrary } from "../api/spotApis";
 import { useInView } from "react-intersection-observer";
 import LoadingWave from "../common/LoadingWave";
 import Spot from "../spot/Spot";
 import { useNavigate } from "react-router-dom";
 import useScrollPosition from "../hooks/useScrollPosition";
 
-export default function SpotLiblary() {
+export default function SpotLibrary() {
   const [order, setOrder] = useState(
-    sessionStorage.getItem("spotLiblaryOrder") === "popular"
+    sessionStorage.getItem("spotLibraryOrder") === "popular"
       ? "popular"
       : "newest"
   );
   const navigate = useNavigate();
 
   const containerRef = useRef();
-  useScrollPosition(containerRef, "scrolledHeightSpotLiblary");
+  useScrollPosition(containerRef, "scrolledHeightSpotLibrary");
 
   const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
     useInfiniteQuery({
-      queryKey: ["spotLiblary", order],
+      queryKey: ["spotLibrary", order],
       queryFn: ({ pageParam = 1 }) =>
-        getSpotLiblary({ pageParam, sortOption: order }),
+        getSpotLibrary({ pageParam, sortOption: order }),
       getNextPageParam: (lastPage, allPages) => {
         if (lastPage.data.length === 20) {
           return allPages.length + 1;
@@ -48,7 +48,7 @@ export default function SpotLiblary() {
         <div className="svg-wrapper" onClick={() => navigate(-1)}>
           <FontAwesomeIcon icon={faArrowLeft} />
         </div>
-        <span>Spot Liblary</span>
+        <span>Spot Library</span>
       </div>
       <div className="spotlists-hub-sort-options">
         <button
@@ -73,7 +73,7 @@ export default function SpotLiblary() {
           </div>
         ) : (
           <>
-            <div className="spot-liblary-spots">
+            <div className="spot-library-spots">
               {spots.map((spot) => {
                 return <Spot key={spot._id} spot={spot} />;
               })}
