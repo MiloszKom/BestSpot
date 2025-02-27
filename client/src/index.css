@@ -1261,11 +1261,6 @@ img {
   width: 100%;
 }
 
-.loader.fullscreen {
-  min-height: 100dvh;
-  background-color: #14161a;
-}
-
 .loader::after {
   content: "";
   width: 75px;
