@@ -86,8 +86,8 @@ export default function CreateSpotPage() {
     []
   );
 
-  const handleFileChange = async (event) => {
-    const files = event.target.files;
+  const handleFileChange = async (e) => {
+    const files = e.target.files;
     if (files.length > 1) {
       showAlert("Upload only 1 image", "fail");
       return;
@@ -106,6 +106,8 @@ export default function CreateSpotPage() {
       setPhotoPreview(reader.result);
     };
     reader.readAsDataURL(file);
+
+    e.target.value = "";
   };
 
   const handleCategoryChange = (event) => {

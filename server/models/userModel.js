@@ -9,7 +9,7 @@ const bucketName = process.env.BUCKET_NAME;
 const bucketRegion = process.env.BUCKET_REGION;
 
 const validateName = (name) => {
-  if (!/^[a-zA-Z0-9\s-]+$/.test(name)) {
+  if (!/^[\p{L}0-9\s-]+$/u.test(name)) {
     return false;
   }
 

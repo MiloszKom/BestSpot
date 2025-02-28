@@ -84,8 +84,9 @@ export default function PostCreate() {
     setTaggedWord(handle);
     setIsTagging(false);
   };
-  const handleFileChange = async (event) => {
-    const files = Array.from(event.target.files);
+
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files);
     const totalPhotos = selectedPhotos.length + files.length;
 
     if (totalPhotos > 5) {
@@ -121,6 +122,8 @@ export default function PostCreate() {
       };
       reader.readAsDataURL(file);
     });
+
+    e.target.value = "";
   };
 
   const createPost = async () => {
