@@ -45,7 +45,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   const user = await User.findOne({ email }).select(
-    "+password role handle photo _id chatsJoined name"
+    "+password role handle photo _id chatsJoined name email"
   );
 
   if (!user || !(await user.correctPassword(password, user.password))) {
@@ -84,7 +84,7 @@ const getUserFromToken = async (token) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   const currentUser = await User.findById(decoded.id).select(
-    "+password role handle photo _id chatsJoined name"
+    "+password role handle photo _id chatsJoined name email"
   );
   if (!currentUser) return null;
 
@@ -159,7 +159,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   }
 
   const user = await User.findById(req.user.id).select(
-    "+password role handle photo _id chatsJoined name"
+    "+password role handle photo _id chatsJoined name email"
   );
   if (!user) {
     return next(new AppError("User not found.", 404));
@@ -197,7 +197,7 @@ exports.checkCookies = catchAsync(async (req, res, next) => {
       );
 
       const currentUser = await User.findById(decoded.id).select(
-        "role handle photo _id chatsJoined name"
+        "role handle photo _id chatsJoined name email"
       );
       if (!currentUser) {
         return next(
