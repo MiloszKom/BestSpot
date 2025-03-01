@@ -39,7 +39,7 @@ export default function ChatRoom() {
         const res = await axios({
           method: "GET",
           headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           url: `${process.env.REACT_APP_API_URL}/api/v1/chats?user1=${auth.userData._id}&user2=${params.id}`,
           withCredentials: true,

@@ -29,7 +29,7 @@ export default function ConfirmButton({
       const res = await axios({
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         url: `${process.env.REACT_APP_API_URL}/api/v1/maps/getLocation/${lat}/${lng}`,
         withCredentials: true,

@@ -1,29 +1,24 @@
-import axios from "axios";
+import { axiosRequest } from "../utils/axiosRequest";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const getReports = async () => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/reports`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/reports`,
   });
-  return res.data;
 };
 
 export const createReport = async (data) => {
-  const res = await axios({
+  return axiosRequest({
     method: "POST",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/reports`,
+    url: `${API_URL}/api/v1/reports`,
     data,
-    withCredentials: true,
   });
-  return res.data;
 };
 
 export const deleteReport = async (reportId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "DELETE",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/reports/${reportId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/reports/${reportId}`,
   });
-  return res.data;
 };

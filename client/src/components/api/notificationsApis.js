@@ -1,28 +1,23 @@
-import axios from "axios";
+import { axiosRequest } from "../utils/axiosRequest";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const getGlobalNotifications = async () => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/global-notifications`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/global-notifications`,
   });
-  return res.data;
 };
 
 export const getNotifications = async () => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/notifications`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/notifications`,
   });
-  return res.data;
 };
 
 export const deleteNotification = async (notificationId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "DELETE",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/notifications/${notificationId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/notifications/${notificationId}`,
   });
-  return res.data;
 };

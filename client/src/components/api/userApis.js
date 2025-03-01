@@ -1,19 +1,18 @@
-import axios from "axios";
+import { axiosRequest } from "../utils/axiosRequest";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const searchUsers = async (chatSearch) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/searchUsers?q=${chatSearch}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/searchUsers`,
+    params: { q: chatSearch },
   });
-  return res.data;
 };
 
 export const searchUsersByHandle = async (taggedWord) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/searchHandles?q=${taggedWord}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/searchHandles`,
+    params: { q: taggedWord },
   });
-  return res.data;
 };

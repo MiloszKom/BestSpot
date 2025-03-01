@@ -1,47 +1,41 @@
-import axios from "axios";
+import { axiosRequest } from "../utils/axiosRequest";
+const API_URL = process.env.REACT_APP_API_URL;
+
+export const checkCookies = async () => {
+  return axiosRequest({
+    method: "GET",
+    url: `${API_URL}/api/v1/users/auth/checkCookies`,
+  });
+};
 
 export const login = async (data) => {
-  const res = await axios({
+  return axiosRequest({
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/login`,
+    url: `${API_URL}/api/v1/users/auth/login`,
     data,
-    withCredentials: true,
   });
-  return res.data;
 };
 
 export const signUp = async (data) => {
-  const res = await axios({
+  return axiosRequest({
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/signup`,
+    url: `${API_URL}/api/v1/users/auth/signup`,
     data,
-    withCredentials: true,
   });
-  return res.data;
 };
 
 export const updateInfo = async (data) => {
-  const res = await axios({
+  return axiosRequest({
     method: "PATCH",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/updateMe`,
+    url: `${API_URL}/api/v1/users/auth/updateMe`,
     data,
-    withCredentials: true,
   });
-  return res.data;
 };
 
 export const updatePassword = async (data) => {
-  const res = await axios({
+  return axiosRequest({
     method: "PATCH",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/updateMyPassword`,
+    url: `${API_URL}/api/v1/users/auth/updateMyPassword`,
     data,
-    withCredentials: true,
   });
-  return res.data;
 };

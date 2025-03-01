@@ -17,21 +17,22 @@ const {
 
 const router = express.Router();
 
-router.post("/signup", signup);
-router.post("/login", login);
-router.get("/logout", logout);
+router.post("/auth/signup", signup);
+router.post("/auth/login", login);
+router.get("/auth/logout", logout);
 
-router.get("/checkCookies", checkCookies);
+router.get("/auth/checkCookies", checkCookies);
 
-router.patch("/updateMyPassword", protect, updatePassword);
+router.patch("/auth/updateMyPassword", protect, updatePassword);
 
 router.patch(
-  "/updateMe",
+  "/auth/updateMe",
   protect,
   uploadUserPhoto,
   initializeUserPhoto,
   userController.updateMe
 );
+
 router.delete("/deleteMe", protect, userController.deleteMe);
 
 router.get("/searchUsers", protect, userController.searchUsers);

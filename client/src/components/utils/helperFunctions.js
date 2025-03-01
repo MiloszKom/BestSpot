@@ -24,23 +24,6 @@ export function measureDistance(position1, position2) {
   return d;
 }
 
-export const checkCookies = async () => {
-  try {
-    const res = await axios({
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      url: `${process.env.REACT_APP_API_URL}/api/v1/users/checkCookies`,
-      withCredentials: true,
-    });
-
-    if (res.data.status === "success") return res.data;
-  } catch (err) {
-    // console.log(err);
-  }
-};
-
 export const formatTime = (date) => {
   const time = new Date(date);
   const year = String(time.getFullYear());
@@ -109,10 +92,7 @@ export const logout = async (auth) => {
   try {
     const res = await axios({
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      url: `${process.env.REACT_APP_API_URL}/api/v1/users/logout`,
+      url: `${process.env.REACT_APP_API_URL}/api/v1/users/auth/logout`,
       withCredentials: true,
     });
     auth.logout();

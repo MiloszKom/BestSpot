@@ -29,6 +29,9 @@ export default function Chats() {
       try {
         const res = await axios({
           method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
           url: `${process.env.REACT_APP_API_URL}/api/v1/chats/${
             pathSegment === "messages" ? "approved" : "request"
           }-chats`,

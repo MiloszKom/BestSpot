@@ -1,22 +1,19 @@
-import axios from "axios";
+import { axiosRequest } from "../utils/axiosRequest";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const getUserSpotlists = async () => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/spotlists`,
   });
-  return res.data;
 };
 
 export const createSpotlist = async ({ data }) => {
-  const res = await axios({
+  return axiosRequest({
     method: "POST",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists`,
+    url: `${API_URL}/api/v1/spotlists`,
     data,
-    withCredentials: true,
   });
-  return res.data;
 };
 
 export const editSpotlist = async ({
@@ -26,72 +23,59 @@ export const editSpotlist = async ({
   newVisibility,
   newDescription,
 }) => {
-  const res = await axios({
+  return axiosRequest({
     method: "PATCH",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/${spotlistId}`,
+    url: `${API_URL}/api/v1/spotlists/${spotlistId}`,
     data: {
       nameIsChanged,
       newName,
       newVisibility,
       newDescription,
     },
-    withCredentials: true,
   });
-  return res.data;
 };
 
 export const deleteSpotlist = async (data) => {
-  const res = await axios({
+  return axiosRequest({
     method: "DELETE",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/${data.spotlistId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/spotlists/${data.spotlistId}`,
   });
-  return res.data;
 };
 
 export const manageSpotlists = async (data) => {
-  const res = await axios({
+  return axiosRequest({
     method: "PATCH",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/manage`,
+    url: `${API_URL}/api/v1/spotlists/manage`,
     data,
-    withCredentials: true,
   });
-  return res.data;
 };
 
 export const removeSpotFromSpotlist = async ({ spotlistId, spotId }) => {
-  const res = await axios({
+  return axiosRequest({
     method: "DELETE",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/${spotlistId}/spot/${spotId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/spotlists/${spotlistId}/spot/${spotId}`,
   });
-  return res.data;
 };
 
 export const toggleLikeSpotlist = async ({ isLiked, spotlistId }) => {
-  const res = await axios({
+  return axiosRequest({
     method: isLiked ? "DELETE" : "POST",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/${spotlistId}/like`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/spotlists/${spotlistId}/like`,
   });
-  return res.data;
 };
 
 export const getSpotsInSpotlist = async (spotlistId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/${spotlistId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/spotlists/${spotlistId}`,
   });
-  return res.data;
 };
 
 export const getHubSpotlists = async ({ pageParam = 1, sortOption }) => {
-  const res = await axios({
-    method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/spotlists/hub?sort=${sortOption}&page=${pageParam}&limit=20`,
-    withCredentials: true,
-  });
   sessionStorage.setItem("spotlistHubOrder", sortOption);
-  return res.data;
+  return axiosRequest({
+    method: "GET",
+    url: `${API_URL}/api/v1/spotlists/hub`,
+    params: { sort: sortOption, page: pageParam, limit: 20 },
+  });
 };

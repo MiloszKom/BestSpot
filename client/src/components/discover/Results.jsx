@@ -35,12 +35,7 @@ export default function Results() {
 
   const navigate = useNavigate();
 
-  const {
-    data: results = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["results", location, category, radius],
     queryFn: () =>
       getAreaSearchResults({
@@ -50,6 +45,7 @@ export default function Results() {
         radius,
       }),
   });
+  const results = data?.data.spots;
 
   const options = useMemo(
     () => ({

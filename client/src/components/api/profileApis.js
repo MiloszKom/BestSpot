@@ -1,64 +1,52 @@
-import axios from "axios";
+import { axiosRequest } from "../utils/axiosRequest";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const getProfile = async (handle) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/${handle}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/${handle}`,
   });
-  return res.data;
 };
 
 export const sendInvite = async (userId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "POST",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/sendFriendRequest/${userId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/sendFriendRequest/${userId}`,
   });
-  return res.data;
 };
 
 export const cancelInvite = async (userId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "DELETE",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/cancelFriendRequest/${userId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/cancelFriendRequest/${userId}`,
   });
-  return res.data;
 };
 
 export const unfriend = async (userId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "DELETE",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/deleteFriend/${userId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/deleteFriend/${userId}`,
   });
-  return res.data;
 };
 
 export const getProfilePosts = async (handle, pageParam = 1) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/${handle}/posts?page=${pageParam}&limit=10`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/${handle}/posts`,
+    params: { page: pageParam, limit: 10 },
   });
-  return res.data;
 };
 
 export const getProfileSpotlists = async (handle) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/${handle}/spotlists`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/${handle}/spotlists`,
   });
-  return res.data;
 };
 
 export const getProfileSpots = async (handle) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/${handle}/spots`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/${handle}/spots`,
   });
-  return res.data;
 };

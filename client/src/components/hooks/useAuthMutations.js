@@ -19,10 +19,8 @@ export const useAuthMutations = () => {
 
   const handleSuccess = (data, navigateTo = "/") => {
     showAlert(data.message, data.status);
-    window.setTimeout(() => {
-      auth.login(data);
-      navigate(navigateTo);
-    }, 1500);
+    auth.login(data);
+    navigate(navigateTo);
   };
 
   const loginMutation = useMutation({

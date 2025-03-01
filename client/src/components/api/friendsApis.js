@@ -1,37 +1,30 @@
-import axios from "axios";
+import { axiosRequest } from "../utils/axiosRequest";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const getFriends = async () => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/friends`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/friends`,
   });
-  return res.data;
 };
 
 export const getFriendRequests = async () => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/friends/requests`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/friends/requests`,
   });
-  return res.data;
 };
 
 export const acceptRequest = async (userId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "POST",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/acceptFriendRequest/${userId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/acceptFriendRequest/${userId}`,
   });
-  return res.data;
 };
 
 export const deleteRequest = async (userId) => {
-  const res = await axios({
+  return axiosRequest({
     method: "DELETE",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/users/rejectFriendRequest/${userId}`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/users/rejectFriendRequest/${userId}`,
   });
-  return res.data;
 };

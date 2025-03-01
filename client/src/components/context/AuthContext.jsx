@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from "react";
-import { checkCookies } from "../utils/helperFunctions";
+import { checkCookies } from "../api/authApis";
 
 export const AuthContext = createContext({
   isLoggedIn: false,
@@ -18,7 +18,10 @@ export const AuthContextProvider = ({ children }) => {
   useEffect(() => {
     const fetchCookies = async () => {
       const result = await checkCookies();
-      if (result) {
+      if (!result) {
+        setIsDataFetched(true);
+        return;
+      } else {
         setIsLoggedIn(true);
         setUserData(result.user);
         localStorage.setItem("token", result.token);
@@ -33,7 +36,7 @@ export const AuthContextProvider = ({ children }) => {
     setIsLoggedIn(true);
     setUserData(data.data.user);
     setIsDataFetched(true);
-    localStorage.setItem("token", data.token);
+    if (data.token) localStorage.setItem("token", data.token);
   }, []);
 
   const logout = useCallback(() => {

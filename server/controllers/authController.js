@@ -82,12 +82,12 @@ exports.logout = (req, res) => {
 
 const getUserFromToken = async (token) => {
   if (!token) return null;
-
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   const currentUser = await User.findById(decoded.id).select(
     "+password role handle photo _id chatsJoined name email"
   );
+
   if (!currentUser) return null;
 
   if (currentUser.changedPasswordAfter(decoded.iat)) return null;
@@ -113,7 +113,6 @@ exports.protect = catchAsync(async (req, res, next) => {
       new AppError("You are not logged in! Please log in to get access", 401)
     );
   }
-
   req.user = currentUser;
 
   next();
@@ -132,7 +131,7 @@ exports.softAuth = catchAsync(async (req, res, next) => {
 
   let currentUser;
 
-  if (token !== "loggedout") {
+  if (token !== "undefined" && token !== "loggedout") {
     currentUser = await getUserFromToken(token);
   }
 
@@ -188,35 +187,36 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 });
 
 exports.checkCookies = catchAsync(async (req, res, next) => {
-  let token;
+  if (!req.cookies.jwt || req.cookies.jwt === "loggedout") {
+    return res.status(204).json({
+      status: "no-content",
+      message: "No authentication cookie found",
+    });
+  }
 
-  if (req.cookies.jwt) {
-    token = req.cookies.jwt;
-    try {
-      const decoded = await promisify(jwt.verify)(
-        token,
-        process.env.JWT_SECRET
-      );
+  const token = req.cookies.jwt;
 
-      const currentUser = await User.findById(decoded.id).select(
-        "role handle photo _id chatsJoined name email"
-      );
-      if (!currentUser) {
-        return next(
-          new AppError("The user belonging to this token no longer exists", 401)
-        );
-      }
+  try {
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-      return res.status(200).json({
-        status: "success",
-        user: currentUser,
-        token,
-      });
-    } catch (err) {
+    const currentUser = await User.findById(decoded.id).select(
+      "role handle photo _id chatsJoined name email"
+    );
+
+    if (!currentUser) {
       return next(
-        new AppError("Invalid token or token verification failed.", 401)
+        new AppError("The user belonging to this token no longer exists", 401)
       );
     }
+
+    return res.status(200).json({
+      status: "success",
+      user: currentUser,
+      token,
+    });
+  } catch (err) {
+    return next(
+      new AppError("Invalid token or token verification failed.", 401)
+    );
   }
-  next();
 });
