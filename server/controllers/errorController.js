@@ -43,8 +43,7 @@ const handleNetworkError = (err) => {
   );
 };
 
-const handleJWTError = () =>
-  new AppError("Invalid token. Please log in again.", 401);
+const handleJWTError = () => new AppError("Log in to gain access.", 401);
 
 const handleJWTExpired = () =>
   new AppError("Your token has expirred! Please log in again", 401);

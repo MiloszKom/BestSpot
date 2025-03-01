@@ -13,7 +13,6 @@ export const AuthContext = createContext({
 export const AuthContextProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [token, setToken] = useState(null);
   const [isDataFetched, setIsDataFetched] = useState(false);
 
   useEffect(() => {
@@ -22,7 +21,7 @@ export const AuthContextProvider = ({ children }) => {
       if (result) {
         setIsLoggedIn(true);
         setUserData(result.user);
-        setToken(result.token);
+        localStorage.setItem("token", result.token);
       }
       setIsDataFetched(true);
     };
@@ -33,20 +32,20 @@ export const AuthContextProvider = ({ children }) => {
   const login = useCallback((data) => {
     setIsLoggedIn(true);
     setUserData(data.data.user);
-    setToken(data.token);
     setIsDataFetched(true);
+    localStorage.setItem("token", data.token);
   }, []);
 
   const logout = useCallback(() => {
     setIsDataFetched(false);
     setIsLoggedIn(false);
     setUserData(null);
-    setToken(null);
+    localStorage.removeItem("token");
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, userData, token, isDataFetched, login, logout }}
+      value={{ isLoggedIn, userData, isDataFetched, login, logout }}
     >
       {children}
     </AuthContext.Provider>

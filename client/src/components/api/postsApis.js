@@ -1,31 +1,34 @@
 import axios from "axios";
 
+import { axiosRequest } from "../utils/axiosRequest";
+
+const API_URL = process.env.REACT_APP_API_URL;
+
 export const getAllPosts = async ({ pageParam = 1 }) => {
-  const res = await axios({
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/posts?filter=all&page=${pageParam}&limit=10`,
-    withCredentials: true,
+    url: `${process.env.REACT_APP_API_URL}/api/v1/posts`,
+    params: { filter: "all", page: pageParam, limit: 10 },
+    requireAuth: false,
   });
-  return res.data;
 };
 
-export const getFriendsPosts = async ({ pageParam = 1 }) => {
-  const res = await axios({
+export const getFriendsPosts = (pageParam = 1) => {
+  return axiosRequest({
     method: "GET",
-    url: `${process.env.REACT_APP_API_URL}/api/v1/posts?filter=friends&page=${pageParam}&limit=10`,
-    withCredentials: true,
+    url: `${API_URL}/api/v1/posts`,
+    params: { filter: "friends", page: pageParam, limit: 10 },
+    requireAuth: true,
   });
-  return res.data;
 };
 
 export const createPost = async (formData) => {
-  const res = await axios({
+  return axiosRequest({
     method: "POST",
     url: `${process.env.REACT_APP_API_URL}/api/v1/posts`,
     data: formData,
-    withCredentials: true,
+    requireAuth: true,
   });
-  return res.data;
 };
 
 export const deletePost = async (postId) => {
