@@ -129,6 +129,12 @@ export default function CreateSpotPage() {
       if (component.types.includes("locality")) {
         city = component.long_name;
       }
+      if (
+        component.types.includes("administrative_area_level_1") &&
+        city === "Unknown Location"
+      ) {
+        city = component.long_name;
+      }
       if (component.types.includes("country")) {
         country = component.long_name;
       }

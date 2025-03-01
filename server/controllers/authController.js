@@ -21,6 +21,8 @@ const createSendToken = (user, statusCode, res, message) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "None",
+    domain: ".bestspot.app",
+    path: "/",
   };
 
   res.cookie("jwt", token, cookieOptions);
