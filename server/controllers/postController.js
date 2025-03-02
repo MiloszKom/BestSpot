@@ -67,7 +67,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
       { path: "author", select: "_id name photo handle" },
       {
         path: "spotlists",
-        select: "_id name cover visibility spots author",
+        select: "_id name cover visibility spots author description",
         populate: { path: "author", select: "handle" },
       },
       { path: "spots", select: "_id name photo city country" },
@@ -290,7 +290,7 @@ exports.getUserBookmarks = catchAsync(async (req, res, next) => {
       { path: "author", select: "_id name photo handle" },
       {
         path: "spotlists",
-        select: "_id name cover visibility spots author",
+        select: "_id name cover visibility spots author description",
         populate: { path: "author", select: "handle" },
       },
       { path: "spots", select: "_id name photo city country" },

@@ -19,6 +19,8 @@ export default function PostSpotlists({
   return (
     <div className="post-spotlists-container">
       {selectedSpotlists.map((spotlist) => {
+        console.log(spotlist);
+
         const spotCount = spotlist.spots?.length
           ? spotlist.spots.length
           : spotlist.spotCount
