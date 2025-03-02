@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const { transliterate } = require("transliteration");
 
 require("dotenv").config();
 
@@ -49,12 +50,6 @@ const userSchema = new mongoose.Schema({
   handle: {
     type: String,
     unique: true,
-    minlength: [3, "Handle must be at least 3 characters long"],
-    maxlength: [30, "Handle cannot exceed 30 characters"],
-    match: [
-      /^[a-zA-Z0-9_]+$/,
-      "Handle can only contain letters, numbers, and underscores",
-    ],
   },
   email: {
     type: String,
@@ -150,7 +145,7 @@ const RESERVED_HANDLES = process.env.RESERVED_HANDLES
   : [];
 
 const generateHandle = async function (user, model) {
-  let baseHandle = user.name.toLowerCase().replace(/\s+/g, "");
+  let baseHandle = transliterate(user.name).toLowerCase().replace(/\s+/g, "");
 
   baseHandle = baseHandle.replace(/[^a-z0-9_]/g, "");
 
