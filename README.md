@@ -14,6 +14,25 @@ BestSpot is a dynamic web application designed to help users create, share, and 
 
 **Social**: Message, add to friends, and tag other users.
 
+## Site Preview
+
+**Home Page**
+
+![Image](https://github.com/user-attachments/assets/6f4c9219-0877-4aa2-8425-20962bac42f4)
+
+**Area Search**
+
+![Image](https://github.com/user-attachments/assets/d76b2e0b-870c-4160-801c-22fad221bba1)
+
+**Chat**
+
+![Image](https://github.com/user-attachments/assets/302b9b63-afae-43f9-a7d2-bc5113b80286)
+
+**Spotlist**
+
+![Image](https://github.com/user-attachments/assets/610900e9-884e-4d9d-b8db-eecb4a4a58f7)
+
+
 ## Tech Stack
 
 **Frontend**: HTML, CSS, Javascript, React
